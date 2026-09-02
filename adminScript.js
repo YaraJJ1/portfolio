@@ -253,10 +253,14 @@ addProjectBtn.addEventListener("click", async function () {
 
     const requiredFields = [title, desc, date, category, difficulty, moreDescription, languages];
 
-    if (requiredFields.some(field => field.value.trim() === "")) {
-        alert("Please fill in all fields.");
-        return;
-    }
+    requiredFields.forEach((field, index) => {
+    console.log(index, field);
+});
+
+if (requiredFields.some(field => field.value.trim() === "")) {
+    alert("Please fill in all fields.");
+    return;
+}
 
     if (!isValidDateFormat(date.value.trim())) {
         alert("Please enter the date as dd/mm/yyyy.");
