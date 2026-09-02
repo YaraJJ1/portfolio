@@ -30,7 +30,7 @@ const GITHUB_OWNER = "yarajj1";
 const GITHUB_REPO = "yarajj1.github.io";
 const GITHUB_BRANCH = "main";
 const GITHUB_IMAGE_FOLDER = "images";
-const GITHUB_TOKEN = "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"; 
+const GITHUB_TOKEN = "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"; // <-- paste your token back in here before testing
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
@@ -75,7 +75,7 @@ function buildImageFilename(file, projectTitle) {
 
 // Commit the image to the GitHub repo and return its jsDelivr CDN URL
 async function uploadImageToGithub(file, projectTitle) {
-    if (!GITHUB_TOKEN || GITHUB_TOKEN === "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") {
+    if (!GITHUB_TOKEN || !GITHUB_TOKEN === "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") {
         throw new Error("Add your GitHub token at the top of adminScript.js first.");
     }
 
