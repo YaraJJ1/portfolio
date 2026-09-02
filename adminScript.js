@@ -16,7 +16,6 @@ const category = addProjectPage.querySelector('.Category');
 const difficulty = addProjectPage.querySelector('.Difficulty');
 const moreDescription = addProjectPage.querySelector('.MoreDescription');
 const languages = addProjectPage.querySelector('.Languages');
-const imageUrlInput = addProjectPage.querySelector('.ImageUrl');
 const addProjectBtn = addProjectPage.querySelector('.addProjectBtn');
 
 const adminProjectList = document.querySelector('.adminProjectList');
@@ -27,13 +26,13 @@ const inputFile = document.getElementById('input-file');
 const imageView = document.getElementById('img-view');
 
 
-const GITHUB_OWNER = "yarajj1";            
-const GITHUB_REPO = "yarajj1.github.io";   
-const GITHUB_BRANCH = "main";              
-const GITHUB_IMAGE_FOLDER = "images";      
-const GITHUB_TOKEN = "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"; 
+const GITHUB_OWNER = "yarajj1";
+const GITHUB_REPO = "yarajj1.github.io";
+const GITHUB_BRANCH = "main";
+const GITHUB_IMAGE_FOLDER = "images";
+const GITHUB_TOKEN = "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"; 
 
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024; 
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 function isValidDateFormat(value) {
     const parts = value.split("/");
@@ -76,7 +75,7 @@ function buildImageFilename(file, projectTitle) {
 
 // Commit the image to the GitHub repo and return its jsDelivr CDN URL
 async function uploadImageToGithub(file, projectTitle) {
-    if (!GITHUB_TOKEN || GITHUB_TOKEN === "YOUR_FINE_GRAINED_TOKEN_HERE") {
+    if (!GITHUB_TOKEN || GITHUB_TOKEN === "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") {
         throw new Error("Add your GitHub token at the top of adminScript.js first.");
     }
 
@@ -94,7 +93,8 @@ async function uploadImageToGithub(file, projectTitle) {
             method: "PUT",
             headers: {
                 Authorization: `token ${GITHUB_TOKEN}`,
-                Accept: "application/vnd.github+json"
+                Accept: "application/vnd.github+json",
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
                 message: `Add project image: ${filename}`,
@@ -106,11 +106,22 @@ async function uploadImageToGithub(file, projectTitle) {
 
     if (!response.ok) {
         const errorBody = await response.json().catch(() => ({}));
+
+        if (response.status === 404) {
+            throw new Error(
+                "GitHub upload failed (404) — the token doesn't have access to this repo. " +
+                "Check that the token's Repository access includes yarajj1.github.io and " +
+                "that its Contents permission is set to Read and write."
+            );
+        }
+        if (response.status === 401) {
+            throw new Error("GitHub upload failed (401) — the token looks invalid or expired.");
+        }
+
         throw new Error(errorBody.message || `GitHub upload failed (${response.status})`);
     }
 
-    // jsDelivr caches globally and is free with no bandwidth cap.
-    // A brand-new file can take a few seconds to appear the very first time.
+   
     return `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${path}`;
 }
 
@@ -148,8 +159,7 @@ async function loadAdminProjects() {
 
     } catch (error) {
         console.error("Error loading admin projects:", error);
-        // Surfaces the actual Firestore error code right in the list, so a
-        // permission-denied (e.g. expired test-mode rules) is obvious without devtools.
+       
         adminProjectList.innerHTML = `<li>Failed to load projects (${error.code || error.message}). If that says "permission-denied", check your Firestore rules.</li>`;
     }
 }
@@ -184,6 +194,7 @@ function resetImagePicker() {
     inputFile.value = "";
     imageView.style.backgroundImage = "";
     imageView.classList.remove("has-image");
+    imageView.classList.remove("uploading");
 }
 
 addProjectBtn.addEventListener("click", async function () {
@@ -201,22 +212,19 @@ addProjectBtn.addEventListener("click", async function () {
     }
 
     const droppedFile = inputFile.files[0];
-    const pastedUrl = imageUrlInput.value.trim();
 
-    if (!droppedFile && !pastedUrl) {
-        alert("Please drop an image above, or paste an image URL.");
+    if (!droppedFile) {
+        alert("Please drop an image above, or click it to browse for one.");
         return;
     }
 
     addProjectBtn.disabled = true;
 
     try {
-        let imageUrl = pastedUrl;
+        addProjectBtn.textContent = "Uploading image...";
+        imageView.classList.add("uploading");
 
-        if (droppedFile) {
-            addProjectBtn.textContent = "Uploading image...";
-            imageUrl = await uploadImageToGithub(droppedFile, title.value.trim());
-        }
+        const imageUrl = await uploadImageToGithub(droppedFile, title.value.trim());
 
         addProjectBtn.textContent = "Adding...";
 
@@ -233,7 +241,7 @@ addProjectBtn.addEventListener("click", async function () {
 
         await addDoc(collection(db, "projects"), newProject);
         alert("Project added!");
-        [title, desc, date, category, difficulty, moreDescription, languages, imageUrlInput]
+        [title, desc, date, category, difficulty, moreDescription, languages]
             .forEach(field => field.value = "");
         resetImagePicker();
         loadAdminProjects();
@@ -241,6 +249,7 @@ addProjectBtn.addEventListener("click", async function () {
         console.error("Error adding project:", error);
         alert(`Something went wrong: ${error.message}`);
     } finally {
+        imageView.classList.remove("uploading");
         addProjectBtn.disabled = false;
         addProjectBtn.textContent = "Add Project";
     }

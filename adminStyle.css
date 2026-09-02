@@ -107,4 +107,36 @@ textarea{
 .upload-placeholder span {
     font-size: 11px;
     color: #8a8a92;
+}.upload-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.upload-overlay p {
+    margin: 0;
+    font-size: 13px;
+    color: #333;
+}
+
+.spinner {
+    width: 22px;
+    height: 22px;
+    border: 3px solid #c7bdfc;
+    border-top-color: #7c6bf0;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+#img-view.uploading .upload-overlay {
+    display: flex;
 }
