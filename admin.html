@@ -1,54 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="./adminStyle.css">
-</head>
 <body>
-    <div class="addProjectPage">
-        <h2 class="addHeader">Enter Project details: </h2>
-            <p class = inputTitle>Enter Title: </p>
-            <input type="text" class = "Title" placeholder="Enter Title">
+    <div class="adminLayout">
 
-            <p class = inputTitle>Enter Description: </p>
-            <textarea type="text" class = "Description" placeholder="Enter Description"></textarea>
-        
-            <p class = inputTitle>Enter Date dd/mm/yyyy: </p>
-            <input type="text" class = "Date" placeholder="Enter Date">
+        <div class="addProjectPage">
+            <h2 class="addHeader">Enter Project details: </h2>
+                <p class = inputTitle>Enter Title: </p>
+                <input type="text" class = "Title" placeholder="Enter Title">
 
-            <p class = inputTitle>Enter Image Source: </p>
-            <input type="text" class = "Img" placeholder="Enter Img Source">
+                <p class = inputTitle>Enter Description: </p>
+                <textarea type="text" class = "Description" placeholder="Enter Description"></textarea>
+            
+                <p class = inputTitle>Enter Date dd/mm/yyyy: </p>
+                <input type="text" class = "Date" placeholder="Enter Date">
 
-            <p class = inputTitle>Enter Data Category: </p>
-            <select class = "Category" placeholder="Enter Data Category">
-                <option value = games>Games</option>
-                <option value = web>Web</option>
-                <option value = backend>Back-end</option>
-                <option value = others>Others</option>
-            </select>
+                <p class = inputTitle>Enter Image Source: </p>
+                <input type="text" class = "Img" placeholder="Enter Img Source">
 
-            <p class = inputTitle>Enter Difficulty Level: </p>
-            <select class = "Difficulty" placeholder="Enter Difficulty Level">
-                <option value = easy>Easy</option>
-                <option value = medium>Medium</option>
-                <option value = hard>Hard</option>
-            </select>
+                <p class = inputTitle>Enter Data Category: </p>
+                <select class = "Category" placeholder="Enter Data Category">
+                    <option value = games>Games</option>
+                    <option value = web>Web</option>
+                    <option value = backend>Back-end</option>
+                    <option value = others>Others</option>
+                </select>
 
-            <p class = inputTitle>Enter Inner Description: </p>
-            <textarea type="text" class = "MoreDescription" placeholder="Enter Inner Description"></textarea>
+                <p class = inputTitle>Enter Difficulty Level: </p>
+                <select class = "Difficulty" placeholder="Enter Difficulty Level">
+                    <option value = easy>Easy</option>
+                    <option value = medium>Medium</option>
+                    <option value = hard>Hard</option>
+                </select>
 
-            <p class = inputTitle>Enter All Languages Used: </p>
-            <input type="text" class = "Languages" placeholder="Enter Languages">
-        <button class="addProjectBtn"> Add Project</button>
-    </div>
+                <p class = inputTitle>Enter Inner Description: </p>
+                <textarea type="text" class = "MoreDescription" placeholder="Enter Inner Description"></textarea>
 
-    <div class="projectListSection">
-        <h2 class="addHeader">Existing Projects</h2>
-        <ul class="adminProjectList"></ul>
+                <p class = inputTitle>Enter All Languages Used: </p>
+                <input type="text" class = "Languages" placeholder="Enter Languages">
+            <button class="addProjectBtn"> Add Project</button>
+        </div>
+
+        <div class="projectListSection">
+            <h2 class="addHeader">Existing Projects</h2>
+            <ul class="adminProjectList"></ul>
+        </div>
+
     </div>
 
     <script type="module" src="./adminScript.js"></script>
 </body>
-</html>
