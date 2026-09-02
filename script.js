@@ -1,3 +1,53 @@
+import { db } from "./firebase.js";
+import {
+    collection,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+const projectsContainer = document.querySelector(".popup-container");
+
+async function loadProjects() {
+
+    const querySnapshot = await getDocs(collection(db, "projects"));
+
+    querySnapshot.forEach((doc) => {
+
+        const project = doc.data();
+
+        const projectCard = document.createElement("div");
+
+        projectCard.classList.add("project");
+
+        projectCard.innerHTML = `
+            <img src="${project.image}" alt="${project.title}">
+
+            <div class="imgtxt">
+                ${project.title}
+            </div>
+
+            <p class="Description">
+                ${project.description}
+            </p>
+
+            <p class="ModelSkill">
+                ${project.skills}
+            </p>
+
+            <p class="ModalLanguage">
+                ${project.language}
+            </p>
+        `;
+
+        projectsContainer.appendChild(projectCard);
+    });
+}
+
+loadProjects();
+
+
+
+
+
+
 // ---------- Element references ----------
 const filterList = document.querySelector('.filter');
 const filterButtons = filterList ? filterList.querySelectorAll('.filter-btn') : null;
