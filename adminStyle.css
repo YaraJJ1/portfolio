@@ -46,11 +46,10 @@ textarea{
 }
 
 
+
+
 .hero {
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 #drop-area {
@@ -62,11 +61,11 @@ textarea{
 
 #img-view {
     width: 100%;
-    height: 160px;
+    height: 140px;
     box-sizing: border-box;
-    border-radius: 20px;
-    border: 2px dashed #bbb5ff;
-    background-color: #f7f8ff;
+    border-radius: 14px;
+    border: 1.5px dashed #c7bdfc;
+    background-color: #f8f7ff;
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
@@ -74,15 +73,18 @@ textarea{
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    transition: border-color 0.15s, background-color 0.15s;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+#drop-area:hover #img-view {
+    border-color: #9b8afc;
 }
 
 #img-view.dragging {
-    border-color: #7a6cff;
-    background-color: #eeeaff;
+    border-color: #7c6bf0;
+    background-color: #efebff;
 }
 
-/* once an image is chosen we hide the placeholder so only the preview shows */
 #img-view.has-image .upload-placeholder {
     display: none;
 }
@@ -91,23 +93,18 @@ textarea{
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 6px;
     text-align: center;
     padding: 10px;
 }
 
-.upload-placeholder img {
-    width: 50px;
-    margin-bottom: 8px;
-}
-
 .upload-placeholder p {
-    margin: 0;
+    margin: 4px 0 0;
     font-size: 13px;
+    color: #333;
 }
 
 .upload-placeholder span {
-    display: block;
-    font-size: 12px;
-    color: #777;
-    margin-top: 6px;
+    font-size: 11px;
+    color: #8a8a92;
 }
