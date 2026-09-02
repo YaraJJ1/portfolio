@@ -13,83 +13,95 @@ async function loadProjects() {
 
     if (!projectList) return;
 
-    const querySnapshot = await getDocs(
-        collection(db, "projects")
-    );
+    try {
 
-    querySnapshot.forEach((doc) => {
-
-        const project = doc.data();
-
-        const projectCard = document.createElement("li");
-
-        projectCard.classList.add("project");
-
-        projectCard.setAttribute(
-            "data-category",
-            project.category
+        const querySnapshot = await getDocs(
+            collection(db, "projects")
         );
 
-        projectCard.setAttribute(
-            "data-difficulty",
-            project.difficulty
-        );
+        querySnapshot.forEach((doc) => {
 
-        projectCard.setAttribute(
-            "data-date",
-            project.date
-        );
+            const project = doc.data();
 
-        projectCard.setAttribute(
-            "code-language",
-            project.languages
-        );
+            const projectCard = document.createElement("li");
 
-        projectCard.setAttribute(
-            "data-id",
-            doc.id
-        );
+            projectCard.classList.add("project");
 
-        projectCard.innerHTML = `
-            <img src="${project.image}" alt="${project.title}">
+            // Use YOUR Firestore field names
+            projectCard.setAttribute(
+                "data-category",
+                project["data-category"] || ""
+            );
 
-            <div class="textContainer">
+            projectCard.setAttribute(
+                "data-difficulty",
+                project["data-difficulty"] || ""
+            );
 
-                <p class="imgtxt">
-                    ${project.title}
-                    <span class="date">
-                        ● ${project.date}
-                    </span>
-                </p>
+            projectCard.setAttribute(
+                "data-date",
+                project["data-date"] || ""
+            );
 
-                <p class="imgdesc">
-                    ${project.shortDescription}
-                </p>
+            projectCard.setAttribute(
+                "code-language",
+                project["code-language"] || ""
+            );
 
-                <p hidden class="moreDesc">
-                    ${project.description}
-                </p>
+            projectCard.setAttribute(
+                "data-id",
+                doc.id
+            );
 
-                <p class="tags">
-                    <span class="skillText"></span>
-                    <span class="language-container"></span>
-                </p>
+            projectCard.innerHTML = `
+                <img
+                    src="${project.imgSrc || "images.png"}"
+                    alt="${project.imgTxt || "Project"}"
+                >
 
-            </div>
-        `;
+                <div class="textContainer">
 
-        projectList.appendChild(projectCard);
-    });
+                    <p class="imgtxt">
+                        ${project.imgTxt || "Untitled Project"}
+                        <span class="date">
+                            ● ${project["data-date"] || ""}
+                        </span>
+                    </p>
 
-    // Get the project cards AFTER Firestore creates them
-    projectCards = document.querySelectorAll(".project");
+                    <p class="imgdesc">
+                        ${project.imgDesc || ""}
+                    </p>
 
-    initializeProjectSystem();
+                    <p hidden class="moreDesc">
+                        ${project.imgMoreDesc || ""}
+                    </p>
+
+                    <p class="tags">
+                        <span class="skillText"></span>
+                        <span class="language-container"></span>
+                    </p>
+
+                </div>
+            `;
+
+            projectList.appendChild(projectCard);
+        });
+
+        // Get the cards AFTER Firestore creates them
+        projectCards = document.querySelectorAll(".project");
+
+        console.log("Projects loaded:", projectCards.length);
+
+        initializeProjectSystem();
+
+    } catch (error) {
+
+        console.error("Error loading projects:", error);
+
+    }
 }
 
 loadProjects();
-
-
 
 
 
