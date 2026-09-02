@@ -1,59 +1,78 @@
 <body>
-    <div class="adminLayout">
+    <div id="login-container" class="login-wrapper" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+        <div class="addProjectPage" style="width: 400px; text-align: center;">
+            <h2 class="addHeader">Admin Login</h2>
+            <p class="inputTitle" style="text-align: left;">Email:</p>
+            <input type="email" id="admin-email" class="Title" placeholder="Enter Admin Email">
 
-        <div class="addProjectPage">
-            <h2 class="addHeader">Enter Project details: </h2>
-                <p class = inputTitle>Enter Title: </p>
-                <input type="text" class = "Title" placeholder="Enter Title">
+            <p class="inputTitle" style="text-align: left;">Password:</p>
+            <input type="password" id="admin-password" class="Title" placeholder="Enter Password">
 
-                <p class = inputTitle>Enter Description: </p>
-                <textarea type="text" class = "Description" placeholder="Enter Description"></textarea>
+            <button id="login-btn" class="addProjectBtn" style="margin-top: 20px;">Log In</button>
+        </div>
+    </div>
+
+    <div id="admin-content" style="display: none;">
+        <div class="adminLayout">
             
-                <p class = inputTitle>Enter Date dd/mm/yyyy: </p>
-                <input type="text" class = "Date" placeholder="Enter Date">
-
-            <div class="hero">
-                <label for="input-file" id="drop-area">
-                    <input type="file" accept="image/*" id="input-file" hidden>
-                    <div id="img-view">
-                        
-                        <div class="upload-overlay">
-                            <div class="spinner"></div>
-                            <p>Uploading…</p>
-                        </div>
-                    </div>
-                </label>
+            <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; padding: 10px;">
+                <button id="logout-btn" class="addProjectBtn" style="width: auto; padding: 8px 16px;">Log Out</button>
             </div>
 
+            <div class="addProjectPage">
+                <h2 class="addHeader">Enter Project details: </h2>
+                
+                <p class="inputTitle">Enter Title: </p>
+                <input type="text" class="Title" placeholder="Enter Title">
 
-                <p class = inputTitle>Enter Data Category: </p>
-                <select class = "Category" placeholder="Enter Data Category">
-                    <option value = games>Games</option>
-                    <option value = web>Web</option>
-                    <option value = backend>Back-end</option>
-                    <option value = others>Others</option>
+                <p class="inputTitle">Enter Description: </p>
+                <textarea class="Description" placeholder="Enter Description"></textarea>
+            
+                <p class="inputTitle">Enter Date dd/mm/yyyy: </p>
+                <input type="text" class="Date" placeholder="Enter Date">
+
+                <div class="hero">
+                    <label for="input-file" id="drop-area">
+                        <input type="file" accept="image/*" id="input-file" hidden>
+                        <div id="img-view">
+                            <div class="upload-overlay">
+                                <div class="spinner"></div>
+                                <p>Uploading…</p>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+
+                <p class="inputTitle">Enter Data Category: </p>
+                <select class="Category">
+                    <option value="games">Games</option>
+                    <option value="web">Web</option>
+                    <option value="backend">Back-end</option>
+                    <option value="others">Others</option>
                 </select>
 
-                <p class = inputTitle>Enter Difficulty Level: </p>
-                <select class = "Difficulty" placeholder="Enter Difficulty Level">
-                    <option value = easy>Easy</option>
-                    <option value = medium>Medium</option>
-                    <option value = hard>Hard</option>
+                <p class="inputTitle">Enter Difficulty Level: </p>
+                <select class="Difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
                 </select>
 
-                <p class = inputTitle>Enter Inner Description: </p>
-                <textarea type="text" class = "MoreDescription" placeholder="Enter Inner Description"></textarea>
+                <p class="inputTitle">Enter Inner Description: </p>
+                <textarea class="MoreDescription" placeholder="Enter Inner Description"></textarea>
 
-                <p class = inputTitle>Enter All Languages Used: </p>
-                <input type="text" class = "Languages" placeholder="Enter Languages">
-            <button class="addProjectBtn"> Add Project</button>
+                <p class="inputTitle">Enter All Languages Used: </p>
+                <input type="text" class="Languages" placeholder="Enter Languages">
+                
+                <button class="addProjectBtn">Add Project</button>
+            </div>
+
+            <div class="projectListSection">
+                <h2 class="addHeader">Existing Projects</h2>
+                <ul class="adminProjectList"></ul>
+            </div>
+
         </div>
-
-        <div class="projectListSection">
-            <h2 class="addHeader">Existing Projects</h2>
-            <ul class="adminProjectList"></ul>
-        </div>
-
     </div>
 
     <script type="module" src="./adminScript.js"></script>
