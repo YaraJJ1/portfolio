@@ -27,30 +27,16 @@ async function loadProjects() {
 
             projectCard.classList.add("project");
 
-            projectCard.setAttribute(
-                "data-category",
-                project["data-category"] || ""
-            );
+            projectCard.setAttribute("data-category",project["data-category"] || "");
 
-            projectCard.setAttribute(
-                "data-difficulty",
-                project["data-difficulty"] || ""
-            );
+            projectCard.setAttribute("data-difficulty",project["data-difficulty"] || "");
 
-            projectCard.setAttribute(
-                "data-date",
-                project["data-date"] || ""
-            );
+            projectCard.setAttribute("data-date",project["data-date"] || "");
 
-            projectCard.setAttribute(
-                "code-language",
-                project["code-language"] || ""
-            );
+            projectCard.setAttribute("code-language", project["code-language"] || "");
 
-            projectCard.setAttribute(
-                "data-id",
-                doc.id
-            );
+            projectCard.setAttribute("data-id",doc.id);
+            
 
             projectCard.innerHTML = `
                 <img
