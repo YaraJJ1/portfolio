@@ -27,7 +27,7 @@ const imageView = document.getElementById('img-view');
 
 
 const GITHUB_OWNER = "yarajj1";
-const GITHUB_REPO = "yarajj1.github.io";
+const GITHUB_REPO = "github.com/YaraJJ1/portfolio";
 const GITHUB_BRANCH = "main";
 const GITHUB_IMAGE_FOLDER = "images";
 const GITHUB_TOKEN = "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"; // <-- paste your token back in here before testing
@@ -75,7 +75,7 @@ function buildImageFilename(file, projectTitle) {
 
 // Commit the image to the GitHub repo and return its jsDelivr CDN URL
 async function uploadImageToGithub(file, projectTitle) {
-    if (!GITHUB_TOKEN || !GITHUB_TOKEN === "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") {
+    if (!GITHUB_TOKEN) {
         throw new Error("Add your GitHub token at the top of adminScript.js first.");
     }
 
