@@ -72,7 +72,7 @@ const difficulty = addProjectPage.querySelector('.Difficulty');
 const moreDescription = addProjectPage.querySelector('.MoreDescription');
 const languages = addProjectPage.querySelector('.Languages');
 // const addProjectBtn = addProjectPage.querySelector('.addProjectBtn');
-const addProjectBtn = document.getElementById('sumbit-project-btn');
+const addProjectBtn = document.getElementById('submit-project-btn');
 
 
 const adminProjectList = document.querySelector('.adminProjectList');
@@ -252,24 +252,20 @@ function resetImagePicker() {
     imageView.classList.remove("has-image");
     imageView.classList.remove("uploading");
 }
-
+document.addEventListener("DOMContentLoaded", () => {
 if (!addProjectBtn) {
-    console.error("ERROR: addProjectBtn not found! Check if your HTML has class='addProjectBtn'");
+    console.error("ERROR: addProjectBtn not found! Check if your HTML has id='addProjectBtn'");
 } else {
-    // 1. Add 'e' to the function parameters
     addProjectBtn.addEventListener("click", async function (e) {
         
-        // 2. Prevent the form from refreshing the page!
         e.preventDefault(); 
 
         const requiredFields = [title, desc, date, category, difficulty, moreDescription, languages];
 
-        // Debugging: This will now successfully print to the console
         requiredFields.forEach((field, index) => {
             console.log(`Checking field ${index}:`, field ? "Found" : "Missing Element");
         });
 
-        // Safe validation check
         if (requiredFields.some(field => !field || !field.value || field.value.trim() === "")) {
             alert("Please fill in all fields.");
             return;
@@ -280,7 +276,6 @@ if (!addProjectBtn) {
             return;
         }
 
-        // Safely check for the image file
         const droppedFile = inputFile ? inputFile.files[0] : null;
 
         if (!droppedFile) {
@@ -336,7 +331,7 @@ if (!addProjectBtn) {
 }
 
 loadAdminProjects();
-
+});
 inputFile.addEventListener("change", handleImageSelected);
 
 function handleImageSelected() {
