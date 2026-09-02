@@ -4,11 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="./adminStyle.css">
 </head>
 <body>
-    
-    <button class="addProject"> Add Project</button>
+    <div class = "addProjectPage">
+        <h2 class="addHeader">Enter Project details: </h1>
+            <p class = inputTitle>Enter Title: </p>
+            <input type="text" class = "Title" placeholder="Enter title">
 
+            <p class = inputTitle>Enter Description: </p>
+            <textarea type="text" class = "Description" placeholder="Enter description"></textarea>
+        
+            <p class = inputTitle>Enter Date dd/mm/yyyy: </p>
+            <input type="text" class = "Date" placeholder="Enter date">
 
+            <p class = inputTitle>Enter Image Source: </p>
+            <input type="text" class = "Img" placeholder="Enter img source">
+
+            <p class = inputTitle>Enter Data Category: </p>
+            <input type="text" class = "Category" placeholder="Enter category">
+
+            <p class = inputTitle>Enter Difficulty Level: </p>
+            <input type="text" class = "Difficulty" placeholder="Enter difficulty level">
+
+            <p class = inputTitle>Enter Inner Description: </p>
+            <textarea type="text" class = "MoreDescription" placeholder="Enter inner description"></textarea>
+        <button class="addProjectBtn"> Add Project</button>
+    </div>
+
+    <script type="module" src="./adminScript.js"></script>
 </body>
 </html>

@@ -1,0 +1,16 @@
+.addProjectPage{
+    display: flex;
+    flex-direction: column;
+    width: 255px;
+    gap: 5px;
+    
+}
+
+.inputTitle{
+    margin-bottom: -2px;
+}
+
+textarea{
+    min-width: 250px;
+    max-width: 250px;
+}

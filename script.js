@@ -119,10 +119,6 @@ const checkboxes = document.querySelectorAll(".difficulty-checkbox");
 const modalOverlay = document.getElementById("modalOverlay");
 const modalClose = modalOverlay ? document.getElementById("modalClose") : null;
 
-// `let`, not `const` — this gets refreshed inside initializeProjectSystem()
-// once Firestore has actually added its card(s) to the page. Left as a
-// one-time `const` snapshot, it would only ever contain the 2 hardcoded
-// placeholder <li> items from the HTML.
 let projects = document.querySelectorAll('.project');
 
 const languageStyles = {
@@ -188,15 +184,13 @@ function filterEvents(eventFilter) {
     });
 }
 
-// ---------- Wires up the whole page: filtering, sorting, badges, ----------
-// ---------- the popup and the modal. Called once, after Firestore  ----------
-// ---------- has finished (successfully or not) adding its cards.   ----------
+
 function initializeProjectSystem() {
 
-    // Re-query so this includes any cards Firestore just appended.
+    // Requery so this also includes any cards Firestore just appended.
     projects = document.querySelectorAll('.project');
 
-    // ---------- Project list logic (only runs on pages that have it) ----------
+    // only runs on pages that have it
     if (projectList && projects.length) {
         updateVisibleCount();
 
@@ -289,7 +283,7 @@ function initializeProjectSystem() {
         }
     }
 
-    // ---------- Filter popup (only runs on pages that have it) ----------
+    // Filter popup only runs on pages that have it
     if (openBtn && popup) {
         openBtn.addEventListener("click", function () {
             popup.style.display = (popup.style.display === "block") ? "none" : "block";
@@ -302,7 +296,7 @@ function initializeProjectSystem() {
         });
     }
 
-    // ---------- Project modal (only runs on pages that have it) ----------
+    // Project modalonly runs on pages that have it
     if (modalOverlay) {
         const modalImg = modalOverlay.querySelector('.modal-img');
         const modalText = modalOverlay.querySelector('.ModelText');
