@@ -1,48 +1,93 @@
 import { db } from "./firebase.js";
+
 import {
     collection,
     getDocs
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-const projectsContainer = document.querySelector(".popup-container");
+
+let projectCards = [];
 
 async function loadProjects() {
 
-    const querySnapshot = await getDocs(collection(db, "projects"));
+    const projectList = document.querySelector(".project-list");
+
+    if (!projectList) return;
+
+    const querySnapshot = await getDocs(
+        collection(db, "projects")
+    );
 
     querySnapshot.forEach((doc) => {
 
         const project = doc.data();
 
-        const projectCard = document.createElement("div");
+        const projectCard = document.createElement("li");
 
         projectCard.classList.add("project");
+
+        projectCard.setAttribute(
+            "data-category",
+            project.category
+        );
+
+        projectCard.setAttribute(
+            "data-difficulty",
+            project.difficulty
+        );
+
+        projectCard.setAttribute(
+            "data-date",
+            project.date
+        );
+
+        projectCard.setAttribute(
+            "code-language",
+            project.languages
+        );
+
+        projectCard.setAttribute(
+            "data-id",
+            doc.id
+        );
 
         projectCard.innerHTML = `
             <img src="${project.image}" alt="${project.title}">
 
-            <div class="imgtxt">
-                ${project.title}
+            <div class="textContainer">
+
+                <p class="imgtxt">
+                    ${project.title}
+                    <span class="date">
+                        ● ${project.date}
+                    </span>
+                </p>
+
+                <p class="imgdesc">
+                    ${project.shortDescription}
+                </p>
+
+                <p hidden class="moreDesc">
+                    ${project.description}
+                </p>
+
+                <p class="tags">
+                    <span class="skillText"></span>
+                    <span class="language-container"></span>
+                </p>
+
             </div>
-
-            <p class="Description">
-                ${project.description}
-            </p>
-
-            <p class="ModelSkill">
-                ${project.skills}
-            </p>
-
-            <p class="ModalLanguage">
-                ${project.language}
-            </p>
         `;
 
-        projectsContainer.appendChild(projectCard);
+        projectList.appendChild(projectCard);
     });
+
+    // Get the project cards AFTER Firestore creates them
+    projectCards = document.querySelectorAll(".project");
+
+    initializeProjectSystem();
 }
 
 loadProjects();
-
 
 
 
