@@ -335,8 +335,6 @@ if (!addProjectBtn) {
 
 loadAdminProjects();
 
-// image preview: drag & drop / click-to-browse — shows instantly like before.
-// The actual GitHub upload happens on submit, in the click handler above.
 inputFile.addEventListener("change", handleImageSelected);
 
 function handleImageSelected() {
