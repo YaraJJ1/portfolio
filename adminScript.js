@@ -71,7 +71,9 @@ const category = addProjectPage.querySelector('.Category');
 const difficulty = addProjectPage.querySelector('.Difficulty');
 const moreDescription = addProjectPage.querySelector('.MoreDescription');
 const languages = addProjectPage.querySelector('.Languages');
-const addProjectBtn = addProjectPage.querySelector('.addProjectBtn');
+// const addProjectBtn = addProjectPage.querySelector('.addProjectBtn');
+const addProjectBtn = document.getElementById('sumbit-project-btn');
+
 
 const adminProjectList = document.querySelector('.adminProjectList');
 
