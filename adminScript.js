@@ -8,7 +8,7 @@ const category = addProjectPage.querySelector('.Category');
 const difficulty = addProjectPage.querySelector('.Difficulty');
 const moreDescription = addProjectPage.querySelector('.MoreDescription');
 const addProjectBtn = addProjectPage.querySelector('.addProjectBtn');
-
+const languageContainer = addProjectPage.querySelector('.languageContainer'); 
 console.log(addProjectBtn);
 addProjectBtn.addEventListener("click", function () {
     const fields = [
@@ -25,6 +25,6 @@ if (fields.some(field => field.value.trim() === "")) {
     alert("Please fill in all fields.");
     return;
 }
-
+alert("Worked");
 
 });
