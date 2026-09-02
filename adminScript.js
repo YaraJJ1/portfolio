@@ -5,14 +5,16 @@ import {
     addDoc,
     getDocs,
     deleteDoc,
-    doc,
+    doc 
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+import {
     getAuth, 
     signInWithEmailAndPassword, 
     onAuthStateChanged, 
     signOut 
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-
+}
 const auth = getAuth();
 
 const loginContainer = document.getElementById("login-container");
