@@ -259,8 +259,8 @@ addProjectBtn.addEventListener("click", async function () {
     console.log(index, field);
 });
 
-if (requiredFields.some(field => field.value.trim() === "")) {
-    alert("Please fill in all fields.");
+if (requiredFields.some(field => !field || !field.value || field.value.trim() === "")) {
+    alert("Please fill in all fields. (Check console if error persists)");
     return;
 }
 
