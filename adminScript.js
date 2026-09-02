@@ -30,7 +30,7 @@ const GITHUB_OWNER = "yarajj1";
 const GITHUB_REPO = "portfolio";
 const GITHUB_BRANCH = "main";
 const GITHUB_IMAGE_FOLDER = "images";
-const GITHUB_TOKEN = "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"; // <-- paste your token back in here before testing
+const GITHUB_TOKEN = "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"; // <-- paste your token back in here before testing
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
