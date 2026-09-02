@@ -1,4 +1,6 @@
-import { db } from "./firebase.js";
+import { db } from "./firebase.js"; 
+
+// 1. Both Firestore and Auth MUST use the exact same version (12.1.0)
 import {
     collection,
     addDoc,
@@ -7,7 +9,12 @@ import {
     doc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-auth.js";
+import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged, 
+    signOut 
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 const auth = getAuth();
 
@@ -18,11 +25,12 @@ const logoutBtn = document.getElementById("logout-btn");
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // User is signed in, show admin tools and hide login form
         if (loginContainer) loginContainer.style.display = "none";
-        if (adminContent) adminContent.style.display = "block";
+        if (adminContent) {
+            adminContent.style.display = "block";
+            adminContent.removeAttribute("hidden"); 
+        }
     } else {
-        // No user is signed in, show login form and hide admin tools
         if (loginContainer) loginContainer.style.display = "block";
         if (adminContent) adminContent.style.display = "none";
     }
@@ -32,6 +40,11 @@ if (loginBtn) {
     loginBtn.addEventListener("click", () => {
         const email = document.getElementById("admin-email").value;
         const password = document.getElementById("admin-password").value;
+
+        if(!email || !password) {
+            alert("Please enter both email and password.");
+            return;
+        }
 
         signInWithEmailAndPassword(auth, email, password)
             .catch((error) => {
@@ -48,8 +61,6 @@ if (logoutBtn) {
     });
 }
 
-
-
 const addProjectPage = document.querySelector('.addProjectPage');
 
 const title = addProjectPage.querySelector('.Title');
@@ -63,7 +74,6 @@ const addProjectBtn = addProjectPage.querySelector('.addProjectBtn');
 
 const adminProjectList = document.querySelector('.adminProjectList');
 
-// image preview elements (drag & drop / click-to-browse widget)
 const dropArea = document.getElementById('drop-area');
 const inputFile = document.getElementById('input-file');
 const imageView = document.getElementById('img-view');
