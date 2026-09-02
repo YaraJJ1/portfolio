@@ -251,67 +251,87 @@ function resetImagePicker() {
     imageView.classList.remove("uploading");
 }
 
-addProjectBtn.addEventListener("click", async function () {
+if (!addProjectBtn) {
+    console.error("ERROR: addProjectBtn not found! Check if your HTML has class='addProjectBtn'");
+} else {
+    // 1. Add 'e' to the function parameters
+    addProjectBtn.addEventListener("click", async function (e) {
+        
+        // 2. Prevent the form from refreshing the page!
+        e.preventDefault(); 
 
-    const requiredFields = [title, desc, date, category, difficulty, moreDescription, languages];
+        const requiredFields = [title, desc, date, category, difficulty, moreDescription, languages];
 
-    requiredFields.forEach((field, index) => {
-    console.log(index, field);
-});
+        // Debugging: This will now successfully print to the console
+        requiredFields.forEach((field, index) => {
+            console.log(`Checking field ${index}:`, field ? "Found" : "Missing Element");
+        });
 
-if (requiredFields.some(field => !field || !field.value || field.value.trim() === "")) {
-    alert("Please fill in all fields. (Check console if error persists)");
-    return;
+        // Safe validation check
+        if (requiredFields.some(field => !field || !field.value || field.value.trim() === "")) {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        if (!isValidDateFormat(date.value.trim())) {
+            alert("Please enter the date as dd/mm/yyyy.");
+            return;
+        }
+
+        // Safely check for the image file
+        const droppedFile = inputFile ? inputFile.files[0] : null;
+
+        if (!droppedFile) {
+            alert("Please drop an image above, or click it to browse for one.");
+            return;
+        }
+
+        addProjectBtn.disabled = true;
+
+        try {
+            console.log("Starting GitHub upload...");
+            addProjectBtn.textContent = "Uploading image...";
+            if (imageView) imageView.classList.add("uploading");
+
+            const imageUrl = await uploadImageToGithub(droppedFile, title.value.trim());
+            console.log("Upload successful, URL:", imageUrl);
+
+            addProjectBtn.textContent = "Adding to database...";
+
+            const newProject = {
+                imgTxt: title.value.trim(),
+                imgDesc: desc.value.trim(),
+                imgMoreDesc: moreDescription.value.trim(),
+                imgSrc: imageUrl,
+                "data-category": category.value,
+                "data-difficulty": difficulty.value,
+                "data-date": date.value.trim(),
+                "code-language": languages.value.trim().toLowerCase()
+            };
+
+            await addDoc(collection(db, "projects"), newProject);
+            
+            console.log("Successfully saved to Firestore!");
+            alert("Project added!");
+            
+            // Safely clear all fields
+            requiredFields.forEach(field => {
+                if (field) field.value = "";
+            });
+            
+            resetImagePicker();
+            loadAdminProjects();
+            
+        } catch (error) {
+            console.error("Error adding project:", error);
+            alert(`Something went wrong: ${error.message}`);
+        } finally {
+            if (imageView) imageView.classList.remove("uploading");
+            addProjectBtn.disabled = false;
+            addProjectBtn.textContent = "Add Project";
+        }
+    });
 }
-
-    if (!isValidDateFormat(date.value.trim())) {
-        alert("Please enter the date as dd/mm/yyyy.");
-        return;
-    }
-
-    const droppedFile = inputFile.files[0];
-
-    if (!droppedFile) {
-        alert("Please drop an image above, or click it to browse for one.");
-        return;
-    }
-
-    addProjectBtn.disabled = true;
-
-    try {
-        addProjectBtn.textContent = "Uploading image...";
-        imageView.classList.add("uploading");
-
-        const imageUrl = await uploadImageToGithub(droppedFile, title.value.trim());
-
-        addProjectBtn.textContent = "Adding...";
-
-        const newProject = {
-            imgTxt: title.value.trim(),
-            imgDesc: desc.value.trim(),
-            imgMoreDesc: moreDescription.value.trim(),
-            imgSrc: imageUrl,
-            "data-category": category.value,
-            "data-difficulty": difficulty.value,
-            "data-date": date.value.trim(),
-            "code-language": languages.value.trim().toLowerCase()
-        };
-
-        await addDoc(collection(db, "projects"), newProject);
-        alert("Project added!");
-        [title, desc, date, category, difficulty, moreDescription, languages]
-            .forEach(field => field.value = "");
-        resetImagePicker();
-        loadAdminProjects();
-    } catch (error) {
-        console.error("Error adding project:", error);
-        alert(`Something went wrong: ${error.message}`);
-    } finally {
-        imageView.classList.remove("uploading");
-        addProjectBtn.disabled = false;
-        addProjectBtn.textContent = "Add Project";
-    }
-});
 
 loadAdminProjects();
 
