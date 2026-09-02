@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="./adminStyle.css">
 </head>
 <body>
-    <div class = "addProjectPage">
-        <h2 class="addHeader">Enter Project details: </h1>
+    <div class="addProjectPage">
+        <h2 class="addHeader">Enter Project details: </h2>
             <p class = inputTitle>Enter Title: </p>
             <input type="text" class = "Title" placeholder="Enter Title">
 
@@ -39,9 +39,14 @@
             <p class = inputTitle>Enter Inner Description: </p>
             <textarea type="text" class = "MoreDescription" placeholder="Enter Inner Description"></textarea>
 
-            <p class="inputTitle">Enter All Languages Used: </p>
-            <input type="text" class="Languages" placeholder="Enter Languages (e.g. html css c# unity)">
+            <p class = inputTitle>Enter All Languages Used: </p>
+            <input type="text" class = "Languages" placeholder="Enter Languages">
         <button class="addProjectBtn"> Add Project</button>
+    </div>
+
+    <div class="projectListSection">
+        <h2 class="addHeader">Existing Projects</h2>
+        <ul class="adminProjectList"></ul>
     </div>
 
     <script type="module" src="./adminScript.js"></script>
