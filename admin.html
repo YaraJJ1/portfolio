@@ -1,22 +1,22 @@
 <body>
-    <div id="login-container" class="login-wrapper" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-        <div class="addProjectPage" style="width: 400px; text-align: center;">
+    <div id="login-container" class="login-wrapper">
+        <div class="addProjectPage login-card-override">
             <h2 class="addHeader">Admin Login</h2>
-            <p class="inputTitle" style="text-align: left;">Email:</p>
+            <p class="inputTitle login-label">Email:</p>
             <input type="email" id="admin-email" class="Title" placeholder="Enter Admin Email">
 
-            <p class="inputTitle" style="text-align: left;">Password:</p>
+            <p class="inputTitle login-label">Password:</p>
             <input type="password" id="admin-password" class="Title" placeholder="Enter Password">
 
-            <button id="login-btn" class="addProjectBtn" style="margin-top: 20px;">Log In</button>
+            <button id="login-btn" class="addProjectBtn login-btn-override">Log In</button>
         </div>
     </div>
 
-    <div id="admin-content" style="display: none;">
+    <div id="admin-content">
         <div class="adminLayout">
             
-            <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; padding: 10px;">
-                <button id="logout-btn" class="addProjectBtn" style="width: auto; padding: 8px 16px;">Log Out</button>
+            <div class="logout-wrapper">
+                <button id="logout-btn" class="addProjectBtn logout-btn-override">Log Out</button>
             </div>
 
             <div class="addProjectPage">

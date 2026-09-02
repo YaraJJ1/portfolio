@@ -1,19 +1,57 @@
-.addProjectPage{
+/* --- Extracted Inline Styles --- */
+#login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-card-override {
+    width: 400px;
+    text-align: center;
+}
+
+.login-label {
+    text-align: left;
+}
+
+.login-btn-override {
+    margin-top: 20px;
+}
+
+#admin-content {
+    display: none;
+}
+
+.logout-wrapper {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+}
+
+.logout-btn-override {
+    width: auto;
+    padding: 8px 16px;
+}
+
+/* --- Original Styles --- */
+.addProjectPage {
     display: flex;
     flex-direction: column;
     width: 255px;
     gap: 5px;
-    
 }
 
-.inputTitle{
+.inputTitle {
     margin-bottom: -2px;
 }
 
-textarea{
+textarea {
     min-width: 250px;
     max-width: 250px;
 }
+
 .adminLayout {
     display: flex;
     align-items: flex-start;
@@ -45,9 +83,6 @@ textarea{
     cursor: pointer;
 }
 
-
-
-
 .hero {
     width: 100%;
 }
@@ -60,6 +95,7 @@ textarea{
 }
 
 #img-view {
+    position: relative;
     width: 100%;
     height: 140px;
     box-sizing: border-box;
@@ -107,7 +143,9 @@ textarea{
 .upload-placeholder span {
     font-size: 11px;
     color: #8a8a92;
-}.upload-overlay {
+}
+
+.upload-overlay {
     display: none;
     position: absolute;
     inset: 0;
