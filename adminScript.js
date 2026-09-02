@@ -1,20 +1,17 @@
 import { db } from "./firebase.js"; 
 
-// 1. Both Firestore and Auth MUST use the exact same version (12.1.0)
 import {
     collection,
     addDoc,
     getDocs,
     deleteDoc,
-    doc
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-import { 
+    doc,
     getAuth, 
     signInWithEmailAndPassword, 
     onAuthStateChanged, 
     signOut 
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
 
 const auth = getAuth();
 
@@ -61,6 +58,8 @@ if (logoutBtn) {
     });
 }
 
+
+//
 const addProjectPage = document.querySelector('.addProjectPage');
 
 const title = addProjectPage.querySelector('.Title');
