@@ -1,4 +1,4 @@
-import { db } from "./firebase.js";
+import { db, storage } from "./firebase.js";
 import {
     collection,
     addDoc,
@@ -6,13 +6,17 @@ import {
     deleteDoc,
     doc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import {
+    ref,
+    uploadBytes,
+    getDownloadURL
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-storage.js";
 
 const addProjectPage = document.querySelector('.addProjectPage');
 
 const title = addProjectPage.querySelector('.Title');
 const desc = addProjectPage.querySelector('.Description');
 const date = addProjectPage.querySelector('.Date');
-const img = addProjectPage.querySelector('.Img');
 const category = addProjectPage.querySelector('.Category');
 const difficulty = addProjectPage.querySelector('.Difficulty');
 const moreDescription = addProjectPage.querySelector('.MoreDescription');
@@ -20,6 +24,13 @@ const languages = addProjectPage.querySelector('.Languages');
 const addProjectBtn = addProjectPage.querySelector('.addProjectBtn');
 
 const adminProjectList = document.querySelector('.adminProjectList');
+
+// image upload elements (the drag & drop / click-to-browse widget)
+const dropArea = document.getElementById('drop-area');
+const inputFile = document.getElementById('input-file');
+const imageView = document.getElementById('img-view');
+
+let selectedImageFile = null;
 
 function isValidDateFormat(value) {
     const parts = value.split("/");
@@ -103,9 +114,16 @@ if (adminProjectList) {
     });
 }
 
+function resetImagePicker() {
+    selectedImageFile = null;
+    inputFile.value = "";
+    imageView.style.backgroundImage = "";
+    imageView.classList.remove("has-image");
+}
+
 addProjectBtn.addEventListener("click", async function () {
 
-    const fields = [title, desc, date, img, category, difficulty, moreDescription, languages];
+    const fields = [title, desc, date, category, difficulty, moreDescription, languages];
 
     if (fields.some(field => field.value.trim() === "")) {
         alert("Please fill in all fields.");
@@ -117,24 +135,39 @@ addProjectBtn.addEventListener("click", async function () {
         return;
     }
 
-    const newProject = {
-        imgTxt: title.value.trim(),
-        imgDesc: desc.value.trim(),
-        imgMoreDesc: moreDescription.value.trim(),
-        imgSrc: img.value.trim(),
-        "data-category": category.value,
-        "data-difficulty": difficulty.value,
-        "data-date": date.value.trim(),
-        "code-language": languages.value.trim().toLowerCase()
-    };
+    if (!selectedImageFile) {
+        alert("Please choose an image for the project.");
+        return;
+    }
 
     addProjectBtn.disabled = true;
-    addProjectBtn.textContent = "Adding...";
+    addProjectBtn.textContent = "Uploading image...";
 
     try {
+        // 1. upload the file to Firebase Storage and get a permanent URL
+        const imagePath = `projects/${Date.now()}-${selectedImageFile.name}`;
+        const imageRef = ref(storage, imagePath);
+        await uploadBytes(imageRef, selectedImageFile);
+        const imgSrc = await getDownloadURL(imageRef);
+
+        addProjectBtn.textContent = "Adding...";
+
+        // 2. save the project doc with the Storage URL instead of a raw file
+        const newProject = {
+            imgTxt: title.value.trim(),
+            imgDesc: desc.value.trim(),
+            imgMoreDesc: moreDescription.value.trim(),
+            imgSrc,
+            "data-category": category.value,
+            "data-difficulty": difficulty.value,
+            "data-date": date.value.trim(),
+            "code-language": languages.value.trim().toLowerCase()
+        };
+
         await addDoc(collection(db, "projects"), newProject);
         alert("Project added!");
         fields.forEach(field => field.value = "");
+        resetImagePicker();
         loadAdminProjects();
     } catch (error) {
         console.error("Error adding project:", error);
@@ -146,3 +179,33 @@ addProjectBtn.addEventListener("click", async function () {
 });
 
 loadAdminProjects();
+
+// image drag & drop / click-to-browse picker
+inputFile.addEventListener("change", handleImageSelected);
+
+function handleImageSelected() {
+    const file = inputFile.files[0];
+    if (!file) return;
+
+    selectedImageFile = file;
+
+    const imgLink = URL.createObjectURL(file);
+    imageView.style.backgroundImage = `url(${imgLink})`;
+    imageView.classList.add("has-image");
+}
+
+dropArea.addEventListener("dragover", function (e) {
+    e.preventDefault();
+    imageView.classList.add("dragging");
+});
+
+dropArea.addEventListener("dragleave", function () {
+    imageView.classList.remove("dragging");
+});
+
+dropArea.addEventListener("drop", function (e) {
+    e.preventDefault();
+    imageView.classList.remove("dragging");
+    inputFile.files = e.dataTransfer.files;
+    handleImageSelected();
+});
