@@ -27,7 +27,6 @@ async function loadProjects() {
 
             projectCard.classList.add("project");
 
-            // Use YOUR Firestore field names
             projectCard.setAttribute(
                 "data-category",
                 project["data-category"] || ""
@@ -87,10 +86,7 @@ async function loadProjects() {
             projectList.appendChild(projectCard);
         });
 
-        // Get the cards AFTER Firestore creates them
         projectCards = document.querySelectorAll(".project");
-
-        console.log("Projects loaded:", projectCards.length);
 
         initializeProjectSystem();
 
