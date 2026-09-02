@@ -1,4 +1,4 @@
-import { db, storage } from "./firebase.js";
+import { db } from "./firebase.js";
 import {
     collection,
     addDoc,
@@ -6,11 +6,6 @@ import {
     deleteDoc,
     doc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-import {
-    ref,
-    uploadBytes,
-    getDownloadURL
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-storage.js";
 
 const addProjectPage = document.querySelector('.addProjectPage');
 
@@ -21,16 +16,24 @@ const category = addProjectPage.querySelector('.Category');
 const difficulty = addProjectPage.querySelector('.Difficulty');
 const moreDescription = addProjectPage.querySelector('.MoreDescription');
 const languages = addProjectPage.querySelector('.Languages');
+const imageUrlInput = addProjectPage.querySelector('.ImageUrl');
 const addProjectBtn = addProjectPage.querySelector('.addProjectBtn');
 
 const adminProjectList = document.querySelector('.adminProjectList');
 
-// image upload elements (the drag & drop / click-to-browse widget)
+// image preview elements (drag & drop / click-to-browse widget)
 const dropArea = document.getElementById('drop-area');
 const inputFile = document.getElementById('input-file');
 const imageView = document.getElementById('img-view');
 
-let selectedImageFile = null;
+
+const GITHUB_OWNER = "yarajj1";            
+const GITHUB_REPO = "yarajj1.github.io";   
+const GITHUB_BRANCH = "main";              
+const GITHUB_IMAGE_FOLDER = "images";      
+const GITHUB_TOKEN = "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"; 
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; 
 
 function isValidDateFormat(value) {
     const parts = value.split("/");
@@ -46,6 +49,69 @@ function isValidDateFormat(value) {
     const yearOk = year.length === 4 && yearNum > 0;
 
     return dayOk && monthOk && yearOk;
+}
+
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const result = reader.result;
+            resolve(result.substring(result.indexOf(",") + 1));
+        };
+        reader.onerror = () => reject(new Error("Couldn't read the image file."));
+        reader.readAsDataURL(file);
+    });
+}
+
+// Build a collision-safe filename like "1735689000000-my-project.png"
+function buildImageFilename(file, projectTitle) {
+    const ext = (file.name.split(".").pop() || "png").toLowerCase();
+    const safeTitle = projectTitle
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "")
+        .slice(0, 40);
+    return `${Date.now()}-${safeTitle || "project"}.${ext}`;
+}
+
+// Commit the image to the GitHub repo and return its jsDelivr CDN URL
+async function uploadImageToGithub(file, projectTitle) {
+    if (!GITHUB_TOKEN || GITHUB_TOKEN === "YOUR_FINE_GRAINED_TOKEN_HERE") {
+        throw new Error("Add your GitHub token at the top of adminScript.js first.");
+    }
+
+    if (file.size > MAX_IMAGE_BYTES) {
+        throw new Error("That image is over 5MB — resize it before uploading.");
+    }
+
+    const filename = buildImageFilename(file, projectTitle);
+    const path = `${GITHUB_IMAGE_FOLDER}/${filename}`;
+    const base64Content = await fileToBase64(file);
+
+    const response = await fetch(
+        `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,
+        {
+            method: "PUT",
+            headers: {
+                Authorization: `token ${GITHUB_TOKEN}`,
+                Accept: "application/vnd.github+json"
+            },
+            body: JSON.stringify({
+                message: `Add project image: ${filename}`,
+                content: base64Content,
+                branch: GITHUB_BRANCH
+            })
+        }
+    );
+
+    if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw new Error(errorBody.message || `GitHub upload failed (${response.status})`);
+    }
+
+    // jsDelivr caches globally and is free with no bandwidth cap.
+    // A brand-new file can take a few seconds to appear the very first time.
+    return `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${path}`;
 }
 
 async function loadAdminProjects() {
@@ -82,12 +148,12 @@ async function loadAdminProjects() {
 
     } catch (error) {
         console.error("Error loading admin projects:", error);
-        adminProjectList.innerHTML = "<li>Failed to load projects.</li>";
+        // Surfaces the actual Firestore error code right in the list, so a
+        // permission-denied (e.g. expired test-mode rules) is obvious without devtools.
+        adminProjectList.innerHTML = `<li>Failed to load projects (${error.code || error.message}). If that says "permission-denied", check your Firestore rules.</li>`;
     }
 }
 
-// One listener on the list handles clicks on any delete button —
-// including ones added after the page first loaded — via event delegation.
 if (adminProjectList) {
     adminProjectList.addEventListener("click", async (event) => {
         const button = event.target.closest(".deleteBtn");
@@ -115,7 +181,6 @@ if (adminProjectList) {
 }
 
 function resetImagePicker() {
-    selectedImageFile = null;
     inputFile.value = "";
     imageView.style.backgroundImage = "";
     imageView.classList.remove("has-image");
@@ -123,9 +188,9 @@ function resetImagePicker() {
 
 addProjectBtn.addEventListener("click", async function () {
 
-    const fields = [title, desc, date, category, difficulty, moreDescription, languages];
+    const requiredFields = [title, desc, date, category, difficulty, moreDescription, languages];
 
-    if (fields.some(field => field.value.trim() === "")) {
+    if (requiredFields.some(field => field.value.trim() === "")) {
         alert("Please fill in all fields.");
         return;
     }
@@ -135,29 +200,31 @@ addProjectBtn.addEventListener("click", async function () {
         return;
     }
 
-    if (!selectedImageFile) {
-        alert("Please choose an image for the project.");
+    const droppedFile = inputFile.files[0];
+    const pastedUrl = imageUrlInput.value.trim();
+
+    if (!droppedFile && !pastedUrl) {
+        alert("Please drop an image above, or paste an image URL.");
         return;
     }
 
     addProjectBtn.disabled = true;
-    addProjectBtn.textContent = "Uploading image...";
 
     try {
-        // 1. upload the file to Firebase Storage and get a permanent URL
-        const imagePath = `projects/${Date.now()}-${selectedImageFile.name}`;
-        const imageRef = ref(storage, imagePath);
-        await uploadBytes(imageRef, selectedImageFile);
-        const imgSrc = await getDownloadURL(imageRef);
+        let imageUrl = pastedUrl;
+
+        if (droppedFile) {
+            addProjectBtn.textContent = "Uploading image...";
+            imageUrl = await uploadImageToGithub(droppedFile, title.value.trim());
+        }
 
         addProjectBtn.textContent = "Adding...";
 
-        // 2. save the project doc with the Storage URL instead of a raw file
         const newProject = {
             imgTxt: title.value.trim(),
             imgDesc: desc.value.trim(),
             imgMoreDesc: moreDescription.value.trim(),
-            imgSrc,
+            imgSrc: imageUrl,
             "data-category": category.value,
             "data-difficulty": difficulty.value,
             "data-date": date.value.trim(),
@@ -166,12 +233,13 @@ addProjectBtn.addEventListener("click", async function () {
 
         await addDoc(collection(db, "projects"), newProject);
         alert("Project added!");
-        fields.forEach(field => field.value = "");
+        [title, desc, date, category, difficulty, moreDescription, languages, imageUrlInput]
+            .forEach(field => field.value = "");
         resetImagePicker();
         loadAdminProjects();
     } catch (error) {
         console.error("Error adding project:", error);
-        alert("Something went wrong — check the console.");
+        alert(`Something went wrong: ${error.message}`);
     } finally {
         addProjectBtn.disabled = false;
         addProjectBtn.textContent = "Add Project";
@@ -180,14 +248,13 @@ addProjectBtn.addEventListener("click", async function () {
 
 loadAdminProjects();
 
-// image drag & drop / click-to-browse picker
+// image preview: drag & drop / click-to-browse — shows instantly like before.
+// The actual GitHub upload happens on submit, in the click handler above.
 inputFile.addEventListener("change", handleImageSelected);
 
 function handleImageSelected() {
     const file = inputFile.files[0];
     if (!file) return;
-
-    selectedImageFile = file;
 
     const imgLink = URL.createObjectURL(file);
     imageView.style.backgroundImage = `url(${imgLink})`;
