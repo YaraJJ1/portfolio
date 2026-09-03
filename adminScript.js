@@ -86,7 +86,7 @@ const GITHUB_OWNER = "yarajj1";
 const GITHUB_REPO = "portfolio";
 const GITHUB_BRANCH = "main";
 const GITHUB_IMAGE_FOLDER = "images";
-const GITHUB_TOKEN = ""; // <-- paste your token back in here before testing
+const GITHUB_TOKEN = "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"; // <-- paste your token back in here before testing
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
