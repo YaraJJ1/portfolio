@@ -82,13 +82,6 @@ const inputFile = document.getElementById('input-file');
 const imageView = document.getElementById('img-view');
 
 
-const GITHUB_OWNER = "yarajj1";
-const GITHUB_REPO = "portfolio";
-const GITHUB_BRANCH = "main";
-const GITHUB_IMAGE_FOLDER = "images";
-
-const GITHUB_TOKEN = "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"; // <-- paste your token back in here before testing
-
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 function isValidDateFormat(value) {
@@ -130,56 +123,30 @@ function buildImageFilename(file, projectTitle) {
     return `${Date.now()}-${safeTitle || "project"}.${ext}`;
 }
 
-// Commit the image to the GitHub repo and return its jsDelivr CDN URL
+// Ask the github-upload serverless function to commit the image to the GitHub repo
+// (it holds the GitHub token server-side) and return its jsDelivr CDN URL.
 async function uploadImageToGithub(file, projectTitle) {
-    if (!GITHUB_TOKEN) {
-        throw new Error("Add your GitHub token at the top of adminScript.js first.");
-    }
-
     if (file.size > MAX_IMAGE_BYTES) {
         throw new Error("That image is over 5MB — resize it before uploading.");
     }
 
     const filename = buildImageFilename(file, projectTitle);
-    const path = `${GITHUB_IMAGE_FOLDER}/${filename}`;
     const base64Content = await fileToBase64(file);
+    const idToken = await auth.currentUser.getIdToken();
 
-    const response = await fetch(
-        `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,
-        {
-            method: "PUT",
-            headers: {
-                Authorization: `token ${GITHUB_TOKEN}`,
-                Accept: "application/vnd.github+json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: `Add project image: ${filename}`,
-                content: base64Content,
-                branch: GITHUB_BRANCH
-            })
-        }
-    );
+    const response = await fetch("/.netlify/functions/github-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken, filename, base64Content })
+    });
+
+    const body = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-        const errorBody = await response.json().catch(() => ({}));
-
-        if (response.status === 404) {
-            throw new Error(
-                "GitHub upload failed (404) — the token doesn't have access to this repo. " +
-                "Check that the token's Repository access includes yarajj1.github.io and " +
-                "that its Contents permission is set to Read and write."
-            );
-        }
-        if (response.status === 401) {
-            throw new Error("GitHub upload failed (401) — the token looks invalid or expired.");
-        }
-
-        throw new Error(errorBody.message || `GitHub upload failed (${response.status})`);
+        throw new Error(body.error || `Upload failed (${response.status})`);
     }
 
-   
-    return `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${path}`;
+    return body.url;
 }
 
 async function loadAdminProjects() {
