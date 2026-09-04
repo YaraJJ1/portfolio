@@ -73,15 +73,13 @@ const category = addProjectPage.querySelector('.Category');
 const difficulty = addProjectPage.querySelector('.Difficulty');
 const moreDescription = addProjectPage.querySelector('.MoreDescription');
 const languages = addProjectPage.querySelector('.Languages');
-// const addProjectBtn = addProjectPage.querySelector('.addProjectBtn');
 const addProjectBtn = document.getElementById('submit-project-btn');
 
 
 const adminProjectList = document.querySelector('.adminProjectList');
 
-const dropArea = document.getElementById('drop-area');
 const inputFile = document.getElementById('input-file');
-const imageView = document.getElementById('img-view');
+const imageUploaderEl = document.getElementById('image-uploader');
 const imageListEl = document.getElementById('image-list');
 const uploadHintEl = document.getElementById('upload-hint');
 
@@ -218,10 +216,13 @@ async function uploadImageToGithub(file, projectTitle, index = 0) {
     return `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${path}`;
 }
 
+// ---------- Existing projects list ----------
+// Just names + a delete button — no thumbnails here, this is an admin
+// index, not a gallery.
 async function loadAdminProjects() {
     if (!adminProjectList) return;
 
-    adminProjectList.innerHTML = "<li>Loading...</li>";
+    adminProjectList.innerHTML = "<li>Loading…</li>";
 
     try {
         const querySnapshot = await getDocs(collection(db, "projects"));
@@ -236,20 +237,11 @@ async function loadAdminProjects() {
         querySnapshot.forEach((docSnap) => {
             const project = docSnap.data();
 
-            const images = Array.isArray(project.images) && project.images.length
-                ? project.images
-                : (project.imgSrc ? [project.imgSrc] : []);
-
             const item = document.createElement("li");
             item.classList.add("adminProjectItem");
 
             item.innerHTML = `
-                ${images[0] ? `<img src="${images[0]}" class="adminThumb" alt="">` : ""}
-                <span class="adminProjectInfo">
-                    ${project.imgTxt || "Untitled"}
-                    (${project["data-category"] || "?"} / ${project["data-difficulty"] || "?"})
-                    ${images.length > 1 ? ` · ${images.length} images` : ""}
-                </span>
+                <span class="adminProjectName">${project.imgTxt || "Untitled"}</span>
                 <button class="deleteBtn" data-id="${docSnap.id}">Delete</button>
             `;
 
@@ -293,21 +285,36 @@ if (adminProjectList) {
 // Images are staged here (as {file, url} pairs, in display order) until the
 // project is submitted. The first entry is always the thumbnail. Nothing is
 // uploaded to GitHub until "Add Project" is clicked.
+//
+// The "add" tile lives permanently as the last <li> in #image-list (it's in
+// the HTML, not generated) so there's always an obvious, always-visible way
+// to add more images — click it or drag files anywhere onto the uploader —
+// no matter how many are already staged.
 let stagedImages = [];
 
 function renderImageList() {
     if (imageListEl) {
-        imageListEl.innerHTML = stagedImages.map((item, index) => `
-            <li class="image-item">
+        const addTile = imageListEl.querySelector('.image-tile--add');
+
+        imageListEl.querySelectorAll('.image-tile:not(.image-tile--add)').forEach(el => el.remove());
+
+        const tilesHtml = stagedImages.map((item, index) => `
+            <li class="image-tile">
                 <img src="${item.url}" class="image-thumb" alt="">
                 ${index === 0 ? '<span class="image-badge">Thumbnail</span>' : ""}
                 <div class="image-controls">
-                    <button type="button" class="moveLeftBtn" data-index="${index}" ${index === 0 ? "disabled" : ""}>‹</button>
-                    <button type="button" class="moveRightBtn" data-index="${index}" ${index === stagedImages.length - 1 ? "disabled" : ""}>›</button>
-                    <button type="button" class="removeImageBtn" data-index="${index}">×</button>
+                    <button type="button" class="moveLeftBtn" data-index="${index}" ${index === 0 ? "disabled" : ""} aria-label="Move earlier">‹</button>
+                    <button type="button" class="removeImageBtn" data-index="${index}" aria-label="Remove image">×</button>
+                    <button type="button" class="moveRightBtn" data-index="${index}" ${index === stagedImages.length - 1 ? "disabled" : ""} aria-label="Move later">›</button>
                 </div>
             </li>
         `).join("");
+
+        if (addTile) {
+            addTile.insertAdjacentHTML("beforebegin", tilesHtml);
+        } else {
+            imageListEl.insertAdjacentHTML("afterbegin", tilesHtml);
+        }
     }
 
     if (uploadHintEl) {
@@ -356,9 +363,9 @@ function resetImagePicker() {
     stagedImages.forEach(item => URL.revokeObjectURL(item.url));
     stagedImages = [];
     renderImageList();
-    if (imageView) {
-        imageView.classList.remove("uploading");
-        imageView.classList.remove("dragging");
+    if (imageUploaderEl) {
+        imageUploaderEl.classList.remove("uploading");
+        imageUploaderEl.classList.remove("dragging");
     }
 }
 
@@ -394,7 +401,7 @@ if (!addProjectBtn) {
         addProjectBtn.disabled = true;
 
         try {
-            if (imageView) imageView.classList.add("uploading");
+            if (imageUploaderEl) imageUploaderEl.classList.add("uploading");
 
             const imageUrls = [];
             for (let i = 0; i < stagedImages.length; i++) {
@@ -435,7 +442,7 @@ if (!addProjectBtn) {
             console.error("Error adding project:", error);
             alert(`Something went wrong: ${error.message}`);
         } finally {
-            if (imageView) imageView.classList.remove("uploading");
+            if (imageUploaderEl) imageUploaderEl.classList.remove("uploading");
             addProjectBtn.disabled = false;
             addProjectBtn.textContent = "Add Project";
         }
@@ -450,17 +457,23 @@ inputFile.addEventListener("change", () => {
     inputFile.value = ""; // clear so picking the same file again still fires "change"
 });
 
-dropArea.addEventListener("dragover", function (e) {
-    e.preventDefault();
-    imageView.classList.add("dragging");
-});
+// Drag-and-drop targets the whole uploader (not just the small add tile) so
+// dropping files anywhere over the staged images works too.
+if (imageUploaderEl) {
+    imageUploaderEl.addEventListener("dragover", function (e) {
+        e.preventDefault();
+        imageUploaderEl.classList.add("dragging");
+    });
 
-dropArea.addEventListener("dragleave", function () {
-    imageView.classList.remove("dragging");
-});
+    imageUploaderEl.addEventListener("dragleave", function (e) {
+        if (!imageUploaderEl.contains(e.relatedTarget)) {
+            imageUploaderEl.classList.remove("dragging");
+        }
+    });
 
-dropArea.addEventListener("drop", function (e) {
-    e.preventDefault();
-    imageView.classList.remove("dragging");
-    addStagedFiles(e.dataTransfer.files);
-});
+    imageUploaderEl.addEventListener("drop", function (e) {
+        e.preventDefault();
+        imageUploaderEl.classList.remove("dragging");
+        addStagedFiles(e.dataTransfer.files);
+    });
+}

@@ -14,39 +14,40 @@
 
     <div id="admin-content" style="display: none;">
         <div class="adminLayout">
-            
+
             <div class="logout-wrapper">
                 <button id="logout-btn" class="addProjectBtn logout-btn-override">Log Out</button>
             </div>
 
             <div class="addProjectPage">
                 <h2 class="addHeader">Enter Project details: </h2>
-                
+
                 <p class="inputTitle">Enter Title: </p>
                 <input type="text" class="Title" placeholder="Enter Title">
 
                 <p class="inputTitle">Enter Description: </p>
                 <textarea class="Description" placeholder="Enter Description"></textarea>
-            
+
                 <p class="inputTitle">Enter Date dd/mm/yyyy: </p>
                 <input type="text" class="Date" placeholder="Enter Date">
 
-                <div class="hero">
-                    <label for="input-file" id="drop-area">
-                        <input type="file" accept="image/*" id="input-file" multiple hidden>
-                        <div id="img-view">
-                            <div class="upload-placeholder">
-                                <p>Drop images here or click to browse</p>
-                                <span id="upload-hint">First image becomes the thumbnail</span>
-                            </div>
-                            <div class="upload-overlay">
-                                <div class="spinner"></div>
-                                <p>Uploading…</p>
-                            </div>
-                        </div>
-                    </label>
-                    <ul id="image-list" class="image-list"></ul>
+                <p class="inputTitle">Project Images: </p>
+                <div class="imageUploader" id="image-uploader">
+                    <input type="file" accept="image/*" id="input-file" multiple hidden>
+                    <ul id="image-list" class="image-grid">
+                        <li class="image-tile image-tile--add">
+                            <label for="input-file" class="image-add-label">
+                                <span class="image-add-icon">+</span>
+                                <span class="image-add-text">Add</span>
+                            </label>
+                        </li>
+                    </ul>
+                    <div class="upload-overlay">
+                        <div class="spinner"></div>
+                        <p>Uploading…</p>
+                    </div>
                 </div>
+                <span class="upload-hint" id="upload-hint">First image becomes the thumbnail</span>
 
                 <p class="inputTitle">Enter Data Category: </p>
                 <select class="Category">
@@ -68,8 +69,8 @@
 
                 <p class="inputTitle">Enter All Languages Used: </p>
                 <input type="text" class="Languages" placeholder="Enter Languages">
-                
-                <button id ="submit-project-btn" class="addProjectBtn">Add Project</button>
+
+                <button id="submit-project-btn" class="addProjectBtn">Add Project</button>
             </div>
 
             <div class="projectListSection">
