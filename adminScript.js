@@ -5,7 +5,8 @@ import {
     addDoc,
     getDocs,
     deleteDoc,
-    doc 
+    doc,
+    getDoc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 import {
@@ -32,6 +33,7 @@ onAuthStateChanged(auth, (user) => {
     } else {
         if (loginContainer) loginContainer.style.display = "block";
         if (adminContent) adminContent.style.display = "none";
+        GITHUB_TOKEN = null; // clear any cached token on logout
     }
 });
 
@@ -83,13 +85,49 @@ const imageView = document.getElementById('img-view');
 
 
 const GITHUB_OWNER = "yarajj1";
-const GITHUB_REPO = "portfolio";
+const GITHUB_REPO = "portfolio"; // TODO: point this at your dedicated images-only repo once you split it out
 const GITHUB_BRANCH = "main";
 const GITHUB_IMAGE_FOLDER = "images";
 
-const GITHUB_TOKEN = "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"; // <-- paste your token back in here before testing
-
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+// The GitHub token is no longer hardcoded here. It lives in Firestore at
+// config/githubToken, protected by a security rule that only your admin
+// UID can read (see rules below). It's fetched once per session, right
+// before it's needed, and cached in memory for the rest of the session.
+//
+// match /config/githubToken {
+//   allow read: if request.auth != null && request.auth.uid == "YOUR_ADMIN_UID_HERE";
+//   allow write: if false; // set the value by hand in the Firebase console
+// }
+let GITHUB_TOKEN = null;
+
+async function loadGithubToken() {
+    if (GITHUB_TOKEN) return GITHUB_TOKEN;
+
+    let snap;
+    try {
+        snap = await getDoc(doc(db, "config", "githubToken"));
+    } catch (error) {
+        throw new Error(
+            "Couldn't read the GitHub token from Firestore " +
+            `(${error.code || error.message}). Check that you're logged in and that ` +
+            "the config/githubToken security rule allows your admin UID to read it."
+        );
+    }
+
+    if (!snap.exists()) {
+        throw new Error("Firestore doc config/githubToken doesn't exist yet — add it in the Firebase console.");
+    }
+
+    GITHUB_TOKEN = snap.data().token;
+
+    if (!GITHUB_TOKEN) {
+        throw new Error("Firestore doc config/githubToken exists but has no 'token' field.");
+    }
+
+    return GITHUB_TOKEN;
+}
 
 
 
@@ -134,13 +172,11 @@ function buildImageFilename(file, projectTitle) {
 
 // Commit the image to the GitHub repo and return its jsDelivr CDN URL
 async function uploadImageToGithub(file, projectTitle) {
-    if (!GITHUB_TOKEN) {
-        throw new Error("Add your GitHub token at the top of adminScript.js first.");
-    }
-
     if (file.size > MAX_IMAGE_BYTES) {
         throw new Error("That image is over 5MB — resize it before uploading.");
     }
+
+    const token = await loadGithubToken();
 
     const filename = buildImageFilename(file, projectTitle);
     const path = `${GITHUB_IMAGE_FOLDER}/${filename}`;
@@ -151,7 +187,7 @@ async function uploadImageToGithub(file, projectTitle) {
         {
             method: "PUT",
             headers: {
-                Authorization: `token ${GITHUB_TOKEN}`,
+                Authorization: `token ${token}`,
                 Accept: "application/vnd.github+json",
                 "Content-Type": "application/json"
             },
