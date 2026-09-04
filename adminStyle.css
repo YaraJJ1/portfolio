@@ -1,6 +1,4 @@
-/* =========================================================
-   Design tokens
-   ========================================================= */
+/* Design tokens */
 :root {
     --color-accent: #7c6bf0;
     --color-accent-soft: #c7bdfc;
@@ -21,9 +19,7 @@
     --space-lg: 20px;
 }
 
-/* =========================================================
-   Login
-   ========================================================= */
+/* Login */
 .login-wrapper {
     display: flex;
     justify-content: center;
@@ -44,9 +40,7 @@
     margin-top: var(--space-lg);
 }
 
-/* =========================================================
-   Admin layout
-   ========================================================= */
+/* Admin layout */
 #admin-content {
     display: none;
 }
@@ -70,9 +64,7 @@
     padding: var(--space-sm) var(--space-lg);
 }
 
-/* =========================================================
-   Add-project form
-   ========================================================= */
+/* Add-project form */
 .addProjectPage {
     display: flex;
     flex-direction: column;
@@ -97,9 +89,7 @@ textarea {
     max-width: 250px;
 }
 
-/* =========================================================
-   Existing projects list
-   ========================================================= */
+/* Existing projects list */
 .projectListSection {
     flex: 1;
     min-width: 250px;
@@ -142,11 +132,7 @@ textarea {
     border-color: var(--color-danger);
 }
 
-/* =========================================================
-   Image uploader
-   A grid of staged thumbnails plus a permanent "add" tile, so there's
-   always a click/drop target no matter how many images are staged.
-   ========================================================= */
+/* Image uploader — staged thumbnails plus a permanent "add" tile */
 .imageUploader {
     position: relative;
     width: 100%;
@@ -172,9 +158,9 @@ textarea {
 
 .image-tile {
     position: relative;
-    width: 60px;
-    height: 60px;
-    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
     border-radius: var(--radius-md);
     overflow: hidden;
     border: 1.5px solid var(--color-accent-soft);
@@ -203,14 +189,8 @@ textarea {
 }
 
 .image-add-icon {
-    font-size: 20px;
+    font-size: 18px;
     line-height: 1;
-}
-
-.image-add-text {
-    margin-top: 2px;
-    font-size: 9px;
-    color: var(--color-text-muted);
 }
 
 .image-thumb {
@@ -226,10 +206,11 @@ textarea {
     left: 2px;
     background: var(--color-accent);
     color: #fff;
-    font-size: 9px;
+    font-size: 7px;
     line-height: 1.4;
-    padding: 1px 5px;
-    border-radius: 6px;
+    padding: 1px 4px;
+    border-radius: 5px;
+    white-space: nowrap;
 }
 
 .image-controls {
@@ -254,7 +235,7 @@ textarea {
     background: none;
     border: none;
     color: #fff;
-    font-size: 12px;
+    font-size: 10px;
     padding: 3px 0;
     cursor: pointer;
     line-height: 1;
