@@ -33,14 +33,19 @@
 
                 <div class="hero">
                     <label for="input-file" id="drop-area">
-                        <input type="file" accept="image/*" id="input-file" hidden>
+                        <input type="file" accept="image/*" id="input-file" multiple hidden>
                         <div id="img-view">
+                            <div class="upload-placeholder">
+                                <p>Drop images here or click to browse</p>
+                                <span id="upload-hint">First image becomes the thumbnail</span>
+                            </div>
                             <div class="upload-overlay">
                                 <div class="spinner"></div>
                                 <p>Uploading…</p>
                             </div>
                         </div>
                     </label>
+                    <ul id="image-list" class="image-list"></ul>
                 </div>
 
                 <p class="inputTitle">Enter Data Category: </p>

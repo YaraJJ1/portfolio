@@ -82,24 +82,17 @@ const adminProjectList = document.querySelector('.adminProjectList');
 const dropArea = document.getElementById('drop-area');
 const inputFile = document.getElementById('input-file');
 const imageView = document.getElementById('img-view');
+const imageListEl = document.getElementById('image-list');
+const uploadHintEl = document.getElementById('upload-hint');
 
 
 const GITHUB_OWNER = "yarajj1";
-const GITHUB_REPO = "portfolio"; // TODO: point this at your dedicated images-only repo once you split it out
+const GITHUB_REPO = "portfolio"; 
 const GITHUB_BRANCH = "main";
 const GITHUB_IMAGE_FOLDER = "images";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
-// The GitHub token is no longer hardcoded here. It lives in Firestore at
-// config/githubToken, protected by a security rule that only your admin
-// UID can read (see rules below). It's fetched once per session, right
-// before it's needed, and cached in memory for the rest of the session.
-//
-// match /config/githubToken {
-//   allow read: if request.auth != null && request.auth.uid == "YOUR_ADMIN_UID_HERE";
-//   allow write: if false; // set the value by hand in the Firebase console
-// }
 let GITHUB_TOKEN = null;
 
 async function loadGithubToken() {
@@ -159,26 +152,31 @@ function fileToBase64(file) {
     });
 }
 
-// Build a collision-safe filename like "1735689000000-my-project.png"
-function buildImageFilename(file, projectTitle) {
+// Build a collision-safe filename like "1735689000000-my-project.png" — or
+// "1735689000000-2-my-project.png" for the 3rd+ image of one project, so
+// several images uploaded moments apart never overwrite each other.
+function buildImageFilename(file, projectTitle, index = 0) {
     const ext = (file.name.split(".").pop() || "png").toLowerCase();
     const safeTitle = projectTitle
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "")
         .slice(0, 40);
-    return `${Date.now()}-${safeTitle || "project"}.${ext}`;
+    const suffix = index > 0 ? `-${index}` : "";
+    return `${Date.now()}${suffix}-${safeTitle || "project"}.${ext}`;
 }
 
-// Commit the image to the GitHub repo and return its jsDelivr CDN URL
-async function uploadImageToGithub(file, projectTitle) {
+// Commit one image to the GitHub repo and return its jsDelivr CDN URL.
+// `index` is only used to keep filenames unique when uploading several
+// images for the same project.
+async function uploadImageToGithub(file, projectTitle, index = 0) {
     if (file.size > MAX_IMAGE_BYTES) {
-        throw new Error("That image is over 5MB — resize it before uploading.");
+        throw new Error(`Image ${index + 1} is over 5MB — resize it before uploading.`);
     }
 
     const token = await loadGithubToken();
 
-    const filename = buildImageFilename(file, projectTitle);
+    const filename = buildImageFilename(file, projectTitle, index);
     const path = `${GITHUB_IMAGE_FOLDER}/${filename}`;
     const base64Content = await fileToBase64(file);
 
@@ -238,13 +236,19 @@ async function loadAdminProjects() {
         querySnapshot.forEach((docSnap) => {
             const project = docSnap.data();
 
+            const images = Array.isArray(project.images) && project.images.length
+                ? project.images
+                : (project.imgSrc ? [project.imgSrc] : []);
+
             const item = document.createElement("li");
             item.classList.add("adminProjectItem");
 
             item.innerHTML = `
+                ${images[0] ? `<img src="${images[0]}" class="adminThumb" alt="">` : ""}
                 <span class="adminProjectInfo">
                     ${project.imgTxt || "Untitled"}
                     (${project["data-category"] || "?"} / ${project["data-difficulty"] || "?"})
+                    ${images.length > 1 ? ` · ${images.length} images` : ""}
                 </span>
                 <button class="deleteBtn" data-id="${docSnap.id}">Delete</button>
             `;
@@ -285,12 +289,79 @@ if (adminProjectList) {
     });
 }
 
+// ---------- Multi-image picker ----------
+// Images are staged here (as {file, url} pairs, in display order) until the
+// project is submitted. The first entry is always the thumbnail. Nothing is
+// uploaded to GitHub until "Add Project" is clicked.
+let stagedImages = [];
+
+function renderImageList() {
+    if (imageListEl) {
+        imageListEl.innerHTML = stagedImages.map((item, index) => `
+            <li class="image-item">
+                <img src="${item.url}" class="image-thumb" alt="">
+                ${index === 0 ? '<span class="image-badge">Thumbnail</span>' : ""}
+                <div class="image-controls">
+                    <button type="button" class="moveLeftBtn" data-index="${index}" ${index === 0 ? "disabled" : ""}>‹</button>
+                    <button type="button" class="moveRightBtn" data-index="${index}" ${index === stagedImages.length - 1 ? "disabled" : ""}>›</button>
+                    <button type="button" class="removeImageBtn" data-index="${index}">×</button>
+                </div>
+            </li>
+        `).join("");
+    }
+
+    if (uploadHintEl) {
+        const count = stagedImages.length;
+        uploadHintEl.textContent = count
+            ? `${count} image${count > 1 ? "s" : ""} added — click or drop to add more`
+            : "First image becomes the thumbnail";
+    }
+}
+
+function addStagedFiles(fileList) {
+    const files = Array.from(fileList || []).filter(file => file.type.startsWith("image/"));
+    files.forEach(file => {
+        stagedImages.push({ file, url: URL.createObjectURL(file) });
+    });
+    renderImageList();
+}
+
+function removeStagedImage(index) {
+    const [removed] = stagedImages.splice(index, 1);
+    if (removed) URL.revokeObjectURL(removed.url);
+    renderImageList();
+}
+
+function moveStagedImage(index, direction) {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= stagedImages.length) return;
+    [stagedImages[index], stagedImages[newIndex]] = [stagedImages[newIndex], stagedImages[index]];
+    renderImageList();
+}
+
+if (imageListEl) {
+    imageListEl.addEventListener("click", (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+
+        const index = Number(button.dataset.index);
+        if (button.classList.contains("removeImageBtn")) removeStagedImage(index);
+        else if (button.classList.contains("moveLeftBtn")) moveStagedImage(index, -1);
+        else if (button.classList.contains("moveRightBtn")) moveStagedImage(index, 1);
+    });
+}
+
 function resetImagePicker() {
     inputFile.value = "";
-    imageView.style.backgroundImage = "";
-    imageView.classList.remove("has-image");
-    imageView.classList.remove("uploading");
+    stagedImages.forEach(item => URL.revokeObjectURL(item.url));
+    stagedImages = [];
+    renderImageList();
+    if (imageView) {
+        imageView.classList.remove("uploading");
+        imageView.classList.remove("dragging");
+    }
 }
+
 document.addEventListener("DOMContentLoaded", () => {
 if (!addProjectBtn) {
     console.error("ERROR: addProjectBtn not found! Check if your HTML has id='addProjectBtn'");
@@ -315,22 +386,23 @@ if (!addProjectBtn) {
             return;
         }
 
-        const droppedFile = inputFile ? inputFile.files[0] : null;
-
-        if (!droppedFile) {
-            alert("Please drop an image above, or click it to browse for one.");
+        if (!stagedImages.length) {
+            alert("Please add at least one image above.");
             return;
         }
 
         addProjectBtn.disabled = true;
 
         try {
-            console.log("Starting GitHub upload...");
-            addProjectBtn.textContent = "Uploading image...";
             if (imageView) imageView.classList.add("uploading");
 
-            const imageUrl = await uploadImageToGithub(droppedFile, title.value.trim());
-            console.log("Upload successful, URL:", imageUrl);
+            const imageUrls = [];
+            for (let i = 0; i < stagedImages.length; i++) {
+                addProjectBtn.textContent = `Uploading image ${i + 1} of ${stagedImages.length}...`;
+                const url = await uploadImageToGithub(stagedImages[i].file, title.value.trim(), i);
+                imageUrls.push(url);
+            }
+            console.log("Upload successful, URLs:", imageUrls);
 
             addProjectBtn.textContent = "Adding to database...";
 
@@ -338,7 +410,8 @@ if (!addProjectBtn) {
                 imgTxt: title.value.trim(),
                 imgDesc: desc.value.trim(),
                 imgMoreDesc: moreDescription.value.trim(),
-                imgSrc: imageUrl,
+                imgSrc: imageUrls[0], // kept so anything still reading the old single-image field still works
+                images: imageUrls,
                 "data-category": category.value,
                 "data-difficulty": difficulty.value,
                 "data-date": date.value.trim(),
@@ -371,16 +444,11 @@ if (!addProjectBtn) {
 
 loadAdminProjects();
 });
-inputFile.addEventListener("change", handleImageSelected);
 
-function handleImageSelected() {
-    const file = inputFile.files[0];
-    if (!file) return;
-
-    const imgLink = URL.createObjectURL(file);
-    imageView.style.backgroundImage = `url(${imgLink})`;
-    imageView.classList.add("has-image");
-}
+inputFile.addEventListener("change", () => {
+    addStagedFiles(inputFile.files);
+    inputFile.value = ""; // clear so picking the same file again still fires "change"
+});
 
 dropArea.addEventListener("dragover", function (e) {
     e.preventDefault();
@@ -394,6 +462,5 @@ dropArea.addEventListener("dragleave", function () {
 dropArea.addEventListener("drop", function (e) {
     e.preventDefault();
     imageView.classList.remove("dragging");
-    inputFile.files = e.dataTransfer.files;
-    handleImageSelected();
+    addStagedFiles(e.dataTransfer.files);
 });

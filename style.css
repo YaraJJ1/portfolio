@@ -496,12 +496,46 @@ img{
     scrollbar-width: none; 
 }
 
+/* Outer box: unchanged from before. This still sizes/frames the image
+   area whether its content is a plain <img> or (now) a swiper. */
 .modal-img {
     width: 100%;
     max-height: 45vh; 
     object-fit: cover;
     border-radius: 8px;
     border: 2px solid #666; 
+}
+
+/* Inner content: the modal image area is now a Swiper slideshow.
+   aspect-ratio replaces the sizing the <img> used to get for free
+   from the global `img { aspect-ratio: 16/10 }` rule above. */
+.modal-img.swiper {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    position: relative;
+}
+
+.modal-img.swiper .swiper-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.modal-img.swiper .swiper-button-prev,
+.modal-img.swiper .swiper-button-next {
+    color: #E4E2D3;
+    --swiper-navigation-size: 22px;
+}
+
+.modal-img.swiper .swiper-pagination-bullet {
+    background: #E4E2D3;
+    opacity: 0.6;
+}
+
+.modal-img.swiper .swiper-pagination-bullet-active {
+    background: #E4E2D3;
+    opacity: 1;
 }
 
 

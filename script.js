@@ -36,11 +36,21 @@ async function loadProjects() {
             projectCard.setAttribute("code-language", project["code-language"] || "");
 
             projectCard.setAttribute("data-id",doc.id);
-            
+
+            // Each project can have a Firestore "images" array (multiple screenshots)
+            // for the modal slideshow. The first entry doubles as the card thumbnail.
+            // Falls back to the old single "imgSrc" field so existing docs still work.
+            const images = Array.isArray(project.images) && project.images.length
+                ? project.images
+                : [project.imgSrc || "images.png"];
+
+            // Stored directly on the element (not a data-attribute) since it's an
+            // array of URLs, not a single string - the modal reads it back on click.
+            projectCard.images = images;
 
             projectCard.innerHTML = `
                 <img
-                    src="${project.imgSrc || "images.png"}"
+                    src="${images[0]}"
                     alt="${project.imgTxt || "Project"}"
                 >
 
@@ -282,13 +292,57 @@ function initializeProjectSystem() {
         });
     }
 
-    // Project modalonly runs on pages that have it
+    // Project modal - only runs on pages that have it
     if (modalOverlay) {
-        const modalImg = modalOverlay.querySelector('.modal-img');
+        // Outer image box (.modal-img) is untouched. Its inner content is now
+        // a Swiper instance instead of a single <img> - rebuilt on every open
+        // from the clicked project's image list.
+        const modalSwiperEl = modalOverlay.querySelector('.modal-img.swiper');
+        const modalSwiperWrapper = modalSwiperEl ? modalSwiperEl.querySelector('.swiper-wrapper') : null;
         const modalText = modalOverlay.querySelector('.ModelText');
         const modalSkill = modalOverlay.querySelector('.ModelSkill');
         const modalLang = modalOverlay.querySelector('.ModalLanguage');
         const modalDesc = modalOverlay.querySelector('.ModalDescription');
+
+        let modalSwiper = null;
+
+        function renderModalSlides(images) {
+            if (!modalSwiperEl || !modalSwiperWrapper) return;
+
+            modalSwiperWrapper.innerHTML = images
+                .map(src => `<div class="swiper-slide"><img src="${src}" alt=""></div>`)
+                .join('');
+
+            // Rebuild the instance each time rather than patching an existing
+            // one - simplest way to keep loop/autoplay in sync with a slide
+            // count that changes per project.
+            if (modalSwiper) {
+                modalSwiper.destroy(true, true);
+                modalSwiper = null;
+            }
+
+            modalSwiper = new Swiper(modalSwiperEl, {
+                loop: images.length > 1,
+                autoplay: images.length > 1
+                    ? { delay: 3000, disableOnInteraction: true }
+                    : false,
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+            });
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove("active");
+            if (modalSwiper && modalSwiper.autoplay) {
+                modalSwiper.autoplay.stop();
+            }
+        }
 
         projects.forEach(project => {
             project.addEventListener("click", () => {
@@ -300,10 +354,14 @@ function initializeProjectSystem() {
                 const sourceImg = project.querySelector('img');
                 const sourceDesc = project.querySelector('.moreDesc');
 
-                if (modalImg && sourceImg) {
-                    modalImg.src = sourceImg.src;
-                    modalImg.alt = sourceImg.alt;
-                }
+                // project.images comes from Firestore (set in loadProjects()).
+                // Fall back to the card's single thumbnail if it's missing.
+                const images = project.images && project.images.length
+                    ? project.images
+                    : (sourceImg ? [sourceImg.src] : []);
+
+                if (images.length) renderModalSlides(images);
+
                 if (modalText && sourceTitle) modalText.textContent = sourceTitle.textContent;
                 if (modalSkill && sourceSkill) {
                     modalSkill.textContent = sourceSkill.textContent;
@@ -316,21 +374,15 @@ function initializeProjectSystem() {
         });
 
         if (modalClose) {
-            modalClose.addEventListener("click", () => {
-                modalOverlay.classList.remove("active");
-            });
+            modalClose.addEventListener("click", closeModal);
         }
 
         modalOverlay.addEventListener("click", (event) => {
-            if (event.target === modalOverlay) {
-                modalOverlay.classList.remove("active");
-            }
+            if (event.target === modalOverlay) closeModal();
         });
 
         document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") {
-                modalOverlay.classList.remove("active");
-            }
+            if (event.key === "Escape") closeModal();
         });
     }
 }
