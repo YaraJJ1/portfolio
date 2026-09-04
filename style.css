@@ -524,17 +524,17 @@ img{
 
 .modal-img.swiper .swiper-button-prev,
 .modal-img.swiper .swiper-button-next {
-    color: #E4E2D3;
+    color: black;
     --swiper-navigation-size: 22px;
 }
 
 .modal-img.swiper .swiper-pagination-bullet {
-    background: #E4E2D3;
+    background: black;
     opacity: 0.6;
 }
 
 .modal-img.swiper .swiper-pagination-bullet-active {
-    background: #E4E2D3;
+    background: black;
     opacity: 1;
 }
 
