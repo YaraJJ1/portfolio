@@ -87,7 +87,7 @@ const GITHUB_REPO = "portfolio";
 const GITHUB_BRANCH = "main";
 const GITHUB_IMAGE_FOLDER = "images";
 
-const GITHUB_TOKEN = "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"; // <-- paste your token back in here before testing
+const GITHUB_TOKEN = "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"; // <-- paste your token back in here before testing
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
