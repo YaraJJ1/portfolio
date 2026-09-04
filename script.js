@@ -37,22 +37,33 @@ async function loadProjects() {
 
             projectCard.setAttribute("data-id",doc.id);
 
-            // Each project can have a Firestore "images" array (multiple screenshots)
-            // for the modal slideshow. The first entry doubles as the card thumbnail.
-            // Falls back to the old single "imgSrc" field so existing docs still work.
-            const images = Array.isArray(project.images) && project.images.length
-                ? project.images
-                : [project.imgSrc || "images.png"];
+            // Each project can have a Firestore "media" array (images and/or a
+            // video) for the modal slideshow. The first entry doubles as the
+            // card thumbnail when it's an image. Falls back to the older
+            // "images" (url-only) and "imgSrc" fields so existing docs still work.
+            const media = Array.isArray(project.media) && project.media.length
+                ? project.media
+                : (Array.isArray(project.images) && project.images.length
+                    ? project.images.map(url => ({ url, type: "image" }))
+                    : [{ url: project.imgSrc || "images.png", type: "image" }]);
 
-            // Stored directly on the element (not a data-attribute) since it's an
-            // array of URLs, not a single string - the modal reads it back on click.
-            projectCard.images = images;
+            // Stored directly on the element (not a data-attribute) since it's
+            // an array of objects, not a single string - the modal reads it
+            // back on click.
+            projectCard.media = media;
+
+            const firstMedia = media[0];
+            // The grid card is always a static image - if the first item is a
+            // video we show the placeholder graphic instead of preloading
+            // video data, and flag it with a small play badge.
+            const thumbSrc = firstMedia.type === "video" ? "images.png" : firstMedia.url;
 
             projectCard.innerHTML = `
                 <img
-                    src="${images[0]}"
+                    src="${thumbSrc}"
                     alt="${project.imgTxt || "Project"}"
                 >
+                ${firstMedia.type === "video" ? '<span class="video-badge"></span>' : ""}
 
                 <div class="textContainer">
 
@@ -296,7 +307,7 @@ function initializeProjectSystem() {
     if (modalOverlay) {
         // Outer image box (.modal-img) is untouched. Its inner content is now
         // a Swiper instance instead of a single <img> - rebuilt on every open
-        // from the clicked project's image list.
+        // from the clicked project's media list.
         const modalSwiperEl = modalOverlay.querySelector('.modal-img.swiper');
         const modalSwiperWrapper = modalSwiperEl ? modalSwiperEl.querySelector('.swiper-wrapper') : null;
         const modalText = modalOverlay.querySelector('.ModelText');
@@ -306,11 +317,14 @@ function initializeProjectSystem() {
 
         let modalSwiper = null;
 
-        function renderModalSlides(images) {
+        function renderModalSlides(media) {
             if (!modalSwiperEl || !modalSwiperWrapper) return;
 
-            modalSwiperWrapper.innerHTML = images
-                .map(src => `<div class="swiper-slide"><img src="${src}" alt=""></div>`)
+            modalSwiperWrapper.innerHTML = media
+                .map(item => item.type === "video"
+                    ? `<div class="swiper-slide"><video src="${item.url}" controls playsinline preload="metadata"></video></div>`
+                    : `<div class="swiper-slide"><img src="${item.url}" alt=""></div>`
+                )
                 .join('');
 
             // Rebuild the instance each time rather than patching an existing
@@ -321,18 +335,32 @@ function initializeProjectSystem() {
                 modalSwiper = null;
             }
 
+            // Autoplay is switched off whenever any slide is a video, so it
+            // never swipes away from a clip the visitor is watching.
+            const hasVideo = media.some(item => item.type === "video");
+
             modalSwiper = new Swiper(modalSwiperEl, {
-                loop: images.length > 1,
-                autoplay: images.length > 1
+                loop: media.length > 1,
+                autoplay: (media.length > 1 && !hasVideo)
                     ? { delay: 3000, disableOnInteraction: true }
                     : false,
                 pagination: {
                     el: '.swiper-pagination',
                     clickable: true,
+                    renderBullet: (index, className) => {
+                        const isVideo = media[index] && media[index].type === "video";
+                        return `<span class="${className}${isVideo ? ' swiper-pagination-bullet-video' : ''}"></span>`;
+                    },
                 },
                 navigation: {
                     nextEl: '.swiper-button-next',
                     prevEl: '.swiper-button-prev',
+                },
+                on: {
+                    // Pause any playing clip the moment the user swipes off it.
+                    slideChangeTransitionStart() {
+                        modalSwiperEl.querySelectorAll('video').forEach(v => v.pause());
+                    },
                 },
             });
         }
@@ -341,6 +369,9 @@ function initializeProjectSystem() {
             modalOverlay.classList.remove("active");
             if (modalSwiper && modalSwiper.autoplay) {
                 modalSwiper.autoplay.stop();
+            }
+            if (modalSwiperEl) {
+                modalSwiperEl.querySelectorAll('video').forEach(v => v.pause());
             }
         }
 
@@ -354,13 +385,13 @@ function initializeProjectSystem() {
                 const sourceImg = project.querySelector('img');
                 const sourceDesc = project.querySelector('.moreDesc');
 
-                // project.images comes from Firestore (set in loadProjects()).
+                // project.media comes from Firestore (set in loadProjects()).
                 // Fall back to the card's single thumbnail if it's missing.
-                const images = project.images && project.images.length
-                    ? project.images
-                    : (sourceImg ? [sourceImg.src] : []);
+                const media = project.media && project.media.length
+                    ? project.media
+                    : (sourceImg ? [{ url: sourceImg.src, type: "image" }] : []);
 
-                if (images.length) renderModalSlides(images);
+                if (media.length) renderModalSlides(media);
 
                 if (modalText && sourceTitle) modalText.textContent = sourceTitle.textContent;
                 if (modalSkill && sourceSkill) {

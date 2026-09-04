@@ -338,7 +338,8 @@ label:hover{
 }
 .project {
     box-sizing: border-box;
-    
+    position: relative;
+
     background-color: #e7e1d0;
     overflow: hidden;
     display: flex;
@@ -381,6 +382,22 @@ img{
     margin-right: 8px;
     padding: 5px;
     text-indent: 30px;
+}
+
+/* video-thumbnail badge on the grid card — a small play-triangle so a
+   project whose first upload is a clip still reads as "has video" even
+   though the card itself always shows a static placeholder image. */
+.video-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 0;
+    height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-left: 12px solid rgba(255, 255, 255, 0.9);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+    pointer-events: none;
 }
 
 /* tags */
@@ -515,7 +532,8 @@ img{
     position: relative;
 }
 
-.modal-img.swiper .swiper-slide img {
+.modal-img.swiper .swiper-slide img,
+.modal-img.swiper .swiper-slide video {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -535,6 +553,23 @@ img{
 
 .modal-img.swiper .swiper-pagination-bullet-active {
     background: black;
+    opacity: 1;
+}
+
+/* Video slides get a play-triangle marker instead of a round dot, set via
+   Swiper's renderBullet in script.js for whichever slide index is a video. */
+.modal-img.swiper .swiper-pagination-bullet-video {
+    width: 0;
+    height: 0;
+    background: transparent;
+    border-radius: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-left: 10px solid black;
+    opacity: 0.6;
+}
+
+.modal-img.swiper .swiper-pagination-bullet-video.swiper-pagination-bullet-active {
     opacity: 1;
 }
 

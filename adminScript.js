@@ -89,7 +89,8 @@ const GITHUB_REPO = "portfolio";
 const GITHUB_BRANCH = "main";
 const GITHUB_IMAGE_FOLDER = "images";
 
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;   // 5MB per image
+const MAX_VIDEO_BYTES = 20 * 1024 * 1024;  // 20MB per video clip - keep clips short
 
 let GITHUB_TOKEN = null;
 
@@ -151,8 +152,8 @@ function fileToBase64(file) {
 }
 
 // Build a collision-safe filename like "1735689000000-my-project.png" — or
-// "1735689000000-2-my-project.png" for the 3rd+ image of one project, so
-// several images uploaded moments apart never overwrite each other.
+// "1735689000000-2-my-project.png" for the 3rd+ item of one project, so
+// several images/videos uploaded moments apart never overwrite each other.
 function buildImageFilename(file, projectTitle, index = 0) {
     const ext = (file.name.split(".").pop() || "png").toLowerCase();
     const safeTitle = projectTitle
@@ -164,12 +165,16 @@ function buildImageFilename(file, projectTitle, index = 0) {
     return `${Date.now()}${suffix}-${safeTitle || "project"}.${ext}`;
 }
 
-// Commit one image to the GitHub repo and return its jsDelivr CDN URL.
-// `index` is only used to keep filenames unique when uploading several
-// images for the same project.
-async function uploadImageToGithub(file, projectTitle, index = 0) {
-    if (file.size > MAX_IMAGE_BYTES) {
-        throw new Error(`Image ${index + 1} is over 5MB — resize it before uploading.`);
+// Commit one image or video to the GitHub repo and return its jsDelivr CDN
+// URL. `index` is only used to keep filenames unique when uploading several
+// items for the same project. `type` ("image" | "video") picks the right
+// size limit and error wording.
+async function uploadMediaToGithub(file, projectTitle, index = 0, type = "image") {
+    const limit = type === "video" ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+    if (file.size > limit) {
+        const limitLabel = type === "video" ? "20MB" : "5MB";
+        const verb = type === "video" ? "trim/compress it" : "resize it";
+        throw new Error(`${type === "video" ? "Video" : "Image"} ${index + 1} is over ${limitLabel} — ${verb} before uploading.`);
     }
 
     const token = await loadGithubToken();
@@ -188,7 +193,7 @@ async function uploadImageToGithub(file, projectTitle, index = 0) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                message: `Add project image: ${filename}`,
+                message: `Add project media: ${filename}`,
                 content: base64Content,
                 branch: GITHUB_BRANCH
             })
@@ -281,14 +286,16 @@ if (adminProjectList) {
     });
 }
 
-// ---------- Multi-image picker ----------
-// Images are staged here (as {file, url} pairs, in display order) until the
-// project is submitted. The first entry is always the thumbnail. Nothing is
-// uploaded to GitHub until "Add Project" is clicked.
+// ---------- Multi-media picker ----------
+// Images and videos are staged here (as {file, url, type} entries, in
+// display order) until the project is submitted. The first entry is always
+// the thumbnail (if it's a video, the public card falls back to a
+// placeholder image instead of trying to thumbnail it - see script.js).
+// Nothing is uploaded to GitHub until "Add Project" is clicked.
 //
 // The "add" tile lives permanently as the last <li> in #image-list (it's in
 // the HTML, not generated) so there's always an obvious, always-visible way
-// to add more images — click it or drag files anywhere onto the uploader —
+// to add more items — click it or drag files anywhere onto the uploader —
 // no matter how many are already staged.
 let stagedImages = [];
 
@@ -298,17 +305,24 @@ function renderImageList() {
 
         imageListEl.querySelectorAll('.image-tile:not(.image-tile--add)').forEach(el => el.remove());
 
-        const tilesHtml = stagedImages.map((item, index) => `
-            <li class="image-tile" style="width:56px;height:56px;">
-                <img src="${item.url}" class="image-thumb" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">
-                ${index === 0 ? '<span class="image-badge">Thumbnail</span>' : ""}
-                <div class="image-controls">
-                    <button type="button" class="moveLeftBtn" data-index="${index}" ${index === 0 ? "disabled" : ""} aria-label="Move earlier">‹</button>
-                    <button type="button" class="removeImageBtn" data-index="${index}" aria-label="Remove image">×</button>
-                    <button type="button" class="moveRightBtn" data-index="${index}" ${index === stagedImages.length - 1 ? "disabled" : ""} aria-label="Move later">›</button>
-                </div>
-            </li>
-        `).join("");
+        const tilesHtml = stagedImages.map((item, index) => {
+            const mediaHtml = item.type === "video"
+                ? `<video src="${item.url}" class="image-thumb" style="width:100%;height:100%;object-fit:cover;display:block;" muted playsinline preload="metadata"></video>`
+                : `<img src="${item.url}" class="image-thumb" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">`;
+
+            return `
+                <li class="image-tile" style="width:56px;height:56px;">
+                    ${mediaHtml}
+                    ${index === 0 ? '<span class="image-badge">Thumbnail</span>' : ""}
+                    ${item.type === "video" ? '<span class="image-badge image-badge--video">▶</span>' : ""}
+                    <div class="image-controls">
+                        <button type="button" class="moveLeftBtn" data-index="${index}" ${index === 0 ? "disabled" : ""} aria-label="Move earlier">‹</button>
+                        <button type="button" class="removeImageBtn" data-index="${index}" aria-label="Remove image">×</button>
+                        <button type="button" class="moveRightBtn" data-index="${index}" ${index === stagedImages.length - 1 ? "disabled" : ""} aria-label="Move later">›</button>
+                    </div>
+                </li>
+            `;
+        }).join("");
 
         if (addTile) {
             addTile.insertAdjacentHTML("beforebegin", tilesHtml);
@@ -320,15 +334,21 @@ function renderImageList() {
     if (uploadHintEl) {
         const count = stagedImages.length;
         uploadHintEl.textContent = count
-            ? `${count} image${count > 1 ? "s" : ""} added — click or drop to add more`
-            : "First image becomes the thumbnail";
+            ? `${count} item${count > 1 ? "s" : ""} added — click or drop to add more`
+            : "First item becomes the thumbnail — images or a short video clip";
     }
 }
 
 function addStagedFiles(fileList) {
-    const files = Array.from(fileList || []).filter(file => file.type.startsWith("image/"));
+    const files = Array.from(fileList || []).filter(file =>
+        file.type.startsWith("image/") || file.type.startsWith("video/")
+    );
     files.forEach(file => {
-        stagedImages.push({ file, url: URL.createObjectURL(file) });
+        stagedImages.push({
+            file,
+            url: URL.createObjectURL(file),
+            type: file.type.startsWith("video/") ? "video" : "image"
+        });
     });
     renderImageList();
 }
@@ -394,7 +414,7 @@ if (!addProjectBtn) {
         }
 
         if (!stagedImages.length) {
-            alert("Please add at least one image above.");
+            alert("Please add at least one image or video above.");
             return;
         }
 
@@ -403,13 +423,14 @@ if (!addProjectBtn) {
         try {
             if (imageUploaderEl) imageUploaderEl.classList.add("uploading");
 
-            const imageUrls = [];
+            const media = [];
             for (let i = 0; i < stagedImages.length; i++) {
-                addProjectBtn.textContent = `Uploading image ${i + 1} of ${stagedImages.length}...`;
-                const url = await uploadImageToGithub(stagedImages[i].file, title.value.trim(), i);
-                imageUrls.push(url);
+                const label = stagedImages[i].type === "video" ? "video" : "image";
+                addProjectBtn.textContent = `Uploading ${label} ${i + 1} of ${stagedImages.length}...`;
+                const url = await uploadMediaToGithub(stagedImages[i].file, title.value.trim(), i, stagedImages[i].type);
+                media.push({ url, type: stagedImages[i].type });
             }
-            console.log("Upload successful, URLs:", imageUrls);
+            console.log("Upload successful:", media);
 
             addProjectBtn.textContent = "Adding to database...";
 
@@ -417,8 +438,9 @@ if (!addProjectBtn) {
                 imgTxt: title.value.trim(),
                 imgDesc: desc.value.trim(),
                 imgMoreDesc: moreDescription.value.trim(),
-                imgSrc: imageUrls[0], // kept so anything still reading the old single-image field still works
-                images: imageUrls,
+                imgSrc: media[0].url, // kept so anything still reading the old single-image field still works
+                images: media.map(item => item.url), // flat URL list, kept for backward compatibility
+                media, // {url, type} per item - lets the slider tell video from image
                 "data-category": category.value,
                 "data-difficulty": difficulty.value,
                 "data-date": date.value.trim(),

@@ -43,12 +43,12 @@
                 <p class="inputTitle">Enter Date dd/mm/yyyy: </p>
                 <input type="text" class="Date" placeholder="Enter Date">
 
-                <p class="inputTitle">Project Images: </p>
+                <p class="inputTitle">Project Images / Video: </p>
                 <div class="imageUploader" id="image-uploader">
-                    <input type="file" accept="image/*" id="input-file" multiple hidden>
+                    <input type="file" accept="image/*,video/*" id="input-file" multiple hidden>
                     <ul id="image-list" class="image-grid">
                         <li class="image-tile image-tile--add">
-                            <label for="input-file" class="image-add-label" aria-label="Add images">
+                            <label for="input-file" class="image-add-label" aria-label="Add images or videos">
                                 <span class="image-add-icon">+</span>
                             </label>
                         </li>
@@ -58,7 +58,7 @@
                         <p>Uploading…</p>
                     </div>
                 </div>
-                <span class="upload-hint" id="upload-hint">First image becomes the thumbnail</span>
+                <span class="upload-hint" id="upload-hint">First item becomes the thumbnail — images or a short video clip</span>
 
                 <p class="inputTitle">Enter Data Category: </p>
                 <select class="Category">
@@ -94,3 +94,4 @@
 
     <script type="module" src="./adminScript.js"></script>
 </body>
+</html>

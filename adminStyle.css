@@ -213,6 +213,13 @@ textarea {
     white-space: nowrap;
 }
 
+/* Play-triangle badge for staged video tiles — sits opposite the
+   "Thumbnail" badge so the two never collide on the same tile. */
+.image-badge--video {
+    left: auto;
+    right: 2px;
+}
+
 .image-controls {
     position: absolute;
     left: 0;
