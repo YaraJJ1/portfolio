@@ -158,9 +158,9 @@ textarea {
 
 .image-tile {
     position: relative;
-    width: 44px;
-    height: 44px;
-    flex: 0 0 44px;
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
     border-radius: var(--radius-md);
     overflow: hidden;
     border: 1.5px solid var(--color-accent-soft);
@@ -189,7 +189,7 @@ textarea {
 }
 
 .image-add-icon {
-    font-size: 18px;
+    font-size: 22px;
     line-height: 1;
 }
 
@@ -206,10 +206,10 @@ textarea {
     left: 2px;
     background: var(--color-accent);
     color: #fff;
-    font-size: 7px;
+    font-size: 8px;
     line-height: 1.4;
-    padding: 1px 4px;
-    border-radius: 5px;
+    padding: 1px 5px;
+    border-radius: 6px;
     white-space: nowrap;
 }
 
@@ -235,7 +235,7 @@ textarea {
     background: none;
     border: none;
     color: #fff;
-    font-size: 10px;
+    font-size: 12px;
     padding: 3px 0;
     cursor: pointer;
     line-height: 1;

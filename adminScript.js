@@ -299,7 +299,7 @@ function renderImageList() {
         imageListEl.querySelectorAll('.image-tile:not(.image-tile--add)').forEach(el => el.remove());
 
         const tilesHtml = stagedImages.map((item, index) => `
-            <li class="image-tile" style="width:44px;height:44px;">
+            <li class="image-tile" style="width:56px;height:56px;">
                 <img src="${item.url}" class="image-thumb" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">
                 ${index === 0 ? '<span class="image-badge">Thumbnail</span>' : ""}
                 <div class="image-controls">
