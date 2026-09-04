@@ -542,17 +542,17 @@ img{
 
 .modal-img.swiper .swiper-button-prev,
 .modal-img.swiper .swiper-button-next {
-    color: black;
+    color: #29202A;
     --swiper-navigation-size: 22px;
 }
 
 .modal-img.swiper .swiper-pagination-bullet {
-    background: black;
+    background: #29202A;
     opacity: 0.6;
 }
 
 .modal-img.swiper .swiper-pagination-bullet-active {
-    background: black;
+    background: #29202A;
     opacity: 1;
 }
 
@@ -565,7 +565,7 @@ img{
     border-radius: 0;
     border-top: 6px solid transparent;
     border-bottom: 6px solid transparent;
-    border-left: 10px solid black;
+    border-left: 10px solid #29202A;
     opacity: 0.6;
 }
 
