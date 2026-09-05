@@ -222,6 +222,13 @@ function initializeProjectSystem() {
             sortSelect.dispatchEvent(new Event("change"));
         }
 
+        // Stagger each card's slide-up entrance based on its final
+        // on-screen order (after sorting, if any), so cards animate in
+        // top to bottom instead of all appearing at once.
+        Array.from(document.querySelectorAll('.project')).forEach((project, i) => {
+            project.style.animationDelay = `${Math.min(i * 0.06, 0.6)}s`;
+        });
+
         projects.forEach(project => {
             const date = project.dataset.date;
             const dateSpan = project.querySelector(".date");
