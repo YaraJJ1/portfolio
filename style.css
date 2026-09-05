@@ -617,6 +617,31 @@ img{
     margin-left: 2px;
 }
 
-.gitLink{
-    align-self: flex-end;
+/* Row that holds the project title alongside the optional GitHub icon,
+   spread to opposite ends. Only shows the icon when a project has a
+   githubLink set - see script.js. */
+.modal-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+}
+
+.gitLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #29202A;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.gitLink:hover {
+    color: #7c6bf0;
+    transform: scale(1.1);
+}
+
+.gitLink[hidden] {
+    display: none;
 }

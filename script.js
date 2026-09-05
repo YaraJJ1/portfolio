@@ -52,6 +52,10 @@ async function loadProjects() {
             // back on click.
             projectCard.media = media;
 
+            // Optional per-project GitHub link. Empty string means the modal
+            // shows no icon at all - see the click handler below.
+            projectCard.githubLink = project.githubLink || "";
+
             const firstMedia = media[0];
             // The grid card is always a static image - if the first item is a
             // video we show the placeholder graphic instead of preloading
@@ -321,6 +325,7 @@ function initializeProjectSystem() {
         const modalSkill = modalOverlay.querySelector('.ModelSkill');
         const modalLang = modalOverlay.querySelector('.ModalLanguage');
         const modalDesc = modalOverlay.querySelector('.ModalDescription');
+        const modalGithub = modalOverlay.querySelector('.gitLink');
 
         let modalSwiper = null;
 
@@ -408,6 +413,18 @@ function initializeProjectSystem() {
                 }
                 if (modalLang && sourceLang) modalLang.innerHTML = sourceLang.innerHTML;
                 if (modalDesc && sourceDesc) modalDesc.textContent = sourceDesc.textContent;
+
+                // project.githubLink comes from Firestore (set in loadProjects()).
+                // Empty/missing means this project has no link - keep the icon hidden.
+                if (modalGithub) {
+                    if (project.githubLink) {
+                        modalGithub.href = project.githubLink;
+                        modalGithub.hidden = false;
+                    } else {
+                        modalGithub.removeAttribute('href');
+                        modalGithub.hidden = true;
+                    }
+                }
             });
         });
 

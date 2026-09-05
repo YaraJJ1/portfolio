@@ -74,6 +74,7 @@ const category = addProjectPage.querySelector('.Category');
 const difficulty = addProjectPage.querySelector('.Difficulty');
 const moreDescription = addProjectPage.querySelector('.MoreDescription');
 const languages = addProjectPage.querySelector('.Languages');
+const githubLink = addProjectPage.querySelector('.GithubLink'); // optional - intentionally left out of requiredFields
 const addProjectBtn = document.getElementById('submit-project-btn');
 const cancelEditBtn = document.getElementById('cancel-edit-btn');
 const addHeader = addProjectPage.querySelector('.addHeader');
@@ -152,6 +153,18 @@ function isValidDateFormat(value) {
     const yearOk = year.length === 4 && yearNum > 0;
 
     return dayOk && monthOk && yearOk;
+}
+
+// GitHub link is optional - blank is always valid. If something is typed,
+// it just has to be a well-formed http(s) URL.
+function isValidGithubLink(value) {
+    if (!value) return true;
+    try {
+        const url = new URL(value);
+        return url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+        return false;
+    }
 }
 
 function fileToBase64(file) {
@@ -336,6 +349,7 @@ function startEditingProject(id) {
     if (project["data-difficulty"]) difficulty.value = project["data-difficulty"];
     moreDescription.value = project.imgMoreDesc || "";
     languages.value = project["code-language"] || "";
+    if (githubLink) githubLink.value = project.githubLink || "";
 
     resetImagePicker(); // clear any leftover staged files first
 
@@ -365,6 +379,7 @@ function stopEditingProject() {
     requiredFields.forEach(field => {
         if (field) field.value = "";
     });
+    if (githubLink) githubLink.value = "";
     resetImagePicker();
 
     addProjectBtn.textContent = "Add Project";
@@ -504,6 +519,12 @@ if (!addProjectBtn) {
             return;
         }
 
+        const githubLinkValue = githubLink ? githubLink.value.trim() : "";
+        if (!isValidGithubLink(githubLinkValue)) {
+            alert("Please enter a valid GitHub URL (starting with http:// or https://), or leave it blank.");
+            return;
+        }
+
         if (!stagedImages.length) {
             alert("Please add at least one image or video above.");
             return;
@@ -544,7 +565,8 @@ if (!addProjectBtn) {
                 "data-category": category.value,
                 "data-difficulty": difficulty.value,
                 "data-date": date.value.trim(),
-                "code-language": languages.value.trim().toLowerCase()
+                "code-language": languages.value.trim().toLowerCase(),
+                githubLink: githubLinkValue // optional - empty string means "no icon" on the public page
             };
 
             if (editingProjectId) {
