@@ -3,6 +3,7 @@ import { db } from "./firebase.js";
 import {
     collection,
     addDoc,
+    updateDoc,
     getDocs,
     deleteDoc,
     doc,
@@ -74,6 +75,11 @@ const difficulty = addProjectPage.querySelector('.Difficulty');
 const moreDescription = addProjectPage.querySelector('.MoreDescription');
 const languages = addProjectPage.querySelector('.Languages');
 const addProjectBtn = document.getElementById('submit-project-btn');
+const cancelEditBtn = document.getElementById('cancel-edit-btn');
+const addHeader = addProjectPage.querySelector('.addHeader');
+
+// Fields required for both adding a new project and saving edits to one.
+const requiredFields = [title, desc, date, category, difficulty, moreDescription, languages];
 
 
 const adminProjectList = document.querySelector('.adminProjectList');
@@ -93,6 +99,15 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;   // 5MB per image
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024;  // 20MB per video clip - keep clips short
 
 let GITHUB_TOKEN = null;
+
+// Set while the form is editing an existing project instead of creating a
+// new one. Holds that project's Firestore doc id, or null in "Add" mode.
+let editingProjectId = null;
+
+// Cache of the raw Firestore data for every project currently listed in the
+// admin sidebar, keyed by doc id — lets "Edit" populate the form instantly
+// without a second Firestore read.
+let adminProjectsById = new Map();
 
 async function loadGithubToken() {
     if (GITHUB_TOKEN) return GITHUB_TOKEN;
@@ -222,12 +237,13 @@ async function uploadMediaToGithub(file, projectTitle, index = 0, type = "image"
 }
 
 // ---------- Existing projects list ----------
-// Just names + a delete button — no thumbnails here, this is an admin
+// Names + Edit/Delete buttons — no thumbnails here, this is an admin
 // index, not a gallery.
 async function loadAdminProjects() {
     if (!adminProjectList) return;
 
     adminProjectList.innerHTML = "<li>Loading…</li>";
+    adminProjectsById = new Map();
 
     try {
         const querySnapshot = await getDocs(collection(db, "projects"));
@@ -241,13 +257,17 @@ async function loadAdminProjects() {
 
         querySnapshot.forEach((docSnap) => {
             const project = docSnap.data();
+            adminProjectsById.set(docSnap.id, project);
 
             const item = document.createElement("li");
             item.classList.add("adminProjectItem");
 
             item.innerHTML = `
                 <span class="adminProjectName">${project.imgTxt || "Untitled"}</span>
-                <button class="deleteBtn" data-id="${docSnap.id}">Delete</button>
+                <span class="adminProjectActions">
+                    <button class="editBtn" data-id="${docSnap.id}">Edit</button>
+                    <button class="deleteBtn" data-id="${docSnap.id}">Delete</button>
+                </span>
             `;
 
             adminProjectList.appendChild(item);
@@ -262,28 +282,94 @@ async function loadAdminProjects() {
 
 if (adminProjectList) {
     adminProjectList.addEventListener("click", async (event) => {
-        const button = event.target.closest(".deleteBtn");
-        if (!button) return;
+        const editButton = event.target.closest(".editBtn");
+        if (editButton) {
+            const id = editButton.dataset.id;
+            if (id) startEditingProject(id);
+            return;
+        }
 
-        const id = button.dataset.id;
+        const deleteButton = event.target.closest(".deleteBtn");
+        if (!deleteButton) return;
+
+        const id = deleteButton.dataset.id;
         if (!id) return;
 
         const confirmed = confirm("Delete this project? This can't be undone.");
         if (!confirmed) return;
 
-        button.disabled = true;
-        button.textContent = "Deleting...";
+        deleteButton.disabled = true;
+        deleteButton.textContent = "Deleting...";
 
         try {
             await deleteDoc(doc(db, "projects", id));
+            // If the project being deleted is the one currently loaded into
+            // the form, back out of edit mode so a leftover "Update Project"
+            // click can't try to update a doc that no longer exists.
+            if (editingProjectId === id) stopEditingProject();
             loadAdminProjects();
         } catch (error) {
             console.error("Error deleting project:", error);
             alert("Couldn't delete this project — check the console.");
-            button.disabled = false;
-            button.textContent = "Delete";
+            deleteButton.disabled = false;
+            deleteButton.textContent = "Delete";
         }
     });
+}
+
+// Loads an existing project's data into the Add-Project form so it can be
+// edited in place, and flips the form into "edit mode" (editingProjectId
+// set, submit button relabeled, Cancel Edit button shown).
+function startEditingProject(id) {
+    const project = adminProjectsById.get(id);
+    if (!project) {
+        alert("Couldn't find that project's data — try refreshing the page.");
+        return;
+    }
+
+    editingProjectId = id;
+
+    title.value = project.imgTxt || "";
+    desc.value = project.imgDesc || "";
+    date.value = project["data-date"] || "";
+    if (project["data-category"]) category.value = project["data-category"];
+    if (project["data-difficulty"]) difficulty.value = project["data-difficulty"];
+    moreDescription.value = project.imgMoreDesc || "";
+    languages.value = project["code-language"] || "";
+
+    resetImagePicker(); // clear any leftover staged files first
+
+    // Pre-load the project's existing media into the picker as
+    // already-hosted items (url + type, no File) - submit skips
+    // re-uploading these unless they're removed and a replacement is added.
+    const existingMedia = Array.isArray(project.media) && project.media.length
+        ? project.media
+        : (Array.isArray(project.images) && project.images.length
+            ? project.images.map(url => ({ url, type: "image" }))
+            : (project.imgSrc ? [{ url: project.imgSrc, type: "image" }] : []));
+
+    stagedImages = existingMedia.map(item => ({ url: item.url, type: item.type || "image" }));
+    renderImageList();
+
+    addProjectBtn.textContent = "Update Project";
+    if (cancelEditBtn) cancelEditBtn.hidden = false;
+    if (addHeader) addHeader.textContent = `Editing "${project.imgTxt || "Untitled"}"`;
+
+    addProjectPage.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// Clears the form and drops out of edit mode, back to "Add a new project".
+function stopEditingProject() {
+    editingProjectId = null;
+
+    requiredFields.forEach(field => {
+        if (field) field.value = "";
+    });
+    resetImagePicker();
+
+    addProjectBtn.textContent = "Add Project";
+    if (cancelEditBtn) cancelEditBtn.hidden = true;
+    if (addHeader) addHeader.textContent = "Enter Project details: ";
 }
 
 // ---------- Multi-media picker ----------
@@ -292,6 +378,10 @@ if (adminProjectList) {
 // the thumbnail (if it's a video, the public card falls back to a
 // placeholder image instead of trying to thumbnail it - see script.js).
 // Nothing is uploaded to GitHub until "Add Project" is clicked.
+//
+// While editing an existing project, staged entries carried over from that
+// project have a url + type but no file - they're already hosted, so
+// submit only re-uploads items that do have a file (newly picked ones).
 //
 // The "add" tile lives permanently as the last <li> in #image-list (it's in
 // the HTML, not generated) so there's always an obvious, always-visible way
@@ -380,6 +470,9 @@ if (imageListEl) {
 
 function resetImagePicker() {
     inputFile.value = "";
+    // Only real blob URLs (newly picked files) need revoking - calling this
+    // on an already-hosted https:// URL (from an in-progress edit) is a
+    // harmless no-op, so this is safe for both kinds of staged item.
     stagedImages.forEach(item => URL.revokeObjectURL(item.url));
     stagedImages = [];
     renderImageList();
@@ -396,8 +489,6 @@ if (!addProjectBtn) {
     addProjectBtn.addEventListener("click", async function (e) {
         
         e.preventDefault(); 
-
-        const requiredFields = [title, desc, date, category, difficulty, moreDescription, languages];
 
         requiredFields.forEach((field, index) => {
             console.log(`Checking field ${index}:`, field ? "Found" : "Missing Element");
@@ -425,16 +516,25 @@ if (!addProjectBtn) {
 
             const media = [];
             for (let i = 0; i < stagedImages.length; i++) {
-                const label = stagedImages[i].type === "video" ? "video" : "image";
-                addProjectBtn.textContent = `Uploading ${label} ${i + 1} of ${stagedImages.length}...`;
-                const url = await uploadMediaToGithub(stagedImages[i].file, title.value.trim(), i, stagedImages[i].type);
-                media.push({ url, type: stagedImages[i].type });
+                const staged = stagedImages[i];
+
+                if (staged.file) {
+                    // A newly picked file - upload it to GitHub.
+                    const label = staged.type === "video" ? "video" : "image";
+                    addProjectBtn.textContent = `Uploading ${label} ${i + 1} of ${stagedImages.length}...`;
+                    const url = await uploadMediaToGithub(staged.file, title.value.trim(), i, staged.type);
+                    media.push({ url, type: staged.type });
+                } else {
+                    // Carried over from the project being edited - already
+                    // hosted on GitHub/jsDelivr, nothing to upload.
+                    media.push({ url: staged.url, type: staged.type });
+                }
             }
-            console.log("Upload successful:", media);
+            console.log("Media ready:", media);
 
-            addProjectBtn.textContent = "Adding to database...";
+            addProjectBtn.textContent = editingProjectId ? "Saving changes..." : "Adding to database...";
 
-            const newProject = {
+            const projectFields = {
                 imgTxt: title.value.trim(),
                 imgDesc: desc.value.trim(),
                 imgMoreDesc: moreDescription.value.trim(),
@@ -447,27 +547,36 @@ if (!addProjectBtn) {
                 "code-language": languages.value.trim().toLowerCase()
             };
 
-            await addDoc(collection(db, "projects"), newProject);
-            
-            console.log("Successfully saved to Firestore!");
-            alert("Project added!");
-            
-            // Safely clear all fields
-            requiredFields.forEach(field => {
-                if (field) field.value = "";
-            });
-            
-            resetImagePicker();
+            if (editingProjectId) {
+                await updateDoc(doc(db, "projects", editingProjectId), projectFields);
+                console.log("Successfully updated in Firestore!");
+                alert("Project updated!");
+            } else {
+                await addDoc(collection(db, "projects"), projectFields);
+                console.log("Successfully saved to Firestore!");
+                alert("Project added!");
+            }
+
+            // Clears the form/staged images and drops out of edit mode
+            // either way (no-op on editingProjectId if we were adding).
+            stopEditingProject();
             loadAdminProjects();
             
         } catch (error) {
-            console.error("Error adding project:", error);
+            console.error("Error saving project:", error);
             alert(`Something went wrong: ${error.message}`);
         } finally {
             if (imageUploaderEl) imageUploaderEl.classList.remove("uploading");
             addProjectBtn.disabled = false;
-            addProjectBtn.textContent = "Add Project";
+            addProjectBtn.textContent = editingProjectId ? "Update Project" : "Add Project";
         }
+    });
+}
+
+if (cancelEditBtn) {
+    cancelEditBtn.addEventListener("click", () => {
+        if (!confirm("Discard changes and stop editing this project?")) return;
+        stopEditingProject();
     });
 }
 

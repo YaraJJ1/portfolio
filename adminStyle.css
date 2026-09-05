@@ -89,6 +89,22 @@ textarea {
     max-width: 250px;
 }
 
+/* Secondary "Cancel Edit" action — only shown while editing an existing
+   project, styled as an outline button so it doesn't compete with the
+   primary Add/Update Project button above it. */
+.cancelEditBtn {
+    margin-top: var(--space-xs);
+    background: none;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+}
+
+.cancelEditBtn:hover {
+    background-color: var(--color-bg-soft);
+    border-color: var(--color-text-muted);
+    color: var(--color-text);
+}
+
 /* Existing projects list */
 .projectListSection {
     flex: 1;
@@ -117,8 +133,30 @@ textarea {
     white-space: nowrap;
 }
 
+/* Groups the Edit + Delete buttons for one project so they sit together
+   at the right edge of the row, spaced by the flex gap below. */
+.adminProjectActions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+}
+
+.editBtn {
+    padding: 4px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--color-accent);
+    cursor: pointer;
+}
+
+.editBtn:hover {
+    background-color: var(--color-bg-soft);
+    border-color: var(--color-accent);
+}
+
 .deleteBtn {
-    margin-left: var(--space-md);
     padding: 4px 10px;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
