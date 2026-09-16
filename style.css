@@ -530,8 +530,7 @@ img{
     gap: 15px;
     box-sizing: border-box;
     height: 100%;
-    overflow-y: auto; 
-    scrollbar-width: none; 
+    overflow: hidden;
 }
 
 
@@ -549,6 +548,7 @@ img{
     aspect-ratio: 16 / 10;
     overflow: hidden;
     position: relative;
+    flex-shrink: 0;
 }
 
 .modal-img.swiper .swiper-slide img,
@@ -606,12 +606,22 @@ img{
     margin: 0;
     line-height: 1.5;
     color: #444;
+    white-space: pre-line;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+.ModalDescription::-webkit-scrollbar {
+    display: none;
 }
 
 .tags {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
 }
 .ModelSkill {
     margin-left: 2px;
@@ -626,6 +636,7 @@ img{
     justify-content: space-between;
     width: 100%;
     gap: 12px;
+    flex-shrink: 0;
 }
 
 .gitLink {
