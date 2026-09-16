@@ -568,15 +568,31 @@ img{
     color: #F1F0EA;
     --swiper-navigation-color: #F1F0EA;
     --swiper-navigation-size: 18px;
+}
+
+/* The circular chip is its own pseudo-element, centered with absolute
+   positioning + transform rather than a width/height on the button
+   itself - Swiper sizes/centers that button internally using its own
+   formula tied to --swiper-navigation-size, so a manually-set width/height
+   on the button falls out of sync with it and renders as a lopsided oval
+   instead of a circle. Centering independently sidesteps that entirely. */
+.modal-img.swiper .swiper-button-prev::before,
+.modal-img.swiper .swiper-button-next::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 34px;
     height: 34px;
-    background-color: rgba(0, 0, 0, 0.4);
     border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: -1;
     transition: background-color 0.15s ease-in-out;
 }
 
-.modal-img.swiper .swiper-button-prev:hover,
-.modal-img.swiper .swiper-button-next:hover {
+.modal-img.swiper .swiper-button-prev:hover::before,
+.modal-img.swiper .swiper-button-next:hover::before {
     background-color: rgba(0, 0, 0, 0.6);
 }
 
