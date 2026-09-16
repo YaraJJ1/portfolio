@@ -559,20 +559,50 @@ img{
     display: block;
 }
 
+/* These controls sit directly on top of whatever image/video is showing,
+   so a single flat color disappears against a same-toned photo. A small
+   translucent dark "chip" behind a light icon keeps both visible no
+   matter how light or dark the media underneath is. */
 .modal-img.swiper .swiper-button-prev,
 .modal-img.swiper .swiper-button-next {
-    color: #29202A;
-    --swiper-navigation-color: #29202A;
-    --swiper-navigation-size: 22px;
+    color: #F1F0EA;
+    --swiper-navigation-color: #F1F0EA;
+    --swiper-navigation-size: 18px;
+    width: 34px;
+    height: 34px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.modal-img.swiper .swiper-button-prev:hover,
+.modal-img.swiper .swiper-button-next:hover {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.modal-img.swiper .swiper-pagination-bullets {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    left: 50%;
+    width: auto !important;
+    transform: translateX(-50%);
+    padding: 5px 10px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
 }
 
 .modal-img.swiper .swiper-pagination-bullet {
-    background: #29202A;
-    opacity: 0.6;
+    background: #F1F0EA;
+    /* A faint dark ring frames the dot so it still reads as a control on a
+       very light patch of image, while the light fill keeps it visible on
+       dark patches - either way there's contrast. */
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+    opacity: 0.65;
 }
 
 .modal-img.swiper .swiper-pagination-bullet-active {
-    background: #29202A;
+    background: #F1F0EA;
     opacity: 1;
 }
 
@@ -585,9 +615,10 @@ img{
     border-radius: 2px;
     border-top: 6px solid transparent;
     border-bottom: 6px solid transparent;
-    border-left: 10px solid #29202A;
+    border-left: 10px solid #F1F0EA;
     vertical-align: middle;
-    opacity: 0.6;
+    opacity: 0.65;
+    box-shadow: none;
 }
 .modal-img.swiper .swiper-pagination-bullet-video.swiper-pagination-bullet-active {
     opacity: 1;
