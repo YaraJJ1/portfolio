@@ -143,6 +143,7 @@ const languageStyles = {
     "unity":  { label: "Unity",  bg: "#37ab62", text: "#FFFFFF" },
     "php":    { label: "PHP",    bg: "#486552", text: "#FFFFFF" },
     "sql":    { label: "SQL",    bg: "#c99082", text: "#FFFFFF" }
+    "hlsl":    { label: "HLSL",    bg: "#77659a", text: "#FFFFFF" }
 };
 
 const skillStyles = {
