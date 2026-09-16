@@ -413,7 +413,11 @@ function initializeProjectSystem() {
                     modalSkill.style.color = sourceSkill.style.color;
                 }
                 if (modalLang && sourceLang) modalLang.innerHTML = sourceLang.innerHTML;
-                if (modalDesc && sourceDesc) modalDesc.textContent = sourceDesc.textContent;
+                // .innerHTML (not .textContent) so the <br> line breaks, <b>/<u>
+                // formatting, and any nbsp-based indentation typed in the admin's
+                // Inner Description editor all carry over into the modal - textContent
+                // strips every tag and collapses that down to one plain-text blob.
+                if (modalDesc && sourceDesc) modalDesc.innerHTML = sourceDesc.innerHTML;
 
                 // project.githubLink comes from Firestore (set in loadProjects()).
                 // Empty/missing means this project has no link - keep the icon hidden.

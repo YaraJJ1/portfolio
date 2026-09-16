@@ -411,6 +411,51 @@ if (moreDescription) {
 
     document.addEventListener("selectionchange", updateRichToolbarState);
 
+    // Tab indents the current line, Shift+Tab outdents it - by default a
+    // contenteditable box just lets Tab move focus away instead of typing
+    // anything. Indentation is built from \u00A0 (non-breaking space)
+    // rather than plain spaces: regular spaces collapse down to one when
+    // rendered as HTML (both here and on the public page), so typed
+    // indentation would otherwise disappear the moment it's displayed.
+    // Because serializeRichContent() just copies text-node characters
+    // through untouched, this indentation is preserved end to end.
+    const INDENT = "\u00A0\u00A0\u00A0\u00A0";
+
+    moreDescription.addEventListener("keydown", (event) => {
+        if (event.key !== "Tab") return;
+        event.preventDefault();
+
+        const selection = document.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+        const range = selection.getRangeAt(0);
+
+        if (event.shiftKey) {
+            // Outdent: strip up to one INDENT's worth of trailing nbsp from
+            // directly before the caret, if that's what's there.
+            const node = range.startContainer;
+            if (node.nodeType === Node.TEXT_NODE) {
+                const before = node.nodeValue.slice(0, range.startOffset);
+                const trimmed = before.endsWith(INDENT)
+                    ? before.slice(0, -INDENT.length)
+                    : before.replace(/\u00A0+$/, "");
+                const removed = before.length - trimmed.length;
+                if (removed > 0) {
+                    node.nodeValue = trimmed + node.nodeValue.slice(range.startOffset);
+                    const newRange = document.createRange();
+                    newRange.setStart(node, range.startOffset - removed);
+                    newRange.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(newRange);
+                }
+            }
+        } else {
+            document.execCommand("insertText", false, INDENT);
+        }
+
+        updateMoreDescriptionState();
+        updateRichToolbarState();
+    });
+
     updateMoreDescriptionState();
 }
 
