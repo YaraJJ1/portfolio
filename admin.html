@@ -75,7 +75,18 @@
                 </select>
 
                 <p class="inputTitle">Enter Inner Description: </p>
-                <textarea class="MoreDescription" placeholder="Enter Inner Description"></textarea>
+                <div class="richEditor">
+                    <div class="richToolbar" role="toolbar" aria-label="Inner description formatting">
+                        <button type="button" class="richBtn" data-command="bold" aria-label="Bold" aria-pressed="false" title="Bold (Ctrl+B)"><b>B</b></button>
+                        <button type="button" class="richBtn" data-command="underline" aria-label="Underline" aria-pressed="false" title="Underline (Ctrl+U)"><u>U</u></button>
+                    </div>
+                    <div class="MoreDescription richInput is-empty"
+                         contenteditable="true"
+                         role="textbox"
+                         aria-multiline="true"
+                         aria-label="Inner Description"
+                         data-placeholder="Enter Inner Description"></div>
+                </div>
 
                 <p class="inputTitle">Enter All Languages Used: </p>
                 <input type="text" class="Languages" placeholder="Enter Languages">

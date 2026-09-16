@@ -89,6 +89,94 @@ textarea {
     max-width: 250px;
 }
 
+/* Inner description rich-text box — a B / U toolbar on top of a
+   contenteditable area, sized to match the textarea above it. */
+.richEditor {
+    width: 250px;
+    box-sizing: border-box;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background-color: #fff;
+    overflow: hidden;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.richEditor:focus-within {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-accent-soft);
+}
+
+.richToolbar {
+    display: flex;
+    gap: var(--space-xs);
+    padding: var(--space-xs);
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-bg-soft);
+}
+
+.richBtn {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.richBtn:hover {
+    background-color: var(--color-bg-soft-hover);
+    border-color: var(--color-border);
+}
+
+/* Lit up while the caret sits inside bold / underlined text. */
+.richBtn.is-active {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #fff;
+}
+
+.richBtn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+}
+
+.richInput {
+    position: relative;
+    min-height: 80px;
+    max-height: 320px;
+    overflow-y: auto;
+    resize: vertical;
+    padding: var(--space-sm);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--color-text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    outline: none;
+}
+
+.richInput b,
+.richInput strong {
+    font-weight: 700;
+}
+
+/* Placeholder, shown only while the box is empty (toggled from JS). */
+.richInput.is-empty::before {
+    content: attr(data-placeholder);
+    position: absolute;
+    top: var(--space-sm);
+    left: var(--space-sm);
+    color: var(--color-text-muted);
+    pointer-events: none;
+}
+
 /* Secondary "Cancel Edit" action — only shown while editing an existing
    project, styled as an outline button so it doesn't compete with the
    primary Add/Update Project button above it. */

@@ -72,15 +72,19 @@ const desc = addProjectPage.querySelector('.Description');
 const date = addProjectPage.querySelector('.Date');
 const category = addProjectPage.querySelector('.Category');
 const difficulty = addProjectPage.querySelector('.Difficulty');
-const moreDescription = addProjectPage.querySelector('.MoreDescription');
+const moreDescription = addProjectPage.querySelector('.MoreDescription'); // contenteditable rich-text box, not a textarea
+const moreDescriptionToolbar = addProjectPage.querySelector('.richToolbar');
 const languages = addProjectPage.querySelector('.Languages');
 const githubLink = addProjectPage.querySelector('.GithubLink'); // optional - intentionally left out of requiredFields
 const addProjectBtn = document.getElementById('submit-project-btn');
 const cancelEditBtn = document.getElementById('cancel-edit-btn');
 const addHeader = addProjectPage.querySelector('.addHeader');
 
-// Fields required for both adding a new project and saving edits to one.
-const requiredFields = [title, desc, date, category, difficulty, moreDescription, languages];
+// Value-based fields required for both adding a new project and saving
+// edits to one. The inner description is required too, but it's a
+// contenteditable box (no .value), so it's checked separately with
+// moreDescriptionHasText().
+const requiredFields = [title, desc, date, category, difficulty, languages];
 
 
 const adminProjectList = document.querySelector('.adminProjectList');
@@ -165,6 +169,249 @@ function isValidGithubLink(value) {
     } catch {
         return false;
     }
+}
+
+// ---------- Inner description rich-text editor ----------
+// The inner description is a contenteditable box so it can hold line
+// breaks, bold and underline. It's saved to Firestore (imgMoreDesc) as a
+// small sanitized HTML string - only <b>, <u> and <br> are ever stored -
+// so the public page shows the line breaks and formatting when it puts
+// imgMoreDesc on the page with innerHTML.
+//
+// Older projects saved imgMoreDesc as plain text with "\n" newlines; those
+// are converted to <br> when loaded into the editor, so re-saving them
+// upgrades them to the new format.
+
+const RICH_BLOCK_TAGS = new Set([
+    "div", "p", "li", "ul", "ol", "blockquote", "pre",
+    "h1", "h2", "h3", "h4", "h5", "h6"
+]);
+
+function escapeHtml(text) {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+function isBoldElement(el) {
+    const tag = el.tagName.toLowerCase();
+    if (tag === "b" || tag === "strong") return true;
+    const weight = el.style ? el.style.fontWeight : "";
+    return weight === "bold" || weight === "bolder" || Number(weight) >= 600;
+}
+
+function isUnderlineElement(el) {
+    if (el.tagName.toLowerCase() === "u") return true;
+    const decoration = el.style
+        ? `${el.style.textDecoration || ""} ${el.style.textDecorationLine || ""}`
+        : "";
+    return decoration.includes("underline");
+}
+
+// Walks the editor's DOM and rebuilds it as clean HTML. Browsers turn
+// Enter into <div>s (or <br>s, depending on the browser) - every block
+// boundary becomes a single <br> so a new line is always exactly one new
+// line, and blank lines are kept.
+function serializeRichNodes(parent, state, out) {
+    parent.childNodes.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+            const lines = node.nodeValue.split("\n");
+            lines.forEach((line, i) => {
+                if (i > 0) {
+                    out.push("<br>");
+                    state.atLineStart = true;
+                }
+                if (line) {
+                    out.push(escapeHtml(line));
+                    state.atLineStart = false;
+                }
+            });
+            return;
+        }
+
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+        const tag = node.tagName.toLowerCase();
+
+        if (tag === "br") {
+            out.push("<br>");
+            state.atLineStart = true;
+            return;
+        }
+
+        if (tag === "script" || tag === "style") return;
+
+        const isBlock = RICH_BLOCK_TAGS.has(tag);
+        if (isBlock && !state.atLineStart) {
+            out.push("<br>");
+            state.atLineStart = true;
+        }
+
+        const opensBold = !state.bold && isBoldElement(node);
+        const opensUnderline = !state.underline && isUnderlineElement(node);
+
+        if (opensBold) { out.push("<b>"); state.bold = true; }
+        if (opensUnderline) { out.push("<u>"); state.underline = true; }
+
+        serializeRichNodes(node, state, out);
+
+        if (opensUnderline) { out.push("</u>"); state.underline = false; }
+        if (opensBold) { out.push("</b>"); state.bold = false; }
+
+        if (isBlock && !state.atLineStart) {
+            out.push("<br>");
+            state.atLineStart = true;
+        }
+    });
+}
+
+function serializeRichContent(root) {
+    const out = [];
+    serializeRichNodes(root, { atLineStart: true, bold: false, underline: false }, out);
+
+    let html = out.join("");
+    let previous;
+    do {
+        previous = html;
+        html = html
+            .replace(/<(b|u)><\/\1>/g, "")                       // empty <b></b> / <u></u>
+            .replace(/^((?:<[bu]>)*)(?:<br>)+/, "$1")              // leading blank lines
+            .replace(/(?:<br>)+((?:<\/[bu]>)*)$/, "$1");           // trailing blank lines
+    } while (html !== previous);
+
+    return html;
+}
+
+// Parses stored HTML in an inert <template> (nothing in it runs or loads)
+// and re-serializes it, so only <b>, <u> and <br> can ever reach the editor.
+function sanitizeRichHtml(html) {
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    return serializeRichContent(template.content);
+}
+
+function plainTextToRichHtml(text) {
+    return escapeHtml(text.replace(/\r\n?/g, "\n")).replace(/\n/g, "<br>");
+}
+
+function looksLikeRichHtml(value) {
+    return /<\/?(b|u|br|strong)\b[^>]*>/i.test(value);
+}
+
+function getMoreDescriptionHtml() {
+    return serializeRichContent(moreDescription);
+}
+
+function setMoreDescriptionHtml(value) {
+    const text = value || "";
+    moreDescription.innerHTML = looksLikeRichHtml(text)
+        ? sanitizeRichHtml(text)
+        : plainTextToRichHtml(text);
+    updateMoreDescriptionState();
+    updateRichToolbarState();
+}
+
+function moreDescriptionHasText() {
+    return moreDescription.textContent.trim() !== "";
+}
+
+// Shows the placeholder only while the box is truly empty (browsers often
+// leave a stray <br> behind after everything is deleted).
+function updateMoreDescriptionState() {
+    const html = moreDescription.innerHTML.trim().toLowerCase();
+    const isEmpty = !moreDescription.textContent &&
+        /^(|<br>|<div><br><\/div>|<p><br><\/p>)$/.test(html);
+    moreDescription.classList.toggle("is-empty", isEmpty);
+}
+
+function selectionIsInMoreDescription() {
+    const selection = document.getSelection();
+    return !!selection &&
+        selection.rangeCount > 0 &&
+        moreDescription.contains(selection.anchorNode);
+}
+
+// Highlights the B / U buttons when the caret is inside bold / underlined text.
+function updateRichToolbarState() {
+    if (!moreDescriptionToolbar) return;
+
+    const inEditor = selectionIsInMoreDescription();
+
+    moreDescriptionToolbar.querySelectorAll(".richBtn").forEach(button => {
+        let isOn = false;
+        if (inEditor) {
+            try {
+                isOn = document.queryCommandState(button.dataset.command);
+            } catch {
+                isOn = false;
+            }
+        }
+        button.classList.toggle("is-active", isOn);
+        button.setAttribute("aria-pressed", isOn ? "true" : "false");
+    });
+}
+
+function applyRichCommand(command) {
+    const selection = document.getSelection();
+    const savedRange = selectionIsInMoreDescription()
+        ? selection.getRangeAt(0).cloneRange()
+        : null;
+
+    moreDescription.focus();
+
+    if (savedRange) {
+        selection.removeAllRanges();
+        selection.addRange(savedRange);
+    }
+
+    document.execCommand("styleWithCSS", false, false); // use <b>/<u>, not styled <span>s
+    document.execCommand(command, false, null);
+
+    updateMoreDescriptionState();
+    updateRichToolbarState();
+}
+
+if (moreDescriptionToolbar) {
+    // mousedown + preventDefault stops the button from stealing focus, so
+    // the text selected in the editor stays selected when B / U is clicked.
+    moreDescriptionToolbar.addEventListener("mousedown", (event) => {
+        if (event.target.closest(".richBtn")) event.preventDefault();
+    });
+
+    moreDescriptionToolbar.addEventListener("click", (event) => {
+        const button = event.target.closest(".richBtn");
+        if (!button) return;
+        applyRichCommand(button.dataset.command);
+    });
+}
+
+if (moreDescription) {
+    moreDescription.addEventListener("input", () => {
+        updateMoreDescriptionState();
+        updateRichToolbarState();
+    });
+
+    // Paste as plain text so copied styles/fonts/colors don't come along.
+    // Bold/underline can then be added with the toolbar or Ctrl+B / Ctrl+U.
+    moreDescription.addEventListener("paste", (event) => {
+        event.preventDefault();
+        const text = (event.clipboardData || window.clipboardData).getData("text/plain");
+        document.execCommand("insertText", false, text);
+    });
+
+    // Don't let dropped files (e.g. an image meant for the uploader) land
+    // inside the description.
+    moreDescription.addEventListener("drop", (event) => {
+        if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length) {
+            event.preventDefault();
+        }
+    });
+
+    document.addEventListener("selectionchange", updateRichToolbarState);
+
+    updateMoreDescriptionState();
 }
 
 function fileToBase64(file) {
@@ -347,7 +594,7 @@ function startEditingProject(id) {
     date.value = project["data-date"] || "";
     if (project["data-category"]) category.value = project["data-category"];
     if (project["data-difficulty"]) difficulty.value = project["data-difficulty"];
-    moreDescription.value = project.imgMoreDesc || "";
+    setMoreDescriptionHtml(project.imgMoreDesc || "");
     languages.value = project["code-language"] || "";
     if (githubLink) githubLink.value = project.githubLink || "";
 
@@ -379,6 +626,7 @@ function stopEditingProject() {
     requiredFields.forEach(field => {
         if (field) field.value = "";
     });
+    setMoreDescriptionHtml("");
     if (githubLink) githubLink.value = "";
     resetImagePicker();
 
@@ -508,8 +756,13 @@ if (!addProjectBtn) {
         requiredFields.forEach((field, index) => {
             console.log(`Checking field ${index}:`, field ? "Found" : "Missing Element");
         });
+        console.log("Checking inner description:", moreDescription ? "Found" : "Missing Element");
 
-        if (requiredFields.some(field => !field || !field.value || field.value.trim() === "")) {
+        if (
+            requiredFields.some(field => !field || !field.value || field.value.trim() === "") ||
+            !moreDescription ||
+            !moreDescriptionHasText()
+        ) {
             alert("Please fill in all fields.");
             return;
         }
@@ -558,7 +811,7 @@ if (!addProjectBtn) {
             const projectFields = {
                 imgTxt: title.value.trim(),
                 imgDesc: desc.value.trim(),
-                imgMoreDesc: moreDescription.value.trim(),
+                imgMoreDesc: getMoreDescriptionHtml(), // sanitized HTML: only <b>, <u>, <br>
                 imgSrc: media[0].url, // kept so anything still reading the old single-image field still works
                 images: media.map(item => item.url), // flat URL list, kept for backward compatibility
                 media, // {url, type} per item - lets the slider tell video from image
