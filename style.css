@@ -570,6 +570,18 @@ img{
     --swiper-navigation-size: 18px;
 }
 
+/* Swiper's own default puts these only 10px from the edge, which isn't
+   enough room for the wider 34px circle chip below - it was spilling past
+   the container's edge and getting clipped by overflow:hidden. Set left/
+   right separately (not on a combined selector) so each button's other,
+   untouched side stays auto as Swiper set it. */
+.modal-img.swiper .swiper-button-prev {
+    left: 16px;
+}
+.modal-img.swiper .swiper-button-next {
+    right: 16px;
+}
+
 /* The circular chip is its own pseudo-element, centered with absolute
    positioning + transform rather than a width/height on the button
    itself - Swiper sizes/centers that button internally using its own

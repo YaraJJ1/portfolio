@@ -927,4 +927,6 @@ if (imageUploaderEl) {
         imageUploaderEl.classList.remove("dragging");
         addStagedFiles(e.dataTransfer.files);
     });
+
+
 }
