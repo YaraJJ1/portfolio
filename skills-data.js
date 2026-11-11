@@ -1,18 +1,9 @@
-// Skills page settings. Edit this file to change the bars, the logo band and the focus chart.
-
-// ----- Skill bars -----
-// Every language/tool used in your projects gets a bar automatically.
-// Its level comes from those projects: each one adds points by difficulty
-// (easy 1, medium 2, hard 3), so more and harder projects = longer bar.
-// Adding a project in the admin page updates the bars by itself.
 export const DIFFICULTY_WEIGHT = { easy: 1, medium: 2, hard: 3 };
 
 export function levelFromProjects(points) {
-    // One easy project ≈ 54, one hard project ≈ 61, five projects with two hard ≈ 85.
     return Math.round(Math.min(92, 50 + points * 3.5));
 }
 
-// The word shown next to each bar.
 export function levelWord(level) {
     if (level >= 90) return "Expert";
     if (level >= 75) return "Advanced";
@@ -20,31 +11,19 @@ export function levelWord(level) {
     return "Beginner";
 }
 
-// Skills you have that aren't in a listed project yet. Set the level yourself
-// (0–100). Once a project uses one of these, its level comes from the projects.
-// Names and colours come from projects-data.js (TECH), so use the same keys.
 export const EXTRA_SKILLS = [
-    { key: "c++",      level: 60 },  // Intermediate
-    { key: "java",     level: 56 },  // Intermediate, a bit below C++
-    { key: "assembly", level: 48 }   // Beginner
+    { key: "c++",      level: 60 },
+    { key: "java",     level: 56 },
+    { key: "assembly", level: 48 }
 ];
 
-// Nudge a project-based level up or down when it doesn't match how you feel
-// about a skill (uses the display names). Negative = a bit lower.
 export const LEVEL_ADJUST = {
-    "CSS": -3,         // a bit below HTML
-    "JavaScript": -6   // a bit below CSS
+    "CSS": -3,
+    "JavaScript": -6
 };
 
-// When two bars have the same level, this order decides which comes first
-// (most relevant for game work first). Uses the display names.
 export const SKILL_ORDER = ["C#", "Unity", "HLSL", "C++", "JavaScript", "HTML", "CSS", "Java", "Assembly"];
 
-// ----- Scrolling logo band at the top of the page -----
-// row 1 scrolls left, row 2 scrolls right. "icon" is a devicon path
-// (see devicon.dev). "mono" logos are black, so they're flipped to white in
-// dark mode; "square" logos are drawn a little smaller so they look the same
-// size as the others. Skills without a logo get an outlined text badge.
 export const TOOLBELT = [
     { row: 1, name: "C#",         icon: "csharp/csharp-original" },
     { row: 1, name: "Unity",      icon: "unity/unity-original", mono: true },
@@ -62,11 +41,6 @@ export const TOOLBELT = [
 ];
 export const DEVICON_BASE = "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/";
 
-// ----- Focus chart -----
-// Four areas that match the kinds of roles studios hire for.
-// Every project goes into the first area whose test matches it, so the order
-// of this list matters. "order" is where the area sits on the chart
-// (1 = starting at the top). Slice sizes are weighted by difficulty.
 export const AREAS = [
     {
         key: "tools",
@@ -99,9 +73,8 @@ export const AREAS = [
         label: "Gameplay",
         color: "#2b8a8a",
         text: "Player controllers, movement and physics-driven mechanics built in Unity and C#.",
-        test: () => true // any other game project
+        test: () => true
     }
 ];
 
-// The area shown when the page opens (falls back to the biggest one).
 export const DEFAULT_AREA = "gameplay";

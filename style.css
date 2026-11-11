@@ -1,5 +1,3 @@
-/* Yara Janahi — portfolio styles (shared by every page) */
-
 :root {
     --bg: #ecebe3;
     --paper: #f7f6f1;
@@ -75,7 +73,6 @@ a { color: var(--accent); }
 h1, h2, h3 { text-wrap: balance; }
 p { text-wrap: pretty; }
 
-/* Small-caps labels: dates, counts, little captions */
 .label,
 .card-meta,
 .intro .summary,
@@ -97,7 +94,6 @@ p { text-wrap: pretty; }
     padding: 0 48px;
 }
 
-/* ---------- Buttons & links ---------- */
 .link-btn {
     padding: 0;
     border: 0;
@@ -143,7 +139,6 @@ p { text-wrap: pretty; }
 }
 .more-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 
-/* ---------- Header ---------- */
 .site-header {
     border-bottom: 1px solid var(--line);
     background: var(--bg);
@@ -188,7 +183,6 @@ p { text-wrap: pretty; }
 }
 .small-btn:hover { color: var(--ink); border-color: var(--ink-2); }
 
-/* Moon / sun theme button */
 .icon-btn {
     display: inline-flex;
     align-items: center;
@@ -218,10 +212,8 @@ p { text-wrap: pretty; }
 
 .menu-btn { display: none; }
 
-/* ---------- Page intro (Projects, Skills, …) ---------- */
 .intro { padding: 64px 0 32px; }
 
-/* Same title size on every page (the Skills title is centred) */
 .intro h1,
 .skills-hero h1 {
     margin: 0 0 14px;
@@ -238,7 +230,6 @@ p { text-wrap: pretty; }
     color: var(--muted);
 }
 
-/* ---------- Sections (Skills) ---------- */
 .section { padding: 40px 0; border-top: 1px solid var(--line); }
 
 .section-head {
@@ -272,13 +263,11 @@ p { text-wrap: pretty; }
 .focus h3 { margin: 6px 0 8px; font-size: 21px; }
 .focus p { margin: 0; color: var(--ink-2); font-size: 16px; }
 
-/* ---------- Home ---------- */
 main .home-hero {
     padding-top: 32px;
     padding-bottom: 72px;
 }
 
-/* Picture banner with the intro on top of it */
 .hero-banner {
     position: relative;
     isolation: isolate;
@@ -301,8 +290,6 @@ main .home-hero {
     object-fit: cover;
     object-position: 50% 45%;
     opacity: 0;
-    /* Zoomed slightly from the bottom-left so editor overlays in the
-       top-right corner of a screenshot stay out of view. */
     transform: scale(1.14);
     transform-origin: 0 100%;
     transition: opacity 0.8s ease, transform 1.6s ease;
@@ -310,7 +297,6 @@ main .home-hero {
 .hero-bg.loaded { opacity: 1; transform: scale(1.1); }
 .hero-bg:not([src]) { visibility: hidden; }
 
-/* Darken the left and bottom so the text always reads, whatever the picture */
 .hero-banner::before {
     content: "";
     position: absolute;
@@ -362,7 +348,6 @@ main .home-hero {
 }
 .btn-ghost-light:hover { border-color: #fff; background: rgba(255, 255, 255, 0.12); }
 
-/* Small link to the pictured project, bottom-right of the banner */
 .hero-credit {
     position: absolute;
     right: clamp(20px, 3vw, 40px);
@@ -388,7 +373,6 @@ main .home-hero {
 .hero-credit strong { font-weight: normal; }
 .hero-credit:hover { background: rgba(18, 14, 20, 0.8); }
 
-/* Facts strip under the banner */
 .hero-facts {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -414,7 +398,6 @@ main .home-hero {
 }
 .hero-facts dd a:hover { text-decoration-color: currentColor; }
 
-/* Each section starts with a hairline that lines up with the content */
 main .home-section { padding-bottom: 88px; }
 .home-section::before {
     content: "";
@@ -437,7 +420,6 @@ main .home-section { padding-bottom: 88px; }
     letter-spacing: -0.01em;
 }
 
-/* Selected work: big picture on the left, words on the right */
 .work-list { list-style: none; margin: 0; padding: 0; }
 
 .work {
@@ -504,7 +486,6 @@ main .home-section { padding-bottom: 88px; }
 .work-more { display: inline-block; margin-top: 24px; font-size: 16px; text-decoration: none; }
 .work-more:hover { text-decoration: underline; text-underline-offset: 3px; }
 
-/* What I work on */
 .areas {
     display: grid;
     grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
@@ -535,7 +516,6 @@ main .home-section { padding-bottom: 88px; }
     letter-spacing: 0.07em;
 }
 
-/* Contact */
 main .home-contact { padding-bottom: 104px; }
 .home-contact h2 { max-width: 18em; }
 .home-contact > p { margin: 14px 0 0; color: var(--ink-2); font-size: 18px; }
@@ -560,7 +540,6 @@ main .home-contact { padding-bottom: 104px; }
 .home-email a:hover { color: var(--accent); }
 .home-contact > .home-contact-more { color: var(--muted); font-size: 16px; }
 
-/* ---------- Toolbar (Projects) ---------- */
 .toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -598,7 +577,6 @@ main .home-contact { padding-bottom: 104px; }
     gap: 8px;
 }
 
-/* Search box with icon */
 .search { position: relative; display: flex; align-items: center; }
 .search svg {
     position: absolute;
@@ -627,7 +605,6 @@ main .home-contact { padding-bottom: 104px; }
 .search input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .search input::-webkit-search-cancel-button { cursor: pointer; }
 
-/* Dropdown buttons */
 .dropdown { position: relative; }
 
 .dd-btn {
@@ -726,7 +703,6 @@ main .home-contact { padding-bottom: 104px; }
     font-size: 16px;
 }
 
-/* ---------- Difficulty signal bars ---------- */
 .level-easy   { --lvl-color: var(--lvl-easy); }
 .level-medium { --lvl-color: var(--lvl-medium); }
 .level-hard   { --lvl-color: var(--lvl-hard); }
@@ -754,7 +730,6 @@ main .home-contact { padding-bottom: 104px; }
 
 .level { display: inline-flex; align-items: center; }
 
-/* ---------- Project cards ---------- */
 .loading { color: var(--muted); }
 
 .project-grid {
@@ -763,7 +738,7 @@ main .home-contact { padding-bottom: 104px; }
     padding: 0;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(460px, 100%), 1fr));
-    grid-auto-rows: 1fr; /* every card the same height */
+    grid-auto-rows: 1fr;
     gap: 48px 40px;
 }
 
@@ -856,10 +831,6 @@ a.card:focus-visible {
 }
 .card-meta .sep { opacity: 0.6; }
 
-/* Fixed-size description box: long text scrolls inside it instead of
-   stretching the card, so every card stays the same size. The scrollbar
-   only shows while hovering the card, and overflowing text fades out at
-   the bottom as a hint that there's more. */
 .card-desc {
     flex: 1 1 0;
     min-height: 4.8em;
@@ -882,7 +853,6 @@ a.card:focus-visible {
 }
 .card-desc.clipped.at-end { -webkit-mask-image: none; mask-image: none; }
 
-/* Home page featured cards: a short 3-line summary, no inner scroll */
 .card-desc.clamp {
     flex: 1 1 auto;
     min-height: 0;
@@ -892,8 +862,6 @@ a.card:focus-visible {
     -webkit-line-clamp: 3;
 }
 
-/* Touch screens: cut the text instead of scrolling inside the card;
-   tapping the card opens the full description. */
 @media (pointer: coarse) {
     .card-desc {
         overflow: hidden;
@@ -909,7 +877,6 @@ a.card:focus-visible {
     border-top: 1px solid var(--line);
 }
 
-/* ---------- Tags ---------- */
 .tags {
     display: flex;
     flex-wrap: wrap;
@@ -928,8 +895,6 @@ a.card:focus-visible {
     font-size: 13.5px;
     line-height: 1;
     white-space: nowrap;
-    /* Trim the font's built-in top/bottom space so the letters sit
-       exactly in the middle of the pill in any browser. */
     text-box: trim-both cap alphabetic;
 }
 
@@ -946,7 +911,6 @@ a.card:focus-visible {
 .empty { padding: 40px 0; color: var(--ink-2); }
 .empty p { margin: 0 0 6px; }
 
-/* ---------- Skills ---------- */
 .sr-only {
     position: absolute;
     width: 1px;
@@ -962,7 +926,6 @@ a.card:focus-visible {
 .skills-hero { padding: 64px 0 40px; text-align: center; }
 .skills-hero h1 { margin: 0; }
 
-/* Logo band: two rows drifting slowly in opposite directions */
 .toolbelt {
     display: grid;
     gap: 36px;
@@ -976,10 +939,8 @@ a.card:focus-visible {
     mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
 }
 .belt-track { display: flex; width: max-content; }
-/* Starts only once the speed is measured, so it never jumps */
 .toolbelt.is-ready .belt-track { animation: belt-scroll 60s linear infinite; }
 .toolbelt.is-ready .belt-row--reverse .belt-track { animation-direction: reverse; }
-/* Hovering slows it down (done in skills.js so it eases without jumping) */
 .toolbelt.is-offscreen .belt-track { animation-play-state: paused; }
 @keyframes belt-scroll { to { transform: translateX(-50%); } }
 
@@ -1027,7 +988,6 @@ a.card:focus-visible {
     color: var(--c-light);
 }
 
-/* Panel: plain lines, joined to the band above */
 .skills-panel {
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
@@ -1042,7 +1002,6 @@ a.card:focus-visible {
 .panel-title { margin: 0 0 8px; font-size: 26px; }
 .panel-hint { margin: 0 0 32px; color: var(--muted); font-size: 16px; }
 
-/* Skill bars */
 .bar-list {
     list-style: none;
     margin: 0;
@@ -1052,7 +1011,7 @@ a.card:focus-visible {
 }
 .bar {
     display: grid;
-    grid-template-columns: 6em minmax(0, 1fr) 6.5em; /* fixed word column so every track is the same length */
+    grid-template-columns: 6em minmax(0, 1fr) 6.5em;
     align-items: center;
     gap: 4px 18px;
 }
@@ -1080,7 +1039,6 @@ a.card:focus-visible {
 }
 .bar-list.ready .bar-fill { width: var(--level); }
 .bar-word { color: var(--ink-2); font-size: 15px; text-align: left; }
-/* If the chart can't load, let the bars use the full width */
 .skills-panel:has(> .panel-col[hidden]) { grid-template-columns: 1fr; }
 .bar-used { grid-column: 2 / 4; color: var(--muted); font-size: 14px; }
 .bar-used a { color: var(--ink-2); text-underline-offset: 3px; text-decoration-color: var(--line-dark); }
@@ -1088,7 +1046,6 @@ a.card:focus-visible {
 :root[data-theme="dark"] .bar-track { box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4); }
 :root[data-theme="dark"] .bar-fill { background-color: color-mix(in srgb, var(--tag) 70%, #fff); }
 
-/* Focus donut */
 .focus-chart { max-width: 600px; margin: -12px auto 0; }
 .donut { display: block; width: 100%; height: auto; overflow: visible; }
 
@@ -1118,8 +1075,6 @@ a.card:focus-visible {
 .donut-seg:focus-visible path { stroke: var(--ink); stroke-width: 3; }
 .focus-chart { margin-bottom: 28px; }
 
-/* Selected area: sits at the bottom of the Focus column so it lines up
-   with the end of the Proficiency list beside it */
 .skills-panel .panel-col:last-child { display: flex; flex-direction: column; }
 .skills-panel .focus-chart { width: 100%; }
 .chart-note { margin: -16px 0 24px; text-align: center; color: var(--muted); font-size: 14px; }
@@ -1167,8 +1122,6 @@ a.card:focus-visible {
     .bar { grid-template-columns: minmax(0, 1fr) auto; }
     .bar-track { grid-column: 1 / 3; grid-row: 2; }
     .bar-used { grid-column: 1 / 3; }
-    /* Callout labels get too small on phones: the ring shows the picked
-       area in the middle and the hint says to tap a slice. */
     .donut-label { display: none; }
     .focus-chart { max-width: 300px; }
 }
@@ -1180,7 +1133,6 @@ a.card:focus-visible {
     .belt-item[data-dup], .belt-set--copy { display: none; }
 }
 
-/* ---------- Certificates ---------- */
 .cert-list {
     list-style: none;
     margin: 0;
@@ -1227,7 +1179,6 @@ a.card:focus-visible {
 .placeholder h2 { margin: 0 0 8px; font-size: 26px; }
 .placeholder p { margin: 0 0 24px; color: var(--ink-2); }
 
-/* ---------- Contact ---------- */
 .contact-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1240,7 +1191,6 @@ a.card:focus-visible {
     border-radius: var(--radius);
     background: var(--paper);
 }
-/* Email and GitHub cards: buttons line up at the bottom */
 .contact-card:not(.contact-form-card) { display: flex; flex-direction: column; align-items: flex-start; }
 .contact-card > .btn,
 .contact-actions { margin-top: auto; }
@@ -1268,7 +1218,6 @@ a.card:focus-visible {
 .contact-form textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
 .contact-form .btn { justify-self: start; }
 
-/* ---------- Footer ---------- */
 .site-footer {
     margin-top: 80px;
     border-top: 1px solid var(--line);
@@ -1287,7 +1236,6 @@ a.card:focus-visible {
 .footer-links a { color: var(--ink-2); text-decoration: none; }
 .footer-links a:hover { color: var(--accent); }
 
-/* ---------- Modal ---------- */
 .modal {
     position: fixed;
     inset: 0;
@@ -1300,7 +1248,6 @@ a.card:focus-visible {
     opacity: 0;
     transition: opacity 0.15s ease, visibility 0.15s;
 }
-/* Become visible instantly on open (so focus can move inside), fade only the opacity. */
 .modal.open { visibility: visible; opacity: 1; transition: opacity 0.15s ease, visibility 0s; }
 
 .modal-backdrop {
@@ -1376,7 +1323,6 @@ a.card:focus-visible {
 .modal-tags { margin: 12px 0 24px; }
 
 .modal-description {
-    /* Fills the popup's width; the 900px popup keeps lines a comfortable length */
     color: var(--ink-2);
     white-space: pre-line;
     overflow-wrap: anywhere;
@@ -1419,7 +1365,6 @@ a.card:focus-visible {
 }
 .toast.show { opacity: 1; }
 
-/* ---------- Home on smaller screens ---------- */
 @media (max-width: 1100px) {
     .hero-facts { grid-template-columns: 1fr 1fr; row-gap: 20px; }
     .hero-facts > div:nth-child(3) { padding-left: 0; border-left: 0; }
@@ -1431,12 +1376,10 @@ a.card:focus-visible {
     .area h3 { grid-row: auto; }
 }
 
-/* ---------- Larger screens: keep the filter bar in view ---------- */
 @media (min-width: 721px) {
     .toolbar { position: sticky; top: 0; z-index: 15; }
 }
 
-/* ---------- Small screens ---------- */
 @media (max-width: 720px) {
     .container { padding: 0 16px; }
 
@@ -1481,7 +1424,6 @@ a.card:focus-visible {
     .dd-menu.dd-right { left: 0; right: auto; }
     .result-count { margin-top: -16px; }
 
-    /* One column: no need for equal heights, so no blank gaps in short cards */
     .project-grid { grid-template-columns: 1fr; grid-auto-rows: auto; gap: 32px; }
     .card-desc { flex: 0 1 auto; max-height: 6.4em; }
     .card-body { padding: 18px 18px 20px; }

@@ -1,4 +1,3 @@
-// Projects page: filters, cards and the project popup.
 import {
     CATEGORY_LABELS,
     CATEGORY_COLORS,
@@ -13,7 +12,6 @@ import {
 } from "./projects-data.js";
 import { start as startContent } from "./site-content.js";
 
-// Footer email/GitHub follow what's set in the admin page.
 startContent();
 
 let allProjects = [];
@@ -52,8 +50,6 @@ function showToast(message) {
     toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2000);
 }
 
-/* ---------- Loading ---------- */
-
 async function loadProjects() {
     loading.hidden = false;
     loading.textContent = "Loading projects…";
@@ -76,7 +72,6 @@ async function loadProjects() {
 function writeSummary() {
     const counts = {};
     allProjects.forEach(p => (counts[p.category] = (counts[p.category] || 0) + 1));
-    // Nouns that read naturally after a number ("1 app or tool", "5 games").
     const NOUNS = {
         games: ["game", "games"],
         web: ["web project", "web projects"],
@@ -93,15 +88,12 @@ function writeSummary() {
     $("#summary").textContent = `${total} project${total === 1 ? "" : "s"}${parts.length ? ` · ${parts.join(", ")}` : ""}`;
 }
 
-// Categories with no projects yet would only lead to an empty page.
 function hideEmptyTabs() {
     $$(".tab").forEach(tab => {
         const key = tab.dataset.filter;
         tab.hidden = key !== "all" && !allProjects.some(p => p.category === key);
     });
 }
-
-/* ---------- Filter, sort, render ---------- */
 
 function getVisibleProjects() {
     const words = state.query.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -173,7 +165,6 @@ function markClippedText(desc) {
 function setUpCard(card) {
     const id = card.dataset.id;
 
-    // The title is a real link (keyboard / middle-click); the whole card is clickable too.
     $(".card-link", card).addEventListener("click", e => {
         if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) return;
         e.preventDefault();
@@ -181,13 +172,12 @@ function setUpCard(card) {
     });
     card.addEventListener("click", e => {
         if (e.target.closest(".card-link")) return;
-        if (getSelection().toString()) return; // don't open while selecting text
+        if (getSelection().toString()) return;
         openModal(id, true);
     });
 
     markClippedText($(".card-desc", card));
 
-    // Play the project's video quietly while hovering, if it has one.
     const video = $("video", card);
     if (!video || !canHover || reduceMotion) return;
     card.addEventListener("mouseenter", () => {
@@ -204,8 +194,6 @@ window.addEventListener("resize", () => $$(".card-desc", grid).forEach(d => {
     d.classList.toggle("clipped", d.scrollHeight > d.clientHeight + 1);
 }));
 
-/* ---------- Controls ---------- */
-
 $$(".tab").forEach(tab => {
     tab.addEventListener("click", () => {
         $$(".tab").forEach(t => t.setAttribute("aria-pressed", String(t === tab)));
@@ -214,7 +202,6 @@ $$(".tab").forEach(tab => {
     });
 });
 
-/* Dropdowns (Difficulty, Sort) */
 const dropdowns = [levelDropdown, sortDropdown];
 
 function closeDropdowns(except) {
@@ -233,7 +220,6 @@ dropdowns.forEach(dd => {
         dd.classList.toggle("open", open);
         btn.setAttribute("aria-expanded", String(open));
     });
-    // Close when keyboard focus leaves the dropdown.
     dd.addEventListener("focusout", e => {
         if (e.relatedTarget && !dd.contains(e.relatedTarget)) closeDropdowns();
     });
@@ -295,15 +281,12 @@ $("#clearFilters").addEventListener("click", () => {
     $('.tab[data-filter="all"]').click();
 });
 
-/* ---------- Popup ---------- */
-
 let modalSwiper = null;
 let currentId = null;
 let lastFocused = null;
 let pushedHistory = false;
 
 const swiperEl = $("#modalSwiper");
-// Everything behind the popup; made inert while it's open so Tab stays inside.
 const background = () => Array.from(document.body.children)
     .filter(el => el !== modal && el !== toastEl && el.tagName !== "SCRIPT");
 
@@ -347,7 +330,6 @@ function fillModal(p) {
     $("#modalTitle").textContent = p.title;
     $("#modalMeta").innerHTML = metaHTML(p, true);
     $("#modalTech").innerHTML = tagsHTML(p);
-    // Written in the admin editor, so line breaks / bold / underline are kept.
     $("#modalDescription").innerHTML = p.descriptionHTML || escapeHTML(p.summary);
 
     const gh = $("#modalGithub");
@@ -366,7 +348,6 @@ function fillModal(p) {
 
     $(".modal-panel", modal).scrollTop = 0;
 
-    // If focus was on a button that just got hidden (e.g. Next on the last project), move it somewhere sensible.
     const active = document.activeElement;
     if (!modal.contains(active) || active.hidden) $(".modal-close", modal).focus({ preventScroll: true });
 }
@@ -389,7 +370,6 @@ function openModal(id, fromClick = false) {
         document.body.classList.add("modal-open");
         background().forEach(el => (el.inert = true));
         $(".modal-close", modal).focus({ preventScroll: true });
-        // A history entry lets the phone's Back button close the popup.
         if (fromClick) {
             history.pushState({ project: id }, "", hash);
             pushedHistory = true;
@@ -420,7 +400,7 @@ function closeModal() {
     if (!modal.classList.contains("open")) return;
     if (pushedHistory) {
         pushedHistory = false;
-        history.back(); // popstate below hides the popup
+        history.back();
     } else {
         history.replaceState(null, "", location.pathname + location.search);
         hideModal();

@@ -73,8 +73,6 @@
 
         const list = document.getElementById("certList");
 
-        // Certificates are added in the admin page (Certificates tab).
-        // Draw from the last-known list right away, then again once loaded.
         function render(content) {
         const certs = [...content.certificates.items]
             .filter(c => c && c.title)

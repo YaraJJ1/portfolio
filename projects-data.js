@@ -1,4 +1,3 @@
-// Shared project data + small helpers used by the Projects, Home and Skills pages.
 import { db } from "./firebase.js";
 import {
     collection,
@@ -21,7 +20,6 @@ export const CATEGORY_COLORS = {
 
 export const DIFFICULTY_ORDER = { easy: 1, medium: 2, hard: 3 };
 
-// Label + tag colour for each technology.
 export const TECH = {
     html:       { label: "HTML",       color: "#b0533a" },
     css:        { label: "CSS",        color: "#4862d4" },
@@ -57,7 +55,6 @@ export const capitalize = s => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "")
 export const techLabel = key => (TECH[key] ? TECH[key].label : key.toUpperCase());
 export const techColor = key => (TECH[key] ? TECH[key].color : "#6f6873");
 
-// Dates are stored as dd/mm/yyyy.
 function parseDate(str) {
     if (!str) return new Date(0);
     const [day, month, year] = str.split("/").map(Number);
@@ -76,8 +73,6 @@ export function tag(text, color, extraClass = "") {
     return `<span class="tag ${extraClass}" style="--tag:${color}">${escapeHTML(text)}</span>`;
 }
 
-// Difficulty as signal bars only (1 = easy, 2 = medium, 3 = hard).
-// The word stays available to screen readers and as a hover tooltip.
 export function levelTag(p) {
     if (!p.difficulty) return "";
     const label = `${capitalize(p.difficulty)} difficulty`;
@@ -86,7 +81,6 @@ export function levelTag(p) {
     </span>`;
 }
 
-// Date + difficulty bars, shown under a project title.
 export function metaHTML(p, longDate = false) {
     const date = formatDate(p.date, longDate);
     const level = levelTag(p);
@@ -100,7 +94,6 @@ export function tagsHTML(p) {
 }
 
 function normalizeProject(id, data) {
-    // "media" holds images and videos; older docs used "images" or "imgSrc".
     let media = Array.isArray(data.media) && data.media.length
         ? data.media
         : (Array.isArray(data.images) && data.images.length
@@ -131,21 +124,17 @@ function normalizeProject(id, data) {
     };
 }
 
-// Loads every project from Firestore (throws on failure).
 export async function fetchProjects() {
     const snapshot = await getDocs(collection(db, "projects"));
-    // Documents starting with "_" hold site settings (e.g. _site = page text), not projects.
     return snapshot.docs
         .filter(doc => !doc.id.startsWith("_"))
         .map(doc => normalizeProject(doc.id, doc.data()));
 }
 
-// Strongest work first: hardest, then newest.
 export function byStrongest(a, b) {
     return (DIFFICULTY_ORDER[b.difficulty] || 0) - (DIFFICULTY_ORDER[a.difficulty] || 0) || b.date - a.date;
 }
 
-// "Featured" order: game projects lead (it's a game-dev portfolio), then strongest first.
 export function byFeatured(a, b) {
     return (b.category === "games") - (a.category === "games") || byStrongest(a, b);
 }

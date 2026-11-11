@@ -1,6 +1,3 @@
-// Admin: the Home, Skills, Certificates and Contact tabs.
-// Text is saved in one Firestore document (projects/_site); each tab saves
-// only its own part, so tabs never overwrite each other.
 import { db } from "./firebase.js";
 import {
     collection, getDocs, getDoc, setDoc, deleteField
@@ -20,18 +17,17 @@ const PAGES = {
     contact:      { title: "Contact",      view: "contact.html",      intro: "How people reach you. The email is used on every page." }
 };
 
-let saved = {};          // raw saved document
-let projects = [];       // for the "pictured project" list and skill nudges
+let saved = {};
+let projects = [];
 let current = "projects";
-let cleanState = "";     // form state when the tab was opened or last saved
+let cleanState = "";
 let started = false;
-let loadFailed = false;  // couldn't read saved text: block saving so nothing gets overwritten
+let loadFailed = false;
 let saving = false;
 let uidCount = 0;
 const uid = () => "pf" + (++uidCount);
 const COLOR_NAMES = { "#6d5a91": "Purple", "#56707a": "Slate", "#2b6f75": "Teal", "#4862d4": "Blue", "#ad3a5a": "Rose", "#9c6214": "Amber" };
 
-// ---------- Small helpers ----------
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const NUDGES = [
     { value: -6, label: "Lower" },
@@ -79,7 +75,6 @@ function section(title, help, body) {
     return `<section class="form-section"><h3>${esc(title)}</h3>${help ? `<p class="section-help">${esc(help)}</p>` : ""}${body}</section>`;
 }
 
-// ---------- Forms ----------
 function homeForm(c) {
     const d = DEFAULTS.home;
     const options = [`<option value="">Automatic (your top project)</option>`]
@@ -113,7 +108,6 @@ function homeForm(c) {
 }
 
 function projectSkills() {
-    // Every technology used in a project, with its calculated level.
     const map = new Map();
     projects.forEach(p => p.techs.forEach(key => {
         const label = techLabel(key);
@@ -250,9 +244,7 @@ function contactForm(c) {
 
 const FORMS = { home: homeForm, skills: skillsForm, certificates: certificatesForm, contact: contactForm };
 
-// ---------- Reading the form back ----------
 const val = (form, name) => (form.elements[name] ? String(form.elements[name].value) : "");
-// Store "" when a field matches the built-in text, so later default updates still show.
 const orBlank = (value, def) => (value.trim() === String(def).trim() ? "" : value.trim());
 
 function readForm(page) {
@@ -282,7 +274,6 @@ function readForm(page) {
             const known = Object.keys(TECH).find(k => TECH[k].label.toLowerCase() === name.toLowerCase());
             return { key: known || name.toLowerCase(), name, level: Number(row.querySelector(".row-slider").value) };
         }).filter(s => s.name);
-        // Start from the saved nudges so ones without a row here are kept.
         const adjust = { ...mergeContent(saved).skills.adjust };
         f.querySelectorAll(".nudge-row input:checked").forEach(r => {
             const label = r.name.slice("adjust:".length);
@@ -330,7 +321,6 @@ function readForm(page) {
     return {};
 }
 
-// ---------- Checking before saving ----------
 function setError(input, message) {
     const field = input.closest(".field");
     const err = field && field.querySelector(".field-error");
@@ -374,7 +364,6 @@ function validate(page) {
     return true;
 }
 
-// ---------- Unsaved changes ----------
 const formState = () => JSON.stringify(readForm(current));
 const isDirty = () => current !== "projects" && cleanState !== "" && formState() !== cleanState;
 
@@ -389,7 +378,6 @@ function updateSaveBar() {
         t.classList.toggle("has-changes", dirty && t.dataset.tab === current));
 }
 
-// Ctrl/Cmd + S saves the open page.
 document.addEventListener("keydown", e => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && current !== "projects") {
         e.preventDefault();
@@ -397,7 +385,6 @@ document.addEventListener("keydown", e => {
     }
 });
 
-// Per-field "Reset" link + character counters.
 function refreshFieldHelpers(scope) {
     (scope || $("pageForm")).querySelectorAll(".field[data-default]").forEach(field => {
         const input = field.querySelector("input, textarea");
@@ -409,7 +396,6 @@ function refreshFieldHelpers(scope) {
     });
 }
 
-// ---------- Rendering a tab ----------
 function renderPage(page) {
     const meta = PAGES[page];
     $("pageTitle").textContent = meta.title;
@@ -428,7 +414,6 @@ function renderPage(page) {
     updateSaveBar();
 }
 
-// ---------- Tabs ----------
 function setTab(tab, { pushHash = true } = {}) {
     if (!PAGES[tab] && tab !== "projects") tab = "projects";
     if (tab !== current && isDirty()) {
@@ -474,7 +459,6 @@ document.querySelectorAll(".admin-tab").forEach(btn => {
     });
 });
 
-// ---------- Editing inside the form ----------
 const form = $("pageForm");
 form.addEventListener("submit", e => e.preventDefault());
 
@@ -499,9 +483,6 @@ form.addEventListener("change", e => {
     updateSaveBar();
 });
 
-// Renumber field names after adding/removing/moving rows so they stay unique.
-// Two passes: radio buttons sharing a name for even a moment would lose
-// their checked state, so give everything a temporary name first.
 function renumber(list) {
     const rows = [...list.children];
     rows.forEach((row, i) => row.querySelectorAll("[name]").forEach(el => {
@@ -572,7 +553,6 @@ form.addEventListener("click", e => {
     updateSaveBar();
 });
 
-// ---------- Save / discard / restore ----------
 function saveErrorMessage(error) {
     if (error && error.code === "permission-denied") {
         return "Couldn't save: your database settings don't allow saving page text. Nothing was changed.";
@@ -634,7 +614,6 @@ window.addEventListener("beforeunload", e => {
     if (isDirty()) { e.preventDefault(); e.returnValue = ""; }
 });
 
-// Ask before signing out with unsaved changes.
 $("logout-btn").addEventListener("click", e => {
     if (isDirty() && !confirm("You have unsaved changes. Sign out anyway?")) {
         e.stopImmediatePropagation();
@@ -642,7 +621,6 @@ $("logout-btn").addEventListener("click", e => {
     }
 }, true);
 
-// ---------- Start once signed in ----------
 async function loadData() {
     const [siteSnap, projSnap] = await Promise.all([
         getDoc(siteDocRef()),

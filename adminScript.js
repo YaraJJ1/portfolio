@@ -33,12 +33,10 @@ const loginBtn = document.getElementById("login-btn");
 const loginMessage = document.getElementById("login-message");
 const logoutBtn = document.getElementById("logout-btn");
 
-// ---------- Friendly messages (instead of browser pop-ups) ----------
 const formNotice = document.getElementById("form-notice");
 const toastEl = document.getElementById("toast");
 let toastTimer;
 
-// Success messages pop up briefly at the bottom of the screen.
 function toast(message) {
     if (!toastEl) return;
     toastEl.textContent = message;
@@ -47,7 +45,6 @@ function toast(message) {
     toastTimer = setTimeout(() => toastEl.classList.remove("show"), 3000);
 }
 
-// Problems show in a box at the top of the form until dismissed or fixed.
 function notify(message) {
     if (!formNotice) return toast(message);
     formNotice.querySelector(".notice-text").textContent = message;
@@ -88,7 +85,7 @@ onAuthStateChanged(auth, (user) => {
     } else {
         if (loginContainer) loginContainer.style.display = "";
         if (adminContent) adminContent.style.display = "none";
-        GITHUB_TOKEN = null; // clear any cached token on logout
+        GITHUB_TOKEN = null;
     }
 });
 
@@ -126,7 +123,6 @@ if (logoutBtn) {
     });
 }
 
-// The date field is a calendar picker (yyyy-mm-dd); projects store dd/mm/yyyy.
 function isoToStored(iso) {
     const [y, m, d] = String(iso || "").split("-");
     return y && m && d ? `${d}/${m}/${y}` : "";
@@ -136,8 +132,6 @@ function storedToIso(stored) {
     return y && m && d ? `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}` : "";
 }
 
-
-//
 const addProjectPage = document.querySelector('#admin-content .addProjectPage');
 
 const title = addProjectPage.querySelector('.Title');
@@ -145,20 +139,15 @@ const desc = addProjectPage.querySelector('.Description');
 const date = addProjectPage.querySelector('.Date');
 const category = addProjectPage.querySelector('.Category');
 const difficulty = addProjectPage.querySelector('.Difficulty');
-const moreDescription = addProjectPage.querySelector('.MoreDescription'); // contenteditable rich-text box, not a textarea
+const moreDescription = addProjectPage.querySelector('.MoreDescription');
 const moreDescriptionToolbar = addProjectPage.querySelector('.richToolbar');
 const languages = addProjectPage.querySelector('.Languages');
-const githubLink = addProjectPage.querySelector('.GithubLink'); // optional - intentionally left out of requiredFields
+const githubLink = addProjectPage.querySelector('.GithubLink');
 const addProjectBtn = document.getElementById('submit-project-btn');
 const cancelEditBtn = document.getElementById('cancel-edit-btn');
 const addHeader = addProjectPage.querySelector('.addHeader');
 
-// Value-based fields required for both adding a new project and saving
-// edits to one. The inner description is required too, but it's a
-// contenteditable box (no .value), so it's checked separately with
-// moreDescriptionHasText().
 const requiredFields = [title, desc, date, category, difficulty, languages];
-
 
 const adminProjectList = document.querySelector('.adminProjectList');
 
@@ -173,7 +162,6 @@ const descCountEl = document.getElementById('desc-count');
 const tagPreviewEl = document.getElementById('tag-preview');
 const projectCountEl = document.getElementById('project-count');
 
-// Live character count under the short summary.
 function updateDescCount() {
     if (!descCountEl) return;
     const max = desc.maxLength > 0 ? desc.maxLength : 400;
@@ -182,7 +170,6 @@ function updateDescCount() {
 desc.addEventListener("input", updateDescCount);
 updateDescCount();
 
-// Live preview of the coloured tags exactly as they'll look on the site.
 function updateTagPreview() {
     if (!tagPreviewEl) return;
     const keys = languages.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -193,7 +180,6 @@ function updateTagPreview() {
 }
 languages.addEventListener("input", updateTagPreview);
 
-// Clear the "please fix this" box and highlight as soon as the user starts fixing things.
 addProjectPage.addEventListener("input", (event) => {
     clearNotice();
     if (event.target.classList) event.target.classList.remove("is-missing");
@@ -208,24 +194,18 @@ if (newProjectBtn) {
     });
 }
 
-
 const GITHUB_OWNER = "yarajj1";
 const GITHUB_REPO = "portfolio"; 
 const GITHUB_BRANCH = "main";
 const GITHUB_IMAGE_FOLDER = "images";
 
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;   // 5MB per image
-const MAX_VIDEO_BYTES = 20 * 1024 * 1024;  // 20MB per video clip - keep clips short
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 20 * 1024 * 1024;
 
 let GITHUB_TOKEN = null;
 
-// Set while the form is editing an existing project instead of creating a
-// new one. Holds that project's Firestore doc id, or null in "Add" mode.
 let editingProjectId = null;
 
-// Cache of the raw Firestore data for every project currently listed in the
-// admin sidebar, keyed by doc id — lets "Edit" populate the form instantly
-// without a second Firestore read.
 let adminProjectsById = new Map();
 
 async function loadGithubToken() {
@@ -255,8 +235,6 @@ async function loadGithubToken() {
     return GITHUB_TOKEN;
 }
 
-
-
 function isValidDateFormat(value) {
     const parts = value.split("/");
     if (parts.length !== 3) return false;
@@ -273,8 +251,6 @@ function isValidDateFormat(value) {
     return dayOk && monthOk && yearOk;
 }
 
-// GitHub link is optional - blank is always valid. If something is typed,
-// it just has to be a well-formed http(s) URL.
 function isValidGithubLink(value) {
     if (!value) return true;
     try {
@@ -284,17 +260,6 @@ function isValidGithubLink(value) {
         return false;
     }
 }
-
-// ---------- Inner description rich-text editor ----------
-// The inner description is a contenteditable box so it can hold line
-// breaks, bold and underline. It's saved to Firestore (imgMoreDesc) as a
-// small sanitized HTML string - only <b>, <u> and <br> are ever stored -
-// so the public page shows the line breaks and formatting when it puts
-// imgMoreDesc on the page with innerHTML.
-//
-// Older projects saved imgMoreDesc as plain text with "\n" newlines; those
-// are converted to <br> when loaded into the editor, so re-saving them
-// upgrades them to the new format.
 
 const RICH_BLOCK_TAGS = new Set([
     "div", "p", "li", "ul", "ol", "blockquote", "pre",
@@ -324,10 +289,6 @@ function isUnderlineElement(el) {
     return decoration.includes("underline");
 }
 
-// Walks the editor's DOM and rebuilds it as clean HTML. Browsers turn
-// Enter into <div>s (or <br>s, depending on the browser) - every block
-// boundary becomes a single <br> so a new line is always exactly one new
-// line, and blank lines are kept.
 function serializeRichNodes(parent, state, out) {
     parent.childNodes.forEach(node => {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -390,16 +351,14 @@ function serializeRichContent(root) {
     do {
         previous = html;
         html = html
-            .replace(/<(b|u)><\/\1>/g, "")                       // empty <b></b> / <u></u>
-            .replace(/^((?:<[bu]>)*)(?:<br>)+/, "$1")              // leading blank lines
-            .replace(/(?:<br>)+((?:<\/[bu]>)*)$/, "$1");           // trailing blank lines
+            .replace(/<(b|u)><\/\1>/g, "")
+            .replace(/^((?:<[bu]>)*)(?:<br>)+/, "$1")
+            .replace(/(?:<br>)+((?:<\/[bu]>)*)$/, "$1");
     } while (html !== previous);
 
     return html;
 }
 
-// Parses stored HTML in an inert <template> (nothing in it runs or loads)
-// and re-serializes it, so only <b>, <u> and <br> can ever reach the editor.
 function sanitizeRichHtml(html) {
     const template = document.createElement("template");
     template.innerHTML = html;
@@ -431,8 +390,6 @@ function moreDescriptionHasText() {
     return moreDescription.textContent.trim() !== "";
 }
 
-// Shows the placeholder only while the box is truly empty (browsers often
-// leave a stray <br> behind after everything is deleted).
 function updateMoreDescriptionState() {
     const html = moreDescription.innerHTML.trim().toLowerCase();
     const isEmpty = !moreDescription.textContent &&
@@ -447,7 +404,6 @@ function selectionIsInMoreDescription() {
         moreDescription.contains(selection.anchorNode);
 }
 
-// Highlights the B / U buttons when the caret is inside bold / underlined text.
 function updateRichToolbarState() {
     if (!moreDescriptionToolbar) return;
 
@@ -480,7 +436,7 @@ function applyRichCommand(command) {
         selection.addRange(savedRange);
     }
 
-    document.execCommand("styleWithCSS", false, false); // use <b>/<u>, not styled <span>s
+    document.execCommand("styleWithCSS", false, false);
     document.execCommand(command, false, null);
 
     updateMoreDescriptionState();
@@ -488,8 +444,6 @@ function applyRichCommand(command) {
 }
 
 if (moreDescriptionToolbar) {
-    // mousedown + preventDefault stops the button from stealing focus, so
-    // the text selected in the editor stays selected when B / U is clicked.
     moreDescriptionToolbar.addEventListener("mousedown", (event) => {
         if (event.target.closest(".richBtn")) event.preventDefault();
     });
@@ -507,16 +461,12 @@ if (moreDescription) {
         updateRichToolbarState();
     });
 
-    // Paste as plain text so copied styles/fonts/colors don't come along.
-    // Bold/underline can then be added with the toolbar or Ctrl+B / Ctrl+U.
     moreDescription.addEventListener("paste", (event) => {
         event.preventDefault();
         const text = (event.clipboardData || window.clipboardData).getData("text/plain");
         document.execCommand("insertText", false, text);
     });
 
-    // Don't let dropped files (e.g. an image meant for the uploader) land
-    // inside the description.
     moreDescription.addEventListener("drop", (event) => {
         if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length) {
             event.preventDefault();
@@ -525,14 +475,6 @@ if (moreDescription) {
 
     document.addEventListener("selectionchange", updateRichToolbarState);
 
-    // Tab indents the current line, Shift+Tab outdents it - by default a
-    // contenteditable box just lets Tab move focus away instead of typing
-    // anything. Indentation is built from \u00A0 (non-breaking space)
-    // rather than plain spaces: regular spaces collapse down to one when
-    // rendered as HTML (both here and on the public page), so typed
-    // indentation would otherwise disappear the moment it's displayed.
-    // Because serializeRichContent() just copies text-node characters
-    // through untouched, this indentation is preserved end to end.
     const INDENT = "\u00A0\u00A0\u00A0\u00A0";
 
     moreDescription.addEventListener("keydown", (event) => {
@@ -544,8 +486,6 @@ if (moreDescription) {
         const range = selection.getRangeAt(0);
 
         if (event.shiftKey) {
-            // Outdent: strip up to one INDENT's worth of trailing nbsp from
-            // directly before the caret, if that's what's there.
             const node = range.startContainer;
             if (node.nodeType === Node.TEXT_NODE) {
                 const before = node.nodeValue.slice(0, range.startOffset);
@@ -585,9 +525,6 @@ function fileToBase64(file) {
     });
 }
 
-// Build a collision-safe filename like "1735689000000-my-project.png" — or
-// "1735689000000-2-my-project.png" for the 3rd+ item of one project, so
-// several images/videos uploaded moments apart never overwrite each other.
 function buildImageFilename(file, projectTitle, index = 0) {
     const ext = (file.name.split(".").pop() || "png").toLowerCase();
     const safeTitle = projectTitle
@@ -599,10 +536,6 @@ function buildImageFilename(file, projectTitle, index = 0) {
     return `${Date.now()}${suffix}-${safeTitle || "project"}.${ext}`;
 }
 
-// Commit one image or video to the GitHub repo and return its jsDelivr CDN
-// URL. `index` is only used to keep filenames unique when uploading several
-// items for the same project. `type` ("image" | "video") picks the right
-// size limit and error wording.
 async function uploadMediaToGithub(file, projectTitle, index = 0, type = "image") {
     const limit = type === "video" ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
     if (file.size > limit) {
@@ -655,9 +588,6 @@ async function uploadMediaToGithub(file, projectTitle, index = 0, type = "image"
     return `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${path}`;
 }
 
-// ---------- Existing projects list ----------
-// Names + Edit/Delete buttons — no thumbnails here, this is an admin
-// index, not a gallery.
 async function loadAdminProjects() {
     if (!adminProjectList) return;
 
@@ -666,7 +596,6 @@ async function loadAdminProjects() {
 
     try {
         const querySnapshot = await getDocs(collection(db, "projects"));
-        // Documents starting with "_" hold page text (edited in the other tabs), not projects.
         const projectDocs = querySnapshot.docs.filter(d => !d.id.startsWith("_"));
 
         adminProjectList.innerHTML = "";
@@ -678,7 +607,6 @@ async function loadAdminProjects() {
             return;
         }
 
-        // Newest first, so recent work is easy to find.
         const toTime = s => { const [d, m, y] = String(s || "").split("/").map(Number); return y ? new Date(y, (m || 1) - 1, d || 1).getTime() : 0; };
         const docs = projectDocs.slice().sort((a, b) => toTime(b.data()["data-date"]) - toTime(a.data()["data-date"]));
 
@@ -746,9 +674,6 @@ if (adminProjectList) {
 
         try {
             await deleteDoc(doc(db, "projects", id));
-            // If the project being deleted is the one currently loaded into
-            // the form, back out of edit mode so a leftover "Update Project"
-            // click can't try to update a doc that no longer exists.
             if (editingProjectId === id) stopEditingProject();
             loadAdminProjects();
             toast(`Deleted "${name}".`);
@@ -761,9 +686,6 @@ if (adminProjectList) {
     });
 }
 
-// Loads an existing project's data into the Add-Project form so it can be
-// edited in place, and flips the form into "edit mode" (editingProjectId
-// set, submit button relabeled, Cancel Edit button shown).
 function startEditingProject(id) {
     const project = adminProjectsById.get(id);
     if (!project) {
@@ -783,11 +705,8 @@ function startEditingProject(id) {
     languages.value = project["code-language"] || "";
     if (githubLink) githubLink.value = project.githubLink || "";
 
-    resetImagePicker(); // clear any leftover staged files first
+    resetImagePicker();
 
-    // Pre-load the project's existing media into the picker as
-    // already-hosted items (url + type, no File) - submit skips
-    // re-uploading these unless they're removed and a replacement is added.
     const existingMedia = Array.isArray(project.media) && project.media.length
         ? project.media
         : (Array.isArray(project.images) && project.images.length
@@ -816,14 +735,12 @@ function highlightEditingItem() {
     });
 }
 
-// Clears the form and drops out of edit mode, back to "Add a new project".
 function stopEditingProject() {
     editingProjectId = null;
 
     requiredFields.forEach(field => {
         if (field) field.value = "";
     });
-    // Dropdowns go back to their first choice instead of blank.
     category.selectedIndex = 0;
     difficulty.selectedIndex = 0;
     addProjectPage.querySelectorAll(".is-missing").forEach(el => el.classList.remove("is-missing"));
@@ -842,21 +759,6 @@ function stopEditingProject() {
     updateTagPreview();
 }
 
-// ---------- Multi-media picker ----------
-// Images and videos are staged here (as {file, url, type} entries, in
-// display order) until the project is submitted. The first entry is always
-// the thumbnail (if it's a video, the public card falls back to a
-// placeholder image instead of trying to thumbnail it - see script.js).
-// Nothing is uploaded to GitHub until "Add Project" is clicked.
-//
-// While editing an existing project, staged entries carried over from that
-// project have a url + type but no file - they're already hosted, so
-// submit only re-uploads items that do have a file (newly picked ones).
-//
-// The "add" tile lives permanently as the last <li> in #image-list (it's in
-// the HTML, not generated) so there's always an obvious, always-visible way
-// to add more items — click it or drag files anywhere onto the uploader —
-// no matter how many are already staged.
 let stagedImages = [];
 
 function renderImageList() {
@@ -940,9 +842,6 @@ if (imageListEl) {
 
 function resetImagePicker() {
     inputFile.value = "";
-    // Only real blob URLs (newly picked files) need revoking - calling this
-    // on an already-hosted https:// URL (from an in-progress edit) is a
-    // harmless no-op, so this is safe for both kinds of staged item.
     stagedImages.forEach(item => URL.revokeObjectURL(item.url));
     stagedImages = [];
     renderImageList();
@@ -961,7 +860,6 @@ if (!addProjectBtn) {
         e.preventDefault();
         clearNotice();
 
-        // Name the exact fields that are still empty, and highlight them.
         const fieldNames = new Map([
             [title, "project name"], [desc, "short summary"], [date, "date"],
             [category, "category"], [difficulty, "difficulty"], [languages, "languages & tools"]
@@ -1006,14 +904,11 @@ if (!addProjectBtn) {
                 const staged = stagedImages[i];
 
                 if (staged.file) {
-                    // A newly picked file - upload it to GitHub.
                     const label = staged.type === "video" ? "video" : "image";
                     addProjectBtn.textContent = `Uploading ${label} ${i + 1} of ${stagedImages.length}…`;
                     const url = await uploadMediaToGithub(staged.file, title.value.trim(), i, staged.type);
                     media.push({ url, type: staged.type });
                 } else {
-                    // Carried over from the project being edited - already
-                    // hosted on GitHub/jsDelivr, nothing to upload.
                     media.push({ url: staged.url, type: staged.type });
                 }
             }
@@ -1022,15 +917,15 @@ if (!addProjectBtn) {
             const projectFields = {
                 imgTxt: title.value.trim(),
                 imgDesc: desc.value.trim(),
-                imgMoreDesc: getMoreDescriptionHtml(), // sanitized HTML: only <b>, <u>, <br>
-                imgSrc: media[0].url, // kept so anything still reading the old single-image field still works
-                images: media.map(item => item.url), // flat URL list, kept for backward compatibility
-                media, // {url, type} per item - lets the slider tell video from image
+                imgMoreDesc: getMoreDescriptionHtml(),
+                imgSrc: media[0].url,
+                images: media.map(item => item.url),
+                media,
                 "data-category": category.value,
                 "data-difficulty": difficulty.value,
                 "data-date": storedDate,
                 "code-language": languages.value.trim().toLowerCase(),
-                githubLink: githubLinkValue // optional - empty string means "no icon" on the public page
+                githubLink: githubLinkValue
             };
 
             if (editingProjectId) {
@@ -1041,8 +936,6 @@ if (!addProjectBtn) {
                 toast(`Added "${projectFields.imgTxt}". It's live on your website.`);
             }
 
-            // Clears the form/staged images and drops out of edit mode
-            // either way (no-op on editingProjectId if we were adding).
             stopEditingProject();
             loadAdminProjects();
             
@@ -1069,11 +962,9 @@ loadAdminProjects();
 
 inputFile.addEventListener("change", () => {
     addStagedFiles(inputFile.files);
-    inputFile.value = ""; // clear so picking the same file again still fires "change"
+    inputFile.value = "";
 });
 
-// Drag-and-drop targets the whole uploader (not just the small add tile) so
-// dropping files anywhere over the staged images works too.
 if (imageUploaderEl) {
     imageUploaderEl.addEventListener("dragover", function (e) {
         e.preventDefault();
@@ -1091,6 +982,5 @@ if (imageUploaderEl) {
         imageUploaderEl.classList.remove("dragging");
         addStagedFiles(e.dataTransfer.files);
     });
-
 
 }

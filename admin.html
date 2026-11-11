@@ -13,7 +13,6 @@
 </head>
 
 <body>
-    <!-- ===== Sign in ===== -->
     <div id="login-container" class="login-wrapper">
         <form class="login-card" id="login-form" novalidate>
             <p class="login-brand">Yara Janahi</p>
@@ -37,7 +36,6 @@
         </form>
     </div>
 
-    <!-- ===== Admin ===== -->
     <div id="admin-content" style="display: none;">
         <header class="admin-header">
             <div class="admin-header-inner">
@@ -61,11 +59,9 @@
             </nav>
         </header>
 
-        <!-- ===== Projects tab ===== -->
         <div class="tab-panel" id="panel-projects" role="tabpanel" aria-labelledby="tab-projects">
         <div class="adminLayout">
 
-            <!-- Project list -->
             <aside class="projectListSection">
                 <div class="list-head">
                     <h2>Your projects <span class="count" id="project-count"></span></h2>
@@ -74,7 +70,6 @@
                 <ul class="adminProjectList"></ul>
             </aside>
 
-            <!-- Add / edit form -->
             <main class="addProjectPage">
                 <div class="form-head">
                     <p class="form-mode" id="form-mode">New project</p>
@@ -87,7 +82,6 @@
                     <button type="button" class="notice-close" aria-label="Dismiss">&times;</button>
                 </div>
 
-                <!-- Basics -->
                 <section class="form-section">
                     <h3>The basics</h3>
 
@@ -129,7 +123,6 @@
                     </div>
                 </section>
 
-                <!-- Media -->
                 <section class="form-section">
                     <h3>Images &amp; videos</h3>
                     <p class="section-help">The <strong>first</strong> item is the card's thumbnail, so put your best, brightest image first. Use the arrows to reorder. Images up to 5&nbsp;MB, videos up to 20&nbsp;MB.</p>
@@ -153,7 +146,6 @@
                     <span class="upload-hint" id="upload-hint">First item becomes the thumbnail — images or a short video clip</span>
                 </section>
 
-                <!-- Description -->
                 <section class="form-section">
                     <h3>Full description</h3>
                     <p class="section-help">Shown when someone opens the project. Explain what you built and how. Use <b>B</b> for bold and <u>U</u> for underline; Tab indents a line.</p>
@@ -171,7 +163,6 @@
                     </div>
                 </section>
 
-                <!-- Tech + link -->
                 <section class="form-section">
                     <h3>Tech &amp; links</h3>
 
@@ -195,7 +186,6 @@
         </div>
         </div>
 
-        <!-- ===== Page tabs (Home, Skills, Certificates, Contact) ===== -->
         <div class="tab-panel" id="panel-pages" role="tabpanel" hidden>
             <div class="page-editor">
                 <div class="form-head">
@@ -218,7 +208,6 @@
             </div>
         </div>
 
-        <!-- Save bar for the page tabs -->
         <div class="save-bar" id="saveBar" hidden>
             <div class="save-bar-inner">
                 <span class="save-state" id="saveState"><span class="save-dot" aria-hidden="true"></span><span id="saveStateText">Saved – live on your site</span></span>

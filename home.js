@@ -1,4 +1,3 @@
-// Home page: hero picture, selected work, project links under each area, copy email.
 import {
     CATEGORY_COLORS,
     escapeHTML,
@@ -17,7 +16,6 @@ const projectUrl = p => `project.html#project=${encodeURIComponent(p.id)}`;
 const canPreview = window.matchMedia("(hover: hover) and (pointer: fine)").matches
     && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// ---------- Hero picture: the strongest project ----------
 function showHero(p) {
     const img = $("heroShotImg");
     img.addEventListener("load", () => img.classList.add("loaded"), { once: true });
@@ -30,7 +28,6 @@ function showHero(p) {
     link.hidden = false;
 }
 
-// ---------- Quick facts under the intro ----------
 function showFacts(projects) {
     const counts = {};
     projects.forEach(p => p.techs.forEach(t => {
@@ -48,7 +45,6 @@ function showFacts(projects) {
     $("heroFacts").hidden = false;
 }
 
-// ---------- Selected work ----------
 function workItem(p) {
     const video = p.previewVideo && canPreview
         ? `<video muted loop playsinline preload="none" data-src="${escapeHTML(p.previewVideo)}"></video>`
@@ -69,7 +65,6 @@ function workItem(p) {
     </li>`;
 }
 
-// Hovering a picture plays the project's clip, if it has one.
 function setUpPreviews(list) {
     list.querySelectorAll(".work-media").forEach(media => {
         const video = media.querySelector("video");
@@ -85,7 +80,6 @@ function setUpPreviews(list) {
     });
 }
 
-// ---------- "Seen in" links under each area ----------
 const AREAS = {
     gameplay: p => /grappl|ship|buoy|bouy|controller|movement/i.test(p.title),
     graphics: p => p.techs.includes("hlsl") || /shader|render/i.test(p.title),
@@ -103,7 +97,6 @@ function showAreaLinks(projects) {
     });
 }
 
-// ---------- Editable text (set in the admin page) ----------
 let email = "janahi.yara@gmail.com";
 function applyHomeText(content) {
     email = content.contact.email;
@@ -114,24 +107,21 @@ function applyHomeText(content) {
         area.querySelector("p:not(.area-links)").textContent = item.text;
     });
 }
-applyHomeText(cachedContent() || mergeContent({})); // no flash of old text
+applyHomeText(cachedContent() || mergeContent({}));
 const contentReady = startContent().then(content => { applyHomeText(content); return content; });
 
-// ---------- Load ----------
 Promise.all([fetchProjects(), contentReady])
     .then(([projects, content]) => {
         $("loading").hidden = true;
         const sorted = [...projects].sort(byFeatured);
         if (!sorted.length) return;
 
-        // The pictured project can be picked in the admin page; otherwise the top one.
         const hero = sorted.find(p => p.id === content.home.heroProject) || sorted[0];
         showHero(hero);
         showFacts(projects);
         showAreaLinks(sorted);
 
         const list = $("workList");
-        // "Selected work" can be picked in the admin page; empty slots fill automatically.
         const picks = (content.home.selectedWork || [])
             .map(id => sorted.find(p => p.id === id))
             .filter((p, i, arr) => p && p !== hero && arr.indexOf(p) === i);
@@ -152,7 +142,6 @@ Promise.all([fetchProjects(), contentReady])
         $("loading").innerHTML = 'Couldn\'t load projects right now. <a href="project.html">Try the projects page</a>.';
     });
 
-// ---------- Copy email ----------
 const toast = $("toast");
 let toastTimer;
 $("copyEmail").addEventListener("click", async () => {

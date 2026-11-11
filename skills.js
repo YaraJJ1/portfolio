@@ -1,21 +1,16 @@
-// Skills page: scrolling logo band, skill bars on the left, a "focus" donut chart on the right.
-// Bar levels, logos and chart areas are set in skills-data.js.
 import { escapeHTML, techLabel, techColor, fetchProjects, byStrongest, TECH } from "./projects-data.js";
 import { DIFFICULTY_WEIGHT, SKILL_ORDER, levelFromProjects, levelWord, AREAS, DEVICON_BASE } from "./skills-data.js";
 import { start as startContent, toolbeltItem, cachedContent, mergeContent } from "./site-content.js";
 
-// Settings that can be changed in the admin page (filled in once loaded).
 let S = null;
 
 const $ = id => document.getElementById(id);
 const projectUrl = p => `project.html#project=${encodeURIComponent(p.id)}`;
-// Counts as words: this font's "1" looks like an "I".
 const WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 const plural = (n, word) => `${WORDS[n] || n} ${word}${n === 1 ? "" : "s"}`;
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// ---------- Skill bars ----------
 const orderIndex = label => {
     const i = SKILL_ORDER.indexOf(label);
     return i < 0 ? SKILL_ORDER.length : i;
@@ -29,7 +24,6 @@ function buildSkills(projects) {
         return skills.get(label);
     };
 
-    // Every technology used in a project gets a bar automatically...
     [...projects].sort(byStrongest).forEach(p => p.techs.forEach(key => {
         const s = add(key);
         if (!s.projects.includes(p)) {
@@ -37,7 +31,6 @@ function buildSkills(projects) {
             s.score += DIFFICULTY_WEIGHT[p.difficulty] || 1;
         }
     }));
-    // ...plus the extra skills listed in skills-data.js.
     S.extraSkills.forEach(extra => { add(extra.key, extra.name).fixedLevel = extra.level; });
 
     return [...skills.values()]
@@ -50,8 +43,6 @@ function buildSkills(projects) {
         .sort((a, b) => b.level - a.level || orderIndex(a.label) - orderIndex(b.label) || a.label.localeCompare(b.label));
 }
 
-// "Used in GPU FFT Ocean" reads better than "used in one project",
-// so name the projects when there are only one or two.
 function evidence(skill) {
     const n = skill.projects.length;
     if (!n) return "Not in a project here yet";
@@ -75,11 +66,9 @@ function renderBars(projects) {
         </li>`;
     }).join("");
 
-    // Grow the bars in once they're on the page.
     requestAnimationFrame(() => requestAnimationFrame(() => list.classList.add("ready")));
 }
 
-// ---------- Focus donut ----------
 const C = { x: 280, y: 200 };
 const R_IN = 96, R_OUT = 144;
 
@@ -112,7 +101,6 @@ let selected = null;
 
 function renderDonut(projects) {
     groups = groupByArea([...projects].sort(byStrongest));
-    // Slice size = total difficulty points (easy 1, medium 2, hard 3), so hard work counts for more.
     const weight = g => g.projects.reduce((n, p) => n + (DIFFICULTY_WEIGHT[p.difficulty] || 1), 0);
     const total = groups.reduce((n, g) => n + weight(g), 0);
     const svg = $("donut");
@@ -128,7 +116,6 @@ function renderDonut(projects) {
         const mid = angle + sweep / 2;
         angle += sweep;
 
-        // A single area is a full ring.
         const d = groups.length === 1
             ? `M${C.x} ${C.y - R_OUT} a${R_OUT} ${R_OUT} 0 1 1 0 ${R_OUT * 2} a${R_OUT} ${R_OUT} 0 1 1 0 ${-R_OUT * 2} Z ` +
               `M${C.x} ${C.y - R_IN} a${R_IN} ${R_IN} 0 1 0 0 ${R_IN * 2} a${R_IN} ${R_IN} 0 1 0 0 ${-R_IN * 2} Z`
@@ -142,7 +129,6 @@ function renderDonut(projects) {
             <circle class="seg-dot" cx="${fmt(dx)}" cy="${fmt(dy)}" r="5"></circle>
         </g>`;
 
-        // Callout: a short line out from the ring, then sideways to the label.
         const right = Math.sin(mid) >= 0;
         const [lx1, ly1] = point(R_OUT + 8, mid);
         const [lx2, ly2] = point(R_OUT + 30, mid);
@@ -164,7 +150,6 @@ function renderDonut(projects) {
             <text class="donut-sub" id="donutSub" x="${C.x}" y="${C.y + 24}" text-anchor="middle"></text>
         </g>`;
 
-    // Hovering a segment previews it; clicking (or Enter/Space) picks it.
     svg.querySelectorAll(".donut-seg").forEach(seg => {
         seg.addEventListener("mouseenter", () => highlight(seg.dataset.key));
         seg.addEventListener("focus", () => highlight(seg.dataset.key));
@@ -176,7 +161,6 @@ function renderDonut(projects) {
     });
     svg.addEventListener("mouseleave", () => highlight(selected));
 
-    // On phones the callout labels are hidden, so zoom in on the ring itself.
     const phone = window.matchMedia("(max-width: 560px)");
     const fitView = () => {
         svg.setAttribute("viewBox", phone.matches ? "124 44 312 312" : "0 0 560 400");
@@ -193,7 +177,6 @@ function renderDonut(projects) {
     if (!reduceMotion) svg.classList.add("animate");
 }
 
-// Visual emphasis only (used for hover previews and the chosen area).
 function highlight(key) {
     const g = groups.find(x => x.key === key);
     if (!g) return;
@@ -214,7 +197,6 @@ function select(key, byUser) {
     });
 
     const detail = $("areaDetail");
-    // Only announce changes the visitor asked for, not the first render.
     if (byUser) detail.setAttribute("aria-live", "polite");
     detail.style.setProperty("--seg", g.color);
     detail.innerHTML = `
@@ -225,9 +207,8 @@ function select(key, byUser) {
         </ul>`;
 }
 
-// ---------- Scrolling logo band ----------
-const BELT_SPEED = 22;       // pixels per second: slow on purpose
-const BELT_HOVER_RATE = 0.3; // speed while the mouse is over it
+const BELT_SPEED = 22;
+const BELT_HOVER_RATE = 0.3;
 
 function beltItem(t, isRepeat) {
     const cls = [t.mono && "mono", t.square && "square"].filter(Boolean).join(" ");
@@ -247,15 +228,12 @@ function renderBelt() {
         const track = $(id);
         if (!items.length) { track.closest(".belt-row").hidden = true; return; }
 
-        // One "set" is the row's items repeated until it's wider than any screen;
-        // the track holds two sets so the loop is seamless.
         const set = [];
         while (set.length < Math.max(14, items.length)) set.push(...items);
         const html = set.map((t, i) => beltItem(t, i >= items.length)).join("");
         track.innerHTML = `<div class="belt-set">${html}</div><div class="belt-set belt-set--copy">${html}</div>`;
     });
 
-    // Measure once fonts are in, then start (so the speed never jumps).
     const start = () => { setBeltSpeed(); belt.classList.add("is-ready"); };
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
     if ("ResizeObserver" in window) {
@@ -263,13 +241,11 @@ function renderBelt() {
         belt.querySelectorAll(".belt-set:not(.belt-set--copy)").forEach(s => ro.observe(s));
     }
 
-    // Hovering eases the band down to a crawl, and back up when you leave.
     if (window.matchMedia("(hover: hover)").matches) {
         belt.addEventListener("mouseenter", () => easeBeltSpeed(BELT_HOVER_RATE));
         belt.addEventListener("mouseleave", () => easeBeltSpeed(1));
     }
 
-    // Stop animating while it's off screen.
     if ("IntersectionObserver" in window) {
         new IntersectionObserver(([entry]) => belt.classList.toggle("is-offscreen", !entry.isIntersecting))
             .observe(belt);
@@ -290,7 +266,6 @@ function easeBeltSpeed(target) {
     beltEase = requestAnimationFrame(step);
 }
 
-// Same speed on both rows, whatever their length.
 function setBeltSpeed() {
     document.querySelectorAll(".belt-track").forEach(track => {
         const set = track.querySelector(".belt-set");
@@ -298,9 +273,6 @@ function setBeltSpeed() {
     });
 }
 
-// ---------- Load ----------
-// Draw the logo band straight away from the last-known text, then redraw
-// only if the saved version turns out to be different.
 S = (cachedContent() || mergeContent({})).skills;
 renderBelt();
 const contentReady = startContent().then(content => {

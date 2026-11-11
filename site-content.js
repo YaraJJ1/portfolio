@@ -1,17 +1,11 @@
-// Editable page text, shared by the public pages and the admin page.
-//
-// Everything here has a built-in default. Text saved in the admin page is
-// stored in one Firestore document (projects/_site) and overrides the
-// defaults. Blank saved fields fall back to the default.
 import { db } from "./firebase.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 import { EXTRA_SKILLS, LEVEL_ADJUST, TOOLBELT, AREAS, DEFAULT_AREA, DEVICON_BASE } from "./skills-data.js";
 import { CERTIFICATES } from "./certificates-data.js";
 
-export const SITE_DOC_ID = "_site"; // lives in the "projects" collection
+export const SITE_DOC_ID = "_site";
 export const siteDocRef = () => doc(db, "projects", SITE_DOC_ID);
 
-// ---------- Logos the admin page can pick from ----------
 export const LOGOS = {
     csharp:     { label: "C#",           icon: "csharp/csharp-original" },
     unity:      { label: "Unity",        icon: "unity/unity-original", mono: true },
@@ -33,26 +27,23 @@ export const LOGOS = {
 };
 export const BADGE_COLORS = ["#6d5a91", "#56707a", "#2b6f75", "#4862d4", "#ad3a5a", "#9c6214"];
 
-// Turn a saved logo-band item ({ row, name, logo | badge, color }) into what the page draws.
 export function toolbeltItem(t) {
     const logo = LOGOS[t.logo];
     if (logo) return { row: t.row, name: t.name || logo.label, icon: logo.icon, mono: logo.mono, square: logo.square };
-    if (t.icon) return t; // already in page format
+    if (t.icon) return t;
     return { row: t.row, name: t.name, badge: t.badge || t.name, color: t.color || BADGE_COLORS[0] };
 }
-// The other way round, for the built-in list (which stores icon paths).
 function logoKeyForIcon(icon) {
     return Object.keys(LOGOS).find(k => LOGOS[k].icon === icon) || "";
 }
 export const iconUrl = icon => DEVICON_BASE + icon + ".svg";
 
-// ---------- Built-in defaults ----------
 export const DEFAULTS = {
     home: {
         role: "Game developer working in Unity & C#",
         intro: "I like the technical side of games: player movement, physics, shaders and procedural animation. Systems that are hard to get right and obvious when they're wrong.",
-        heroProject: "", // "" = the top project automatically
-        selectedWork: [], // up to 3 project ids for "Selected work"; "" or missing = automatic
+        heroProject: "",
+        selectedWork: [],
         areasIntro: "Mostly the systems underneath a game: how things move, collide and look.",
         areas: [
             { title: "Gameplay & physics", text: "Movement and vehicle controllers, grappling hooks, and buoyancy that lets objects ride on moving water." },
@@ -83,7 +74,6 @@ export const DEFAULTS = {
     }
 };
 
-// ---------- Merging saved text over the defaults ----------
 const isBlank = v => v === undefined || v === null || (typeof v === "string" && v.trim() === "");
 
 function mergePage(defaults, saved) {
@@ -95,7 +85,6 @@ function mergePage(defaults, saved) {
         const def = defaults[key];
         if (Array.isArray(def)) {
             if (!Array.isArray(value)) continue;
-            // Fixed-length lists of {title,text} keep defaults for blank entries.
             out[key] = key === "areas"
                 ? def.map((d, i) => ({
                     title: isBlank(value[i]?.title) ? d.title : value[i].title,
@@ -103,7 +92,6 @@ function mergePage(defaults, saved) {
                 }))
                 : value;
         } else if (key === "adjust") {
-            // Saved nudges replace the built-in ones (a removed nudge means "as calculated").
             if (value && typeof value === "object") out[key] = { ...value };
         } else if (def && typeof def === "object") {
             out[key] = { ...def };
@@ -121,7 +109,6 @@ export function mergeContent(saved) {
     return out;
 }
 
-// ---------- Loading ----------
 const CACHE_KEY = "siteContent";
 
 export function cachedContent() {
@@ -133,7 +120,6 @@ export function cachedContent() {
 }
 
 let loading = null;
-// Saved text merged over defaults. Never rejects: falls back to the cache, then the defaults.
 export function loadContent() {
     if (!loading) {
         loading = getDoc(siteDocRef())
@@ -147,11 +133,9 @@ export function loadContent() {
     return loading;
 }
 
-// ---------- Applying it to a page ----------
 const DEFAULT_EMAIL = DEFAULTS.contact.email;
 const DEFAULT_GITHUB = DEFAULTS.contact.github;
 
-// Email and GitHub appear on every page (footer, buttons, links).
 export function applyContactLinks(content) {
     const { email, github } = content.contact;
     const ghUrl = "https://github.com/" + github;
@@ -160,7 +144,6 @@ export function applyContactLinks(content) {
         if (a.textContent.trim() === DEFAULT_EMAIL || a.dataset.shown === "email") { a.textContent = email; a.dataset.shown = "email"; }
     });
     document.querySelectorAll(`a[href^="https://github.com/"]`).forEach(a => {
-        // Only the profile link, never links to individual repositories.
         const href = a.getAttribute("href").replace(/\/$/, "");
         if (href.toLowerCase() !== ("https://github.com/" + DEFAULT_GITHUB).toLowerCase() && a.dataset.gh !== "1") return;
         a.dataset.gh = "1";
@@ -170,7 +153,6 @@ export function applyContactLinks(content) {
     document.querySelectorAll("[data-content-email]").forEach(el => { el.textContent = email; });
 }
 
-// Fill every element marked data-content="page.field" with plain text.
 export function applyText(content) {
     document.querySelectorAll("[data-content]").forEach(el => {
         const [page, field] = el.dataset.content.split(".");
@@ -184,7 +166,6 @@ export function applyAll(content) {
     applyContactLinks(content);
 }
 
-// Pages that just need the shared bits can import this file and call start().
 export function start() {
     const cached = cachedContent();
     if (cached) applyAll(cached);
