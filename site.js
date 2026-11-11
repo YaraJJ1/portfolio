@@ -37,6 +37,16 @@
         });
     }
 
+    var toolbar = document.querySelector(".toolbar");
+    if (toolbar) {
+        var checkStuck = function () {
+            toolbar.classList.toggle("is-stuck", getComputedStyle(toolbar).position === "sticky" && toolbar.getBoundingClientRect().top <= 0);
+        };
+        window.addEventListener("scroll", checkStuck, { passive: true });
+        window.addEventListener("resize", checkStuck);
+        checkStuck();
+    }
+
     var year = document.getElementById("year");
     if (year) year.textContent = new Date().getFullYear();
 

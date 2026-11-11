@@ -549,10 +549,9 @@ main .home-contact { padding-bottom: 104px; }
     padding: 12px 0 16px;
     margin-bottom: 32px;
     border-bottom: 1px solid var(--line);
-    background: color-mix(in srgb, var(--bg) 78%, transparent);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+    background: transparent;
 }
+.toolbar.is-stuck { background: var(--bg); }
 
 .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
 
