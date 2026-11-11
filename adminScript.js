@@ -17,40 +17,103 @@ import {
     signOut 
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
+import {
+    CATEGORY_LABELS,
+    techLabel,
+    techColor,
+    escapeHTML
+} from "./projects-data.js";
+
 const auth = getAuth();
 
 const loginContainer = document.getElementById("login-container");
 const adminContent = document.getElementById("admin-content");
+const loginForm = document.getElementById("login-form");
 const loginBtn = document.getElementById("login-btn");
+const loginMessage = document.getElementById("login-message");
 const logoutBtn = document.getElementById("logout-btn");
+
+// ---------- Friendly messages (instead of browser pop-ups) ----------
+const formNotice = document.getElementById("form-notice");
+const toastEl = document.getElementById("toast");
+let toastTimer;
+
+// Success messages pop up briefly at the bottom of the screen.
+function toast(message) {
+    if (!toastEl) return;
+    toastEl.textContent = message;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 3000);
+}
+
+// Problems show in a box at the top of the form until dismissed or fixed.
+function notify(message) {
+    if (!formNotice) return toast(message);
+    formNotice.querySelector(".notice-text").textContent = message;
+    formNotice.hidden = false;
+    formNotice.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+function clearNotice() {
+    if (formNotice) formNotice.hidden = true;
+}
+if (formNotice) formNotice.querySelector(".notice-close").addEventListener("click", clearNotice);
+
+function showLoginMessage(message) {
+    if (!loginMessage) return;
+    loginMessage.textContent = message;
+    loginMessage.hidden = !message;
+}
+
+const LOGIN_ERRORS = {
+    "auth/invalid-credential": "That email and password don't match. Please try again.",
+    "auth/wrong-password": "That password isn't right. Please try again.",
+    "auth/user-not-found": "There's no account with that email.",
+    "auth/invalid-email": "That doesn't look like a valid email address.",
+    "auth/too-many-requests": "Too many attempts. Please wait a few minutes and try again.",
+    "auth/network-request-failed": "Can't reach the server. Check your internet connection."
+};
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
         if (loginContainer) loginContainer.style.display = "none";
         if (adminContent) {
             adminContent.style.display = "block";
-            adminContent.removeAttribute("hidden"); 
+            adminContent.removeAttribute("hidden");
         }
+        const signedIn = document.getElementById("signed-in-as");
+        if (signedIn) signedIn.textContent = user.email || "";
+        showLoginMessage("");
+        loadAdminProjects();
     } else {
-        if (loginContainer) loginContainer.style.display = "block";
+        if (loginContainer) loginContainer.style.display = "";
         if (adminContent) adminContent.style.display = "none";
         GITHUB_TOKEN = null; // clear any cached token on logout
     }
 });
 
-if (loginBtn) {
-    loginBtn.addEventListener("click", () => {
-        const email = document.getElementById("admin-email").value;
+if (loginForm) {
+    loginForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const email = document.getElementById("admin-email").value.trim();
         const password = document.getElementById("admin-password").value;
 
-        if(!email || !password) {
-            alert("Please enter both email and password.");
+        if (!email || !password) {
+            showLoginMessage("Please enter your email and password.");
             return;
         }
 
+        showLoginMessage("");
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Signing in…";
+
         signInWithEmailAndPassword(auth, email, password)
             .catch((error) => {
-                alert("Login Error: " + error.message);
+                showLoginMessage(LOGIN_ERRORS[error.code] || `Couldn't sign in (${error.code || error.message}).`);
+            })
+            .finally(() => {
+                loginBtn.disabled = false;
+                loginBtn.textContent = "Sign in";
             });
     });
 }
@@ -61,6 +124,16 @@ if (logoutBtn) {
             console.error("Logout Error: ", error);
         });
     });
+}
+
+// The date field is a calendar picker (yyyy-mm-dd); projects store dd/mm/yyyy.
+function isoToStored(iso) {
+    const [y, m, d] = String(iso || "").split("-");
+    return y && m && d ? `${d}/${m}/${y}` : "";
+}
+function storedToIso(stored) {
+    const [d, m, y] = String(stored || "").split("/");
+    return y && m && d ? `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}` : "";
 }
 
 
@@ -93,6 +166,47 @@ const inputFile = document.getElementById('input-file');
 const imageUploaderEl = document.getElementById('image-uploader');
 const imageListEl = document.getElementById('image-list');
 const uploadHintEl = document.getElementById('upload-hint');
+
+const formModeEl = document.getElementById('form-mode');
+const newProjectBtn = document.getElementById('new-project-btn');
+const descCountEl = document.getElementById('desc-count');
+const tagPreviewEl = document.getElementById('tag-preview');
+const projectCountEl = document.getElementById('project-count');
+
+// Live character count under the short summary.
+function updateDescCount() {
+    if (!descCountEl) return;
+    const max = desc.maxLength > 0 ? desc.maxLength : 400;
+    descCountEl.textContent = `${desc.value.length} / ${max}`;
+}
+desc.addEventListener("input", updateDescCount);
+updateDescCount();
+
+// Live preview of the coloured tags exactly as they'll look on the site.
+function updateTagPreview() {
+    if (!tagPreviewEl) return;
+    const keys = languages.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    tagPreviewEl.innerHTML = keys.length
+        ? `<span class="preview-label">Preview:</span>` + keys.map(k =>
+            `<span class="tag" style="--tag:${techColor(k)}">${escapeHTML(techLabel(k))}</span>`).join("")
+        : "";
+}
+languages.addEventListener("input", updateTagPreview);
+
+// Clear the "please fix this" box and highlight as soon as the user starts fixing things.
+addProjectPage.addEventListener("input", (event) => {
+    clearNotice();
+    if (event.target.classList) event.target.classList.remove("is-missing");
+});
+
+if (newProjectBtn) {
+    newProjectBtn.addEventListener("click", () => {
+        if (editingProjectId && !confirm("Stop editing this project? Unsaved changes will be lost.")) return;
+        stopEditingProject();
+        addProjectPage.scrollIntoView({ behavior: "smooth", block: "start" });
+        title.focus({ preventScroll: true });
+    });
+}
 
 
 const GITHUB_OWNER = "yarajj1";
@@ -555,23 +669,44 @@ async function loadAdminProjects() {
 
         adminProjectList.innerHTML = "";
 
+        if (projectCountEl) projectCountEl.textContent = querySnapshot.size ? `(${querySnapshot.size})` : "";
+
         if (querySnapshot.empty) {
-            adminProjectList.innerHTML = "<li>No projects yet.</li>";
+            adminProjectList.innerHTML = `<li class="list-empty">No projects yet. Add your first one with the form.</li>`;
             return;
         }
 
-        querySnapshot.forEach((docSnap) => {
+        // Newest first, so recent work is easy to find.
+        const toTime = s => { const [d, m, y] = String(s || "").split("/").map(Number); return y ? new Date(y, (m || 1) - 1, d || 1).getTime() : 0; };
+        const docs = querySnapshot.docs.slice().sort((a, b) => toTime(b.data()["data-date"]) - toTime(a.data()["data-date"]));
+
+        docs.forEach((docSnap) => {
             const project = docSnap.data();
             adminProjectsById.set(docSnap.id, project);
 
+            const media = Array.isArray(project.media) && project.media.length
+                ? project.media
+                : (project.imgSrc ? [{ url: project.imgSrc, type: "image" }] : []);
+            const thumb = (media.find(m => m.type !== "video") || {}).url || "images.png";
+            const metaParts = [
+                CATEGORY_LABELS[project["data-category"]] || project["data-category"],
+                project["data-date"]
+            ].filter(Boolean);
+
             const item = document.createElement("li");
             item.classList.add("adminProjectItem");
+            item.dataset.id = docSnap.id;
+            if (docSnap.id === editingProjectId) item.classList.add("is-editing");
 
             item.innerHTML = `
-                <span class="adminProjectName">${project.imgTxt || "Untitled"}</span>
+                <img class="adminProjectThumb" src="${escapeHTML(thumb)}" alt="" loading="lazy">
+                <span class="adminProjectInfo">
+                    <span class="adminProjectName">${escapeHTML(project.imgTxt || "Untitled")}</span>
+                    <span class="adminProjectMeta">${escapeHTML(metaParts.join(" · "))}</span>
+                </span>
                 <span class="adminProjectActions">
-                    <button class="editBtn" data-id="${docSnap.id}">Edit</button>
-                    <button class="deleteBtn" data-id="${docSnap.id}">Delete</button>
+                    <button class="editBtn" data-id="${escapeHTML(docSnap.id)}" type="button">Edit</button>
+                    <button class="deleteBtn" data-id="${escapeHTML(docSnap.id)}" type="button" aria-label="Delete ${escapeHTML(project.imgTxt || "project")}">Delete</button>
                 </span>
             `;
 
@@ -581,7 +716,7 @@ async function loadAdminProjects() {
     } catch (error) {
         console.error("Error loading admin projects:", error);
        
-        adminProjectList.innerHTML = `<li>Failed to load projects (${error.code || error.message}). If that says "permission-denied", check your Firestore rules.</li>`;
+        adminProjectList.innerHTML = `<li class="list-empty">Couldn't load your projects (${escapeHTML(error.code || error.message)}). Try refreshing the page.</li>`;
     }
 }
 
@@ -600,11 +735,12 @@ if (adminProjectList) {
         const id = deleteButton.dataset.id;
         if (!id) return;
 
-        const confirmed = confirm("Delete this project? This can't be undone.");
+        const name = (adminProjectsById.get(id) || {}).imgTxt || "this project";
+        const confirmed = confirm(`Delete "${name}" from your website?\n\nThis can't be undone.`);
         if (!confirmed) return;
 
         deleteButton.disabled = true;
-        deleteButton.textContent = "Deleting...";
+        deleteButton.textContent = "Deleting…";
 
         try {
             await deleteDoc(doc(db, "projects", id));
@@ -613,9 +749,10 @@ if (adminProjectList) {
             // click can't try to update a doc that no longer exists.
             if (editingProjectId === id) stopEditingProject();
             loadAdminProjects();
+            toast(`Deleted "${name}".`);
         } catch (error) {
             console.error("Error deleting project:", error);
-            alert("Couldn't delete this project — check the console.");
+            notify(`Couldn't delete "${name}" (${error.code || error.message}). Please try again.`);
             deleteButton.disabled = false;
             deleteButton.textContent = "Delete";
         }
@@ -628,15 +765,16 @@ if (adminProjectList) {
 function startEditingProject(id) {
     const project = adminProjectsById.get(id);
     if (!project) {
-        alert("Couldn't find that project's data — try refreshing the page.");
+        notify("Couldn't find that project's data. Try refreshing the page.");
         return;
     }
 
+    clearNotice();
     editingProjectId = id;
 
     title.value = project.imgTxt || "";
     desc.value = project.imgDesc || "";
-    date.value = project["data-date"] || "";
+    date.value = storedToIso(project["data-date"]);
     if (project["data-category"]) category.value = project["data-category"];
     if (project["data-difficulty"]) difficulty.value = project["data-difficulty"];
     setMoreDescriptionHtml(project.imgMoreDesc || "");
@@ -657,11 +795,23 @@ function startEditingProject(id) {
     stagedImages = existingMedia.map(item => ({ url: item.url, type: item.type || "image" }));
     renderImageList();
 
-    addProjectBtn.textContent = "Update Project";
+    addProjectBtn.textContent = "Save changes";
     if (cancelEditBtn) cancelEditBtn.hidden = false;
-    if (addHeader) addHeader.textContent = `Editing "${project.imgTxt || "Untitled"}"`;
+    if (addHeader) addHeader.textContent = project.imgTxt || "Untitled";
+    if (formModeEl) formModeEl.textContent = "Editing";
+    addProjectPage.classList.add("is-editing");
+    highlightEditingItem();
+    updateDescCount();
+    updateTagPreview();
 
     addProjectPage.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function highlightEditingItem() {
+    if (!adminProjectList) return;
+    adminProjectList.querySelectorAll(".adminProjectItem").forEach(li => {
+        li.classList.toggle("is-editing", li.dataset.id === editingProjectId);
+    });
 }
 
 // Clears the form and drops out of edit mode, back to "Add a new project".
@@ -671,13 +821,23 @@ function stopEditingProject() {
     requiredFields.forEach(field => {
         if (field) field.value = "";
     });
+    // Dropdowns go back to their first choice instead of blank.
+    category.selectedIndex = 0;
+    difficulty.selectedIndex = 0;
+    addProjectPage.querySelectorAll(".is-missing").forEach(el => el.classList.remove("is-missing"));
     setMoreDescriptionHtml("");
     if (githubLink) githubLink.value = "";
     resetImagePicker();
 
     addProjectBtn.textContent = "Add Project";
     if (cancelEditBtn) cancelEditBtn.hidden = true;
-    if (addHeader) addHeader.textContent = "Enter Project details: ";
+    if (addHeader) addHeader.textContent = "Add a project";
+    if (formModeEl) formModeEl.textContent = "New project";
+    addProjectPage.classList.remove("is-editing");
+    clearNotice();
+    highlightEditingItem();
+    updateDescCount();
+    updateTagPreview();
 }
 
 // ---------- Multi-media picker ----------
@@ -705,18 +865,18 @@ function renderImageList() {
 
         const tilesHtml = stagedImages.map((item, index) => {
             const mediaHtml = item.type === "video"
-                ? `<video src="${item.url}" class="image-thumb" style="width:100%;height:100%;object-fit:cover;display:block;" muted playsinline preload="metadata"></video>`
-                : `<img src="${item.url}" class="image-thumb" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">`;
+                ? `<video src="${escapeHTML(item.url)}" class="image-thumb" muted playsinline preload="metadata"></video>`
+                : `<img src="${escapeHTML(item.url)}" class="image-thumb" alt="">`;
 
             return `
-                <li class="image-tile" style="width:56px;height:56px;">
+                <li class="image-tile${index === 0 ? " is-thumb" : ""}">
                     ${mediaHtml}
                     ${index === 0 ? '<span class="image-badge">Thumbnail</span>' : ""}
-                    ${item.type === "video" ? '<span class="image-badge image-badge--video">▶</span>' : ""}
+                    ${item.type === "video" ? '<span class="image-badge image-badge--video">Video</span>' : ""}
                     <div class="image-controls">
-                        <button type="button" class="moveLeftBtn" data-index="${index}" ${index === 0 ? "disabled" : ""} aria-label="Move earlier">‹</button>
-                        <button type="button" class="removeImageBtn" data-index="${index}" aria-label="Remove image">×</button>
-                        <button type="button" class="moveRightBtn" data-index="${index}" ${index === stagedImages.length - 1 ? "disabled" : ""} aria-label="Move later">›</button>
+                        <button type="button" class="moveLeftBtn" data-index="${index}" ${index === 0 ? "disabled" : ""} aria-label="Move earlier" title="Move earlier">‹</button>
+                        <button type="button" class="removeImageBtn" data-index="${index}" aria-label="Remove" title="Remove">×</button>
+                        <button type="button" class="moveRightBtn" data-index="${index}" ${index === stagedImages.length - 1 ? "disabled" : ""} aria-label="Move later" title="Move later">›</button>
                     </div>
                 </li>
             `;
@@ -732,8 +892,8 @@ function renderImageList() {
     if (uploadHintEl) {
         const count = stagedImages.length;
         uploadHintEl.textContent = count
-            ? `${count} item${count > 1 ? "s" : ""} added — click or drop to add more`
-            : "First item becomes the thumbnail — images or a short video clip";
+            ? `${count} file${count > 1 ? "s" : ""}. Drag more onto the box to add them.`
+            : "No files yet. Click “Add files” or drag images and videos onto the box.";
     }
 }
 
@@ -796,35 +956,41 @@ if (!addProjectBtn) {
 } else {
     addProjectBtn.addEventListener("click", async function (e) {
         
-        e.preventDefault(); 
+        e.preventDefault();
+        clearNotice();
 
-        requiredFields.forEach((field, index) => {
-            console.log(`Checking field ${index}:`, field ? "Found" : "Missing Element");
-        });
-        console.log("Checking inner description:", moreDescription ? "Found" : "Missing Element");
-
-        if (
-            requiredFields.some(field => !field || !field.value || field.value.trim() === "") ||
-            !moreDescription ||
-            !moreDescriptionHasText()
-        ) {
-            alert("Please fill in all fields.");
+        // Name the exact fields that are still empty, and highlight them.
+        const fieldNames = new Map([
+            [title, "project name"], [desc, "short summary"], [date, "date"],
+            [category, "category"], [difficulty, "difficulty"], [languages, "languages & tools"]
+        ]);
+        addProjectPage.querySelectorAll(".is-missing").forEach(el => el.classList.remove("is-missing"));
+        const missing = requiredFields.filter(field => !field || !field.value || field.value.trim() === "");
+        const descMissing = !moreDescription || !moreDescriptionHasText();
+        if (missing.length || descMissing) {
+            missing.forEach(field => field && field.classList.add("is-missing"));
+            if (descMissing && moreDescription) moreDescription.classList.add("is-missing");
+            const names = missing.map(f => fieldNames.get(f)).concat(descMissing ? ["full description"] : []);
+            notify(`Almost there! Please fill in: ${names.join(", ")}.`);
             return;
         }
 
-        if (!isValidDateFormat(date.value.trim())) {
-            alert("Please enter the date as dd/mm/yyyy.");
+        const storedDate = isoToStored(date.value);
+        if (!isValidDateFormat(storedDate)) {
+            date.classList.add("is-missing");
+            notify("Please pick the date from the calendar.");
             return;
         }
 
         const githubLinkValue = githubLink ? githubLink.value.trim() : "";
         if (!isValidGithubLink(githubLinkValue)) {
-            alert("Please enter a valid GitHub URL (starting with http:// or https://), or leave it blank.");
+            githubLink.classList.add("is-missing");
+            notify("The GitHub link should start with https:// (or leave it empty).");
             return;
         }
 
         if (!stagedImages.length) {
-            alert("Please add at least one image or video above.");
+            notify("Please add at least one image or video.");
             return;
         }
 
@@ -840,7 +1006,7 @@ if (!addProjectBtn) {
                 if (staged.file) {
                     // A newly picked file - upload it to GitHub.
                     const label = staged.type === "video" ? "video" : "image";
-                    addProjectBtn.textContent = `Uploading ${label} ${i + 1} of ${stagedImages.length}...`;
+                    addProjectBtn.textContent = `Uploading ${label} ${i + 1} of ${stagedImages.length}…`;
                     const url = await uploadMediaToGithub(staged.file, title.value.trim(), i, staged.type);
                     media.push({ url, type: staged.type });
                 } else {
@@ -849,9 +1015,7 @@ if (!addProjectBtn) {
                     media.push({ url: staged.url, type: staged.type });
                 }
             }
-            console.log("Media ready:", media);
-
-            addProjectBtn.textContent = editingProjectId ? "Saving changes..." : "Adding to database...";
+            addProjectBtn.textContent = editingProjectId ? "Saving…" : "Adding…";
 
             const projectFields = {
                 imgTxt: title.value.trim(),
@@ -862,19 +1026,17 @@ if (!addProjectBtn) {
                 media, // {url, type} per item - lets the slider tell video from image
                 "data-category": category.value,
                 "data-difficulty": difficulty.value,
-                "data-date": date.value.trim(),
+                "data-date": storedDate,
                 "code-language": languages.value.trim().toLowerCase(),
                 githubLink: githubLinkValue // optional - empty string means "no icon" on the public page
             };
 
             if (editingProjectId) {
                 await updateDoc(doc(db, "projects", editingProjectId), projectFields);
-                console.log("Successfully updated in Firestore!");
-                alert("Project updated!");
+                toast(`Saved "${projectFields.imgTxt}". It's live on your website.`);
             } else {
                 await addDoc(collection(db, "projects"), projectFields);
-                console.log("Successfully saved to Firestore!");
-                alert("Project added!");
+                toast(`Added "${projectFields.imgTxt}". It's live on your website.`);
             }
 
             // Clears the form/staged images and drops out of edit mode
@@ -884,18 +1046,18 @@ if (!addProjectBtn) {
             
         } catch (error) {
             console.error("Error saving project:", error);
-            alert(`Something went wrong: ${error.message}`);
+            notify(`Something went wrong, so nothing was saved: ${error.message}`);
         } finally {
             if (imageUploaderEl) imageUploaderEl.classList.remove("uploading");
             addProjectBtn.disabled = false;
-            addProjectBtn.textContent = editingProjectId ? "Update Project" : "Add Project";
+            addProjectBtn.textContent = editingProjectId ? "Save changes" : "Add Project";
         }
     });
 }
 
 if (cancelEditBtn) {
     cancelEditBtn.addEventListener("click", () => {
-        if (!confirm("Discard changes and stop editing this project?")) return;
+        if (!confirm("Stop editing? Any changes you haven't saved will be lost.")) return;
         stopEditingProject();
     });
 }

@@ -3,109 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Admin Page</title>
-    <link rel="stylesheet" href="./adminStyle.css">
-
+    <meta name="robots" content="noindex">
+    <title>Admin | Yara Janahi</title>
+    <script>
+        try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
+    </script>
+    <link rel="stylesheet" href="./adminStyle.css?v=8">
 </head>
 
 <body>
+    <!-- ===== Sign in ===== -->
     <div id="login-container" class="login-wrapper">
-        <div class="addProjectPage login-card-override">
-            <h2 class="addHeader">Admin Login</h2>
-            <p class="inputTitle login-label">Email:</p>
-            <input type="email" id="admin-email" class="TitleT" placeholder="Enter Admin Email">
+        <form class="login-card" id="login-form" novalidate>
+            <p class="login-brand">Yara Janahi</p>
+            <h1>Sign in to manage your projects</h1>
+            <p class="login-note">Only you can make changes here.</p>
 
-            <p class="inputTitle login-label">Password:</p>
-            <input type="password" id="admin-password" class="TitleT" placeholder="Enter Password">
+            <label class="field">
+                <span class="field-label">Email</span>
+                <input type="email" id="admin-email" autocomplete="username" placeholder="you@example.com">
+            </label>
 
-            <button id="login-btn" class="addProjectBtn login-btn-override">Log In</button>
-        </div>
+            <label class="field">
+                <span class="field-label">Password</span>
+                <input type="password" id="admin-password" autocomplete="current-password" placeholder="Your password">
+            </label>
+
+            <p class="form-message" id="login-message" role="alert" hidden></p>
+
+            <button id="login-btn" class="btn btn-primary btn-block" type="submit">Sign in</button>
+            <a class="back-link" href="index.html">&larr; Back to the website</a>
+        </form>
     </div>
 
+    <!-- ===== Admin ===== -->
     <div id="admin-content" style="display: none;">
+        <header class="admin-header">
+            <div class="admin-header-inner">
+                <div>
+                    <p class="admin-brand">Yara Janahi <span>· Admin</span></p>
+                </div>
+                <div class="admin-header-actions">
+                    <span class="signed-in" id="signed-in-as"></span>
+                    <a class="btn btn-ghost" href="project.html" target="_blank" rel="noopener">View website</a>
+                    <button id="logout-btn" class="btn btn-ghost" type="button">Sign out</button>
+                </div>
+            </div>
+        </header>
+
         <div class="adminLayout">
 
-            <div class="logout-wrapper">
-                <button id="logout-btn" class="addProjectBtn logout-btn-override">Log Out</button>
-            </div>
-
-            <div class="addProjectPage">
-                <h2 class="addHeader">Enter Project details: </h2>
-
-                <p class="inputTitle">Enter Title: </p>
-                <input type="text" class="Title" placeholder="Enter Title">
-
-                <p class="inputTitle">Enter Description: </p>
-                <textarea class="Description" placeholder="Enter Description"></textarea>
-
-                <p class="inputTitle">Enter Date dd/mm/yyyy: </p>
-                <input type="text" class="Date" placeholder="Enter Date">
-
-                <p class="inputTitle">Project Images / Video: </p>
-                <div class="imageUploader" id="image-uploader">
-                    <input type="file" accept="image/*,video/*" id="input-file" multiple hidden>
-                    <ul id="image-list" class="image-grid">
-                        <li class="image-tile image-tile--add">
-                            <label for="input-file" class="image-add-label" aria-label="Add images or videos">
-                                <span class="image-add-icon">+</span>
-                            </label>
-                        </li>
-                    </ul>
-                    <div class="upload-overlay">
-                        <div class="spinner"></div>
-                        <p>Uploading…</p>
-                    </div>
+            <!-- Project list -->
+            <aside class="projectListSection">
+                <div class="list-head">
+                    <h2>Your projects <span class="count" id="project-count"></span></h2>
+                    <button class="btn btn-primary btn-small" id="new-project-btn" type="button">+ New project</button>
                 </div>
-                <span class="upload-hint" id="upload-hint">First item becomes the thumbnail — images or a short video clip</span>
-
-                <p class="inputTitle">Enter Data Category: </p>
-                <select class="Category">
-                    <option value="games">Games</option>
-                    <option value="web">Web</option>
-                    <option value="backend">Back-end</option>
-                    <option value="others">Others</option>
-                </select>
-
-                <p class="inputTitle">Enter Difficulty Level: </p>
-                <select class="Difficulty">
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                </select>
-
-                <p class="inputTitle">Enter Inner Description: </p>
-                <div class="richEditor">
-                    <div class="richToolbar" role="toolbar" aria-label="Inner description formatting">
-                        <button type="button" class="richBtn" data-command="bold" aria-label="Bold" aria-pressed="false" title="Bold (Ctrl+B)"><b>B</b></button>
-                        <button type="button" class="richBtn" data-command="underline" aria-label="Underline" aria-pressed="false" title="Underline (Ctrl+U)"><u>U</u></button>
-                    </div>
-                    <div class="MoreDescription richInput is-empty"
-                         contenteditable="true"
-                         role="textbox"
-                         aria-multiline="true"
-                         aria-label="Inner Description"
-                         data-placeholder="Enter Inner Description"></div>
-                </div>
-
-                <p class="inputTitle">Enter All Languages Used: </p>
-                <input type="text" class="Languages" placeholder="Enter Languages">
-
-                <p class="inputTitle">GitHub Link (optional): </p>
-                <input type="url" class="GithubLink" placeholder="https://github.com/username/repo">
-
-                <button id="submit-project-btn" class="addProjectBtn">Add Project</button>
-                <button id="cancel-edit-btn" class="addProjectBtn cancelEditBtn" type="button" hidden>Cancel Edit</button>
-            </div>
-
-            <div class="projectListSection">
-                <h2 class="addHeader">Existing Projects</h2>
                 <ul class="adminProjectList"></ul>
-            </div>
+            </aside>
 
+            <!-- Add / edit form -->
+            <main class="addProjectPage">
+                <div class="form-head">
+                    <p class="form-mode" id="form-mode">New project</p>
+                    <h2 class="addHeader">Add a project</h2>
+                    <p class="form-intro">Fill in the details below. Everything except the GitHub link is required.</p>
+                </div>
+
+                <div class="notice" id="form-notice" role="status" hidden>
+                    <span class="notice-text"></span>
+                    <button type="button" class="notice-close" aria-label="Dismiss">&times;</button>
+                </div>
+
+                <!-- Basics -->
+                <section class="form-section">
+                    <h3>The basics</h3>
+
+                    <label class="field">
+                        <span class="field-label">Project name</span>
+                        <input type="text" class="Title" placeholder="e.g. GPU FFT Ocean" maxlength="80">
+                    </label>
+
+                    <label class="field">
+                        <span class="field-label">Short summary <span class="hint">Shown on the project card. One or two sentences.</span></span>
+                        <textarea class="Description" rows="3" maxlength="400" placeholder="What is it, in a sentence or two?"></textarea>
+                        <span class="char-count" id="desc-count"></span>
+                    </label>
+
+                    <div class="field-row">
+                        <label class="field">
+                            <span class="field-label">Date finished</span>
+                            <input type="date" class="Date">
+                        </label>
+
+                        <label class="field">
+                            <span class="field-label">Category</span>
+                            <select class="Category">
+                                <option value="games">Games</option>
+                                <option value="web">Web</option>
+                                <option value="backend">Back-end</option>
+                                <option value="others">Other</option>
+                            </select>
+                        </label>
+
+                        <label class="field">
+                            <span class="field-label">Difficulty</span>
+                            <select class="Difficulty">
+                                <option value="easy">Easy (1 bar)</option>
+                                <option value="medium">Medium (2 bars)</option>
+                                <option value="hard">Hard (3 bars)</option>
+                            </select>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Media -->
+                <section class="form-section">
+                    <h3>Images &amp; videos</h3>
+                    <p class="section-help">The <strong>first</strong> item is the card's thumbnail, so put your best, brightest image first. Use the arrows to reorder. Images up to 5&nbsp;MB, videos up to 20&nbsp;MB.</p>
+
+                    <div class="imageUploader" id="image-uploader">
+                        <input type="file" accept="image/*,video/*" id="input-file" multiple hidden>
+                        <ul id="image-list" class="image-grid">
+                            <li class="image-tile image-tile--add">
+                                <label for="input-file" class="image-add-label" aria-label="Add images or videos">
+                                    <span class="image-add-icon">+</span>
+                                    <span class="image-add-text">Add files</span>
+                                </label>
+                            </li>
+                        </ul>
+                        <div class="drop-hint">Drop files here</div>
+                        <div class="upload-overlay">
+                            <div class="spinner"></div>
+                            <p>Uploading…</p>
+                        </div>
+                    </div>
+                    <span class="upload-hint" id="upload-hint">First item becomes the thumbnail — images or a short video clip</span>
+                </section>
+
+                <!-- Description -->
+                <section class="form-section">
+                    <h3>Full description</h3>
+                    <p class="section-help">Shown when someone opens the project. Explain what you built and how. Use <b>B</b> for bold and <u>U</u> for underline; Tab indents a line.</p>
+                    <div class="richEditor">
+                        <div class="richToolbar" role="toolbar" aria-label="Description formatting">
+                            <button type="button" class="richBtn" data-command="bold" aria-label="Bold" aria-pressed="false" title="Bold (Ctrl+B)"><b>B</b></button>
+                            <button type="button" class="richBtn" data-command="underline" aria-label="Underline" aria-pressed="false" title="Underline (Ctrl+U)"><u>U</u></button>
+                        </div>
+                        <div class="MoreDescription richInput is-empty"
+                             contenteditable="true"
+                             role="textbox"
+                             aria-multiline="true"
+                             aria-label="Full description"
+                             data-placeholder="What does it do? What was the hardest part? What did you learn?"></div>
+                    </div>
+                </section>
+
+                <!-- Tech + link -->
+                <section class="form-section">
+                    <h3>Tech &amp; links</h3>
+
+                    <label class="field">
+                        <span class="field-label">Languages &amp; tools <span class="hint">Separate with spaces, e.g. <code>unity c# hlsl</code></span></span>
+                        <input type="text" class="Languages" placeholder="unity c#" autocomplete="off" spellcheck="false">
+                    </label>
+                    <div class="tag-preview" id="tag-preview" aria-live="polite"></div>
+
+                    <label class="field">
+                        <span class="field-label">GitHub link <span class="hint">Optional</span></span>
+                        <input type="url" class="GithubLink" placeholder="https://github.com/username/repo">
+                    </label>
+                </section>
+
+                <div class="form-actions">
+                    <button id="submit-project-btn" class="btn btn-primary" type="button">Add Project</button>
+                    <button id="cancel-edit-btn" class="btn btn-ghost cancelEditBtn" type="button" hidden>Cancel editing</button>
+                </div>
+            </main>
         </div>
     </div>
 
-    <script type="module" src="./adminScript.js"></script>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="./adminScript.js?v=8"></script>
 </body>
 </html>
