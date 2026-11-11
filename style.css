@@ -141,7 +141,7 @@ p { text-wrap: pretty; }
 
 .site-header {
     border-bottom: 1px solid var(--line);
-    background: var(--bg);
+    background: transparent;
 }
 
 .header-inner {
@@ -549,7 +549,9 @@ main .home-contact { padding-bottom: 104px; }
     padding: 12px 0 16px;
     margin-bottom: 32px;
     border-bottom: 1px solid var(--line);
-    background: var(--bg);
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
 }
 
 .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -1512,4 +1514,19 @@ html.has-custom-cursor :fullscreen * { cursor: auto !important; }
 }
 @media (prefers-reduced-motion: reduce) {
     .custom-cursor.is-link circle { animation: none; }
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: -10vmax;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(38vmax 38vmax at 12% 18%, rgba(91, 74, 140, 0.30), transparent 60%);
+}
+:root[data-theme="dark"] body::before {
+    background: radial-gradient(38vmax 38vmax at 12% 18%, rgba(185, 166, 240, 0.16), transparent 60%);
+}
+@media (prefers-reduced-transparency: reduce) {
+    body::before { display: none; }
 }
