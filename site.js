@@ -45,7 +45,10 @@
     var cursor = document.createElement("div");
     cursor.className = "custom-cursor";
     cursor.setAttribute("aria-hidden", "true");
-    cursor.innerHTML = '<span class="custom-cursor-dot"></span>';
+    cursor.innerHTML = '<svg class="custom-cursor-dot" viewBox="0 0 40 40" aria-hidden="true">' +
+        '<circle class="cursor-outline" cx="20" cy="20" r="7.5"/>' +
+        '<circle class="cursor-ring" cx="20" cy="20" r="7.5"/></svg>';
+    var snap = function (v) { var dpr = window.devicePixelRatio || 1; return Math.round(v * dpr) / dpr; };
     document.body.appendChild(cursor);
     root.classList.add("has-custom-cursor");
 
@@ -65,7 +68,7 @@
     function frame() {
         cx += (x - cx) * 0.35;
         cy += (y - cy) * 0.35;
-        cursor.style.transform = "translate3d(" + cx + "px," + cy + "px,0)";
+        cursor.style.transform = "translate3d(" + snap(cx) + "px," + snap(cy) + "px,0)";
         if (Math.abs(x - cx) > 0.1 || Math.abs(y - cy) > 0.1) requestAnimationFrame(frame);
         else moving = false;
     }
