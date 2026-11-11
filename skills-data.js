@@ -14,18 +14,19 @@ export function levelFromProjects(points) {
 
 // The word shown next to each bar.
 export function levelWord(level) {
+    if (level >= 90) return "Expert";
     if (level >= 75) return "Advanced";
-    if (level >= 58) return "Working knowledge";
-    return "Familiar";
+    if (level >= 55) return "Intermediate";
+    return "Beginner";
 }
 
 // Skills you have that aren't in a listed project yet. Set the level yourself
 // (0–100). Once a project uses one of these, its level comes from the projects.
 // Names and colours come from projects-data.js (TECH), so use the same keys.
 export const EXTRA_SKILLS = [
-    { key: "c++",      level: 60 },
-    { key: "java",     level: 60 },
-    { key: "assembly", level: 60 }
+    { key: "c++",      level: 60 },  // Intermediate
+    { key: "java",     level: 56 },  // Intermediate, a bit below C++
+    { key: "assembly", level: 48 }   // Beginner
 ];
 
 // When two bars have the same level, this order decides which comes first
