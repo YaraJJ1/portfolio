@@ -140,7 +140,7 @@ p { text-wrap: pretty; }
 .more-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 .site-header {
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid rgba(41, 32, 42, 0.14);
     background: transparent;
 }
 
@@ -1529,3 +1529,4 @@ body::before {
 @media (prefers-reduced-transparency: reduce) {
     body::before { display: none; }
 }
+:root[data-theme="dark"] .site-header { border-bottom-color: var(--line); }
