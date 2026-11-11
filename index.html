@@ -8,7 +8,7 @@
     <script>
         try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
     </script>
-    <link rel="stylesheet" href="./style.css?v=7">
+    <link rel="stylesheet" href="./style.css?v=9">
 </head>
 <body>
 
@@ -34,60 +34,96 @@
         </div>
     </header>
 
-    <main class="container">
-        <section class="hero">
-            <p class="eyebrow">Game developer · Unity &amp; C#</p>
-            <h1>Hi, I'm Yara<span class="dot">.</span></h1>
-            <p class="hero-text">
-                I build gameplay systems and real-time graphics in Unity, from a GPU ocean
-                and buoyancy physics to procedural animation and movement mechanics.
-                This site collects my personal projects.
-            </p>
-            <div class="hero-actions">
-                <a class="btn btn-primary" href="project.html">View projects</a>
-                <a class="btn" href="contact.html">Get in touch</a>
+    <main>
+        <!-- Intro + the strongest project as a big picture -->
+        <section class="container home-hero">
+            <div class="hero-copy">
+                <p class="hero-role">Game developer &middot; Unity &amp; C#</p>
+                <h1>Yara Janahi</h1>
+                <p class="hero-text">
+                    I like the technical side of games: simulating an ocean on the GPU,
+                    making things float on it, and working out where a many-legged creature
+                    should put its feet. Below is some of what I've built.
+                </p>
+                <div class="hero-actions">
+                    <a class="btn btn-primary" href="project.html">See my projects</a>
+                    <a class="btn" href="contact.html">Get in touch</a>
+                </div>
+
+                <dl class="hero-facts" id="heroFacts" hidden>
+                    <div>
+                        <dt>Projects</dt>
+                        <dd id="factCount"></dd>
+                    </div>
+                    <div>
+                        <dt>Mostly in</dt>
+                        <dd id="factTech"></dd>
+                    </div>
+                    <div>
+                        <dt>Latest</dt>
+                        <dd id="factLatest"></dd>
+                    </div>
+                </dl>
             </div>
+
+            <figure class="hero-shot" id="heroShot">
+                <a class="hero-shot-media" id="heroShotLink" href="project.html" aria-hidden="true" tabindex="-1">
+                    <img id="heroShotImg" alt="" fetchpriority="high">
+                </a>
+                <figcaption id="heroShotCaption"></figcaption>
+            </figure>
         </section>
 
-        <section class="section">
-            <div class="section-head">
-                <h2>Featured work</h2>
-                <a class="more-link" href="project.html">All projects &rarr;</a>
+        <!-- Selected work -->
+        <section class="container home-section">
+            <div class="home-head">
+                <h2>Selected work</h2>
+                <a class="more-link" id="allProjectsLink" href="project.html">All projects &rarr;</a>
             </div>
             <p class="loading" id="loading">Loading projects…</p>
-            <ul class="featured-grid" id="featuredGrid"></ul>
+            <ol class="work-list" id="workList"></ol>
         </section>
 
-        <section class="section">
-            <div class="section-head">
-                <h2>What I work on</h2>
-                <a class="more-link" href="skills.html">Skills &rarr;</a>
-            </div>
-            <div class="focus-grid">
-                <article class="focus">
-                    <span class="focus-num">01</span>
-                    <h3>Gameplay &amp; physics</h3>
-                    <p>Character and vehicle controllers, grappling movement, and buoyancy that makes objects float on moving water.</p>
-                </article>
-                <article class="focus">
-                    <span class="focus-num">02</span>
-                    <h3>Graphics &amp; shaders</h3>
-                    <p>Real-time GPU work in URP and HLSL, like an FFT ocean simulation running in compute shaders.</p>
-                </article>
-                <article class="focus">
-                    <span class="focus-num">03</span>
-                    <h3>Animation &amp; tools</h3>
-                    <p>Procedural animation for multi-legged characters, plus desktop and web tools built with JavaScript.</p>
-                </article>
+        <!-- What I work on -->
+        <section class="container home-section">
+            <div class="areas">
+                <div class="areas-intro">
+                    <h2>What I work on</h2>
+                    <p>Mostly the systems underneath a game: how things move, collide and look. A full list of tools is on the <a href="skills.html">skills page</a>.</p>
+                </div>
+                <ul class="area-list">
+                    <li class="area" data-area="gameplay">
+                        <h3>Gameplay &amp; physics</h3>
+                        <p>Movement and vehicle controllers, grappling hooks, and buoyancy that lets objects ride on moving water.</p>
+                        <p class="area-links"></p>
+                    </li>
+                    <li class="area" data-area="graphics">
+                        <h3>Graphics &amp; shaders</h3>
+                        <p>Real-time GPU work in URP and HLSL, like an FFT ocean simulated in compute shaders.</p>
+                        <p class="area-links"></p>
+                    </li>
+                    <li class="area" data-area="animation">
+                        <h3>Animation &amp; tools</h3>
+                        <p>Procedural animation for multi-legged characters, plus desktop and web tools in JavaScript.</p>
+                        <p class="area-links"></p>
+                    </li>
+                </ul>
             </div>
         </section>
 
-        <section class="cta">
-            <h2>Want to work together?</h2>
-            <p>I'm always happy to talk about games, graphics, or a role on your team.</p>
-            <a class="btn btn-primary" href="contact.html">Contact me</a>
+        <!-- Contact -->
+        <section class="container home-section home-contact">
+            <h2>Hiring, or working on something interesting?</h2>
+            <p>Email is the quickest way to reach me.</p>
+            <div class="home-email">
+                <a href="mailto:janahi.yara@gmail.com">janahi.yara@gmail.com</a>
+                <button class="small-btn" id="copyEmail" type="button">Copy</button>
+            </div>
+            <p class="home-contact-more">Code is on <a href="https://github.com/YaraJJ1" target="_blank" rel="noopener noreferrer">GitHub</a>, or use the <a href="contact.html">contact page</a>.</p>
         </section>
     </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <footer class="site-footer">
         <div class="container footer-inner">
@@ -100,6 +136,6 @@
     </footer>
 
     <script src="./site.js?v=7" defer></script>
-    <script type="module" src="./home.js?v=7"></script>
+    <script type="module" src="./home.js?v=9"></script>
 </body>
 </html>
