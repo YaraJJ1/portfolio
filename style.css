@@ -56,9 +56,9 @@ a { color: var(--accent); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .container {
-    max-width: 1100px;
+    max-width: 1640px;
     margin: 0 auto;
-    padding: 0 24px;
+    padding: 0 48px;
 }
 
 .link-btn {
@@ -193,7 +193,8 @@ a { color: var(--accent); }
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(460px, 100%), 1fr));
+    grid-auto-rows: 1fr; /* every card the same height */
     gap: 48px 40px;
 }
 
@@ -272,18 +273,24 @@ a { color: var(--accent); }
     color: var(--muted);
 }
 
+/* Fixed-size description box: long text scrolls inside it instead of
+   stretching the card, so every card stays the same size. */
 .card-desc {
-    margin: 0 0 18px;
+    flex: 1 1 0;
+    min-height: 4.8em;
+    margin: 0 0 16px;
+    padding-right: 6px;
     color: var(--ink-2);
-    font-size: 16px;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-dark) transparent;
 }
+.card-desc::-webkit-scrollbar { width: 6px; }
+.card-desc::-webkit-scrollbar-thumb { background: var(--line-dark); border-radius: 3px; }
 
 .card .tags {
-    margin-top: auto;
     padding-top: 14px;
     border-top: 1px solid var(--line);
 }
@@ -296,14 +303,20 @@ a { color: var(--accent); }
 }
 
 .tag {
-    display: inline-block;
-    padding: 2px 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    padding: 0 11px;
     border-radius: 999px;
     background: var(--tag, #6f6873);
     color: #fff;
     font-size: 13.5px;
-    line-height: 1.5;
+    line-height: 1;
     white-space: nowrap;
+    /* Trim the font's built-in top/bottom space so the letters sit
+       exactly in the middle of the pill in any browser. */
+    text-box: trim-both cap alphabetic;
 }
 
 .tag.category {
