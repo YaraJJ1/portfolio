@@ -112,7 +112,9 @@ let selected = null;
 
 function renderDonut(projects) {
     groups = groupByArea([...projects].sort(byStrongest));
-    const total = groups.reduce((n, g) => n + g.projects.length, 0);
+    // Slice size = total difficulty points (easy 1, medium 2, hard 3), so hard work counts for more.
+    const weight = g => g.projects.reduce((n, p) => n + (DIFFICULTY_WEIGHT[p.difficulty] || 1), 0);
+    const total = groups.reduce((n, g) => n + weight(g), 0);
     const svg = $("donut");
     if (!total) { svg.closest(".panel-col").hidden = true; return; }
 
@@ -121,7 +123,7 @@ function renderDonut(projects) {
     let segments = "", labels = "";
 
     groups.forEach((g, i) => {
-        const sweep = (g.projects.length / total) * Math.PI * 2;
+        const sweep = (weight(g) / total) * Math.PI * 2;
         const a0 = angle + gap / 2, a1 = angle + sweep - gap / 2;
         const mid = angle + sweep / 2;
         angle += sweep;
@@ -185,7 +187,7 @@ function renderDonut(projects) {
     fitView();
     phone.addEventListener("change", fitView);
 
-    const start = groups.find(g => g.key === S.defaultArea)
+    const start = groups.find(g => g.key === S.defaultArea) || groups.find(g => g.key === "gameplay")
         || [...groups].sort((a, b) => b.projects.length - a.projects.length)[0];
     select(start.key, false);
     if (!reduceMotion) svg.classList.add("animate");

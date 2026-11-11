@@ -1122,6 +1122,7 @@ a.card:focus-visible {
    with the end of the Proficiency list beside it */
 .skills-panel .panel-col:last-child { display: flex; flex-direction: column; }
 .skills-panel .focus-chart { width: 100%; }
+.chart-note { margin: -16px 0 24px; text-align: center; color: var(--muted); font-size: 14px; }
 .area-detail { margin-top: auto; padding-top: 22px; border-top: 1px solid var(--line); }
 .area-detail h3 { margin: 0 0 4px; font-size: 18px; }
 .area-detail h3::before {

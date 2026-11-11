@@ -9,7 +9,7 @@
         try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
     </script>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="./style.css?v=19">
+    <link rel="stylesheet" href="./style.css?v=20">
 </head>
 <body>
 
@@ -64,6 +64,7 @@
                 <div class="focus-chart">
                     <svg class="donut" id="donut" viewBox="0 0 560 400" role="group" aria-label="Projects by area"></svg>
                 </div>
+                <p class="chart-note">Slice size is weighted by project difficulty.</p>
                 <div class="area-detail" id="areaDetail"></div>
             </div>
         </section>
@@ -80,6 +81,6 @@
     </footer>
 
     <script src="./site.js?v=8" defer></script>
-    <script type="module" src="./skills.js?v=21"></script>
+    <script type="module" src="./skills.js?v=22"></script>
 </body>
 </html>

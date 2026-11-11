@@ -63,52 +63,45 @@ export const TOOLBELT = [
 export const DEVICON_BASE = "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/";
 
 // ----- Focus chart -----
+// Four areas that match the kinds of roles studios hire for.
 // Every project goes into the first area whose test matches it, so the order
-// of this list matters (e.g. the buoyancy project mentions "Ocean" but
-// belongs in Physics, which is checked before Graphics).
-// "order" is where the area sits on the chart (1 = starting at the top).
+// of this list matters. "order" is where the area sits on the chart
+// (1 = starting at the top). Slice sizes are weighted by difficulty.
 export const AREAS = [
     {
         key: "tools",
-        order: 5,
-        label: "Apps & tools",
+        order: 4,
+        label: "Tools & apps",
         color: "#b07a1f",
-        text: "Apps and websites outside of games, built with JavaScript, HTML and CSS.",
-        test: p => p.category !== "games"
-    },
-    {
-        key: "physics",
-        order: 3,
-        label: "Physics",
-        color: "#3776ab",
-        text: "Physics-driven systems, like buoyancy that keeps objects floating on a moving ocean.",
-        test: p => /buoy|bouy|physics/i.test(p.title)
+        text: "Software beyond the game itself: web apps, desktop tools and editor utilities.",
+        test: p => p.category !== "games" || /\b(tool|editor|plugin|pipeline)s?\b/i.test(p.title)
     },
     {
         key: "animation",
-        order: 2,
+        order: 3,
         label: "Animation",
         color: "#ad3a5a",
-        text: "Procedural animation: legs and bodies driven by code instead of keyframes, adjusting to the ground they walk on.",
-        test: p => /animation|rig|ik\b/i.test(p.title)
+        text: "Runtime animation systems driven from code, such as procedural locomotion, IK and rigs.",
+        test: p => /anim|\brig\b|\bik\b|kinematic|locomotion|gait/i.test(p.title)
     },
     {
         key: "graphics",
-        order: 1,
+        order: 2,
         label: "Graphics",
         color: "#6d5a91",
-        text: "Real-time GPU work in Unity URP with compute shaders and HLSL, like an FFT ocean simulation.",
-        test: p => p.techs.includes("hlsl") || /shader|render|ocean/i.test(p.title)
+        text: "Real-time rendering: shaders, GPU compute and visual effects.",
+        test: p => p.techs.some(t => /hlsl|glsl|shader|compute/i.test(t)) ||
+            /shader|render|vfx|lighting|post.?process|ray.?(march|trac)|toon|cel.?shad/i.test(p.title)
     },
     {
         key: "gameplay",
-        order: 4,
+        order: 1,
         label: "Gameplay",
         color: "#2b8a8a",
-        text: "Movement and controllers, from spaceship flight to grappling hooks.",
+        text: "Player controllers, movement and physics-driven mechanics built in Unity and C#.",
         test: () => true // any other game project
     }
 ];
 
 // The area shown when the page opens (falls back to the biggest one).
-export const DEFAULT_AREA = "graphics";
+export const DEFAULT_AREA = "gameplay";
