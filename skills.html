@@ -8,7 +8,7 @@
     <script>
         try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
     </script>
-    <link rel="stylesheet" href="./style.css?v=16">
+    <link rel="stylesheet" href="./style.css?v=17">
 </head>
 <body>
 
@@ -62,9 +62,8 @@
                 <h2 class="panel-title">Focus</h2>
                 <p class="panel-hint">Select an area to see its projects.</p>
                 <div class="focus-chart">
-                    <svg class="donut" id="donut" viewBox="0 0 560 400" aria-hidden="true"></svg>
+                    <svg class="donut" id="donut" viewBox="0 0 560 400" role="group" aria-label="Projects by area"></svg>
                 </div>
-                <div class="area-legend" id="areaLegend" role="group" aria-label="Choose an area"></div>
                 <div class="area-detail" id="areaDetail"></div>
             </div>
         </section>
@@ -81,6 +80,6 @@
     </footer>
 
     <script src="./site.js?v=7" defer></script>
-    <script type="module" src="./skills.js?v=16"></script>
+    <script type="module" src="./skills.js?v=17"></script>
 </body>
 </html>

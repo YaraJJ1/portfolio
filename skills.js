@@ -132,9 +132,9 @@ function renderDonut(projects) {
             : bandPath(a0, a1);
         const [dx, dy] = point((R_IN + R_OUT) / 2, mid);
 
-        // Mouse only: the legend buttons are the keyboard/screen-reader control.
+        const name = `${g.label}: ${plural(g.projects.length, "project")}`;
         segments += `
-        <g class="donut-seg" data-key="${g.key}" style="--seg:${g.color}; --i:${i}">
+        <g class="donut-seg" data-key="${g.key}" style="--seg:${g.color}; --i:${i}" tabindex="0" role="button" aria-pressed="false" aria-controls="areaDetail" aria-label="${escapeHTML(name)}">
             <path d="${d}" fill-rule="evenodd"></path>
             <circle class="seg-dot" cx="${fmt(dx)}" cy="${fmt(dy)}" r="5"></circle>
         </g>`;
@@ -146,7 +146,7 @@ function renderDonut(projects) {
         const lx3 = lx2 + (right ? 26 : -26);
         const tx = lx3 + (right ? 8 : -8);
         labels += `
-        <g class="donut-label" data-key="${g.key}" style="--seg:${g.color}">
+        <g class="donut-label" data-key="${g.key}" style="--seg:${g.color}" aria-hidden="true">
             <polyline points="${fmt(lx1)},${fmt(ly1)} ${fmt(lx2)},${fmt(ly2)} ${fmt(lx3)},${fmt(ly2)}"></polyline>
             <text x="${fmt(tx)}" y="${fmt(ly2 - 3)}" text-anchor="${right ? "start" : "end"}">${escapeHTML(g.label)}</text>
             <text class="donut-label-count" x="${fmt(tx)}" y="${fmt(ly2 + 15)}" text-anchor="${right ? "start" : "end"}">${cap(plural(g.projects.length, "project"))}</text>
@@ -156,26 +156,20 @@ function renderDonut(projects) {
     svg.innerHTML = `
         ${segments}
         ${labels}
-        <g class="donut-center">
+        <g class="donut-center" aria-hidden="true">
             <text class="donut-title" id="donutTitle" x="${C.x}" y="${C.y - 2}" text-anchor="middle"></text>
             <text class="donut-sub" id="donutSub" x="${C.x}" y="${C.y + 24}" text-anchor="middle"></text>
         </g>`;
 
-    $("areaLegend").innerHTML = groups.map(g => `
-        <button type="button" class="legend-item" data-key="${g.key}" style="--seg:${g.color}" aria-pressed="false" aria-controls="areaDetail">
-            <span class="legend-dot" aria-hidden="true"></span>${escapeHTML(g.label)}
-        </button>`).join("");
-
-    // Hovering a segment previews it; clicking picks it.
+    // Hovering a segment previews it; clicking (or Enter/Space) picks it.
     svg.querySelectorAll(".donut-seg").forEach(seg => {
         seg.addEventListener("mouseenter", () => highlight(seg.dataset.key));
         seg.addEventListener("click", () => select(seg.dataset.key, true));
+        seg.addEventListener("keydown", e => {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(seg.dataset.key, true); }
+        });
     });
     svg.addEventListener("mouseleave", () => highlight(selected));
-    $("areaLegend").addEventListener("click", e => {
-        const btn = e.target.closest(".legend-item");
-        if (btn) select(btn.dataset.key, true);
-    });
 
     // On phones the callout labels are hidden, so zoom in on the ring itself.
     const phone = window.matchMedia("(max-width: 560px)");
@@ -205,10 +199,8 @@ function select(key, byUser) {
     selected = key;
     highlight(key);
 
-    document.querySelectorAll(".legend-item").forEach(btn => {
-        const on = btn.dataset.key === key;
-        btn.classList.toggle("is-active", on);
-        btn.setAttribute("aria-pressed", String(on));
+    $("donut").querySelectorAll(".donut-seg").forEach(seg => {
+        seg.setAttribute("aria-pressed", String(seg.dataset.key === key));
     });
 
     const detail = $("areaDetail");
@@ -224,7 +216,8 @@ function select(key, byUser) {
 }
 
 // ---------- Scrolling logo band ----------
-const BELT_SPEED = 22; // pixels per second: slow on purpose
+const BELT_SPEED = 22;       // pixels per second: slow on purpose
+const BELT_HOVER_RATE = 0.3; // speed while the mouse is over it
 
 function beltItem(t, isRepeat) {
     const cls = [t.mono && "mono", t.square && "square"].filter(Boolean).join(" ");
@@ -259,6 +252,12 @@ function renderBelt() {
         belt.querySelectorAll(".belt-set:not(.belt-set--copy)").forEach(s => ro.observe(s));
     }
 
+    // Hovering eases the band down to a crawl, and back up when you leave.
+    if (window.matchMedia("(hover: hover)").matches) {
+        belt.addEventListener("mouseenter", () => easeBeltSpeed(BELT_HOVER_RATE));
+        belt.addEventListener("mouseleave", () => easeBeltSpeed(1));
+    }
+
     // Stop animating while it's off screen.
     if ("IntersectionObserver" in window) {
         new IntersectionObserver(([entry]) => belt.classList.toggle("is-offscreen", !entry.isIntersecting))
@@ -281,6 +280,20 @@ function renderBelt() {
         setPaused(paused);
         try { localStorage.setItem("beltPaused", paused ? "1" : "0"); } catch (e) {}
     });
+}
+
+let beltRate = 1, beltEase = 0;
+function easeBeltSpeed(target) {
+    cancelAnimationFrame(beltEase);
+    const from = beltRate, startTime = performance.now(), duration = 500;
+    const step = now => {
+        const t = Math.min(1, (now - startTime) / duration);
+        beltRate = from + (target - from) * (1 - Math.pow(1 - t, 3));
+        document.querySelectorAll(".belt-track").forEach(track =>
+            track.getAnimations().forEach(a => { a.playbackRate = beltRate; }));
+        if (t < 1) beltEase = requestAnimationFrame(step);
+    };
+    beltEase = requestAnimationFrame(step);
 }
 
 // Same speed on both rows, whatever their length.

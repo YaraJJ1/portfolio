@@ -983,12 +983,9 @@ a.card:focus-visible {
 /* Starts only once the speed is measured, so it never jumps */
 .toolbelt.is-ready .belt-track { animation: belt-scroll 60s linear infinite; }
 .toolbelt.is-ready .belt-row--reverse .belt-track { animation-direction: reverse; }
+/* Hovering slows it down (done in skills.js so it eases without jumping) */
 .toolbelt.is-paused .belt-track,
-.toolbelt.is-offscreen .belt-track,
-.toolbelt:focus-within .belt-track { animation-play-state: paused; }
-@media (hover: hover) {
-    .toolbelt:hover .belt-track { animation-play-state: paused; }
-}
+.toolbelt.is-offscreen .belt-track { animation-play-state: paused; }
 @keyframes belt-scroll { to { transform: translateX(-50%); } }
 
 .belt-set {
@@ -1133,30 +1130,9 @@ a.card:focus-visible {
     from { opacity: 0; transform: scale(0.85) rotate(-20deg); }
 }
 
-/* Legend buttons: the keyboard and screen-reader way to pick an area */
-.area-legend {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    margin: 8px 0 28px;
-}
-.legend-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 34px;
-    padding: 0 12px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: transparent;
-    color: var(--ink-2);
-    font-size: 15px;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-.legend-item:hover { border-color: var(--line-dark); color: var(--ink); }
-.legend-item.is-active { border-color: var(--seg); background: var(--paper); color: var(--ink); }
-.legend-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--seg); }
+.donut-seg { outline: none; }
+.donut-seg:focus-visible path { stroke: var(--ink); stroke-width: 3; }
+.focus-chart { margin-bottom: 28px; }
 
 /* Selected area */
 .area-detail { padding-top: 22px; border-top: 1px solid var(--line); }
