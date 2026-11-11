@@ -13,21 +13,29 @@ const CATEGORY_LABELS = {
 
 const DIFFICULTY_ORDER = { easy: 1, medium: 2, hard: 3 };
 
-const TECH_LABELS = {
-    html: "HTML",
-    css: "CSS",
-    js: "JavaScript",
-    javascript: "JavaScript",
-    ts: "TypeScript",
-    typescript: "TypeScript",
-    java: "Java",
-    "c++": "C++",
-    "c#": "C#",
-    python: "Python",
-    unity: "Unity",
-    php: "PHP",
-    sql: "SQL",
-    hlsl: "HLSL"
+// Label + tag colour for each technology.
+const TECH = {
+    html:       { label: "HTML",       color: "#dd7156" },
+    css:        { label: "CSS",        color: "#5f7be9" },
+    js:         { label: "JavaScript", color: "#b8961a" },
+    javascript: { label: "JavaScript", color: "#b8961a" },
+    ts:         { label: "TypeScript", color: "#3178c6" },
+    typescript: { label: "TypeScript", color: "#3178c6" },
+    java:       { label: "Java",       color: "#866aa5" },
+    "c++":      { label: "C++",        color: "#ae759f" },
+    "c#":       { label: "C#",         color: "#439775" },
+    python:     { label: "Python",     color: "#3776ab" },
+    unity:      { label: "Unity",      color: "#4b4b55" },
+    php:        { label: "PHP",        color: "#486552" },
+    sql:        { label: "SQL",        color: "#c47a66" },
+    hlsl:       { label: "HLSL",       color: "#77659a" }
+};
+
+const CATEGORY_COLORS = {
+    games: "#2f7f86",
+    web: "#4a6fc0",
+    backend: "#8a5a3c",
+    others: "#7a6f7c"
 };
 
 const PLACEHOLDER_IMG = "images.png";
@@ -82,13 +90,21 @@ function formatDate(date, long = false) {
         : { month: "long", year: "numeric" });
 }
 
-const techLabel = key => TECH_LABELS[key] || key.toUpperCase();
+const techLabel = key => (TECH[key] ? TECH[key].label : key.toUpperCase());
 const capitalize = s => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
 
-function metaLine(p, longDate) {
-    return [formatDate(p.date, longDate), CATEGORY_LABELS[p.category] || capitalize(p.category), capitalize(p.difficulty)]
-        .filter(Boolean)
-        .join(" · ");
+function tag(text, color, extraClass = "") {
+    return `<span class="tag ${extraClass}" style="--tag:${color}">${escapeHTML(text)}</span>`;
+}
+
+function levelTag(p) {
+    return p.difficulty ? `<span class="tag level level-${escapeHTML(p.difficulty)}">${escapeHTML(capitalize(p.difficulty))}</span>` : "";
+}
+
+function tagsHTML(p) {
+    const category = tag(CATEGORY_LABELS[p.category] || capitalize(p.category), CATEGORY_COLORS[p.category] || "#7a6f7c", "category");
+    const techs = p.techs.map(t => tag(techLabel(t), TECH[t] ? TECH[t].color : "#6f6873")).join("");
+    return category + techs;
 }
 
 let toastTimer;
@@ -188,10 +204,13 @@ function cardHTML(p) {
                 ${p.previewVideo ? `<video muted loop playsinline preload="none" data-src="${escapeHTML(p.previewVideo)}"></video><span class="video-note">video</span>` : ""}
             </div>
             <div class="card-body">
-                <h3 class="card-title">${escapeHTML(p.title)}</h3>
-                <p class="card-meta">${escapeHTML(metaLine(p))}</p>
+                <div class="card-head">
+                    <h3 class="card-title">${escapeHTML(p.title)}</h3>
+                    ${levelTag(p)}
+                </div>
+                <p class="card-date">${escapeHTML(formatDate(p.date))}</p>
                 <p class="card-desc">${escapeHTML(p.summary)}</p>
-                <p class="card-tech">${escapeHTML(p.techs.map(techLabel).join(", "))}</p>
+                <div class="tags">${tagsHTML(p)}</div>
             </div>
         </article>
     </li>`;
@@ -309,8 +328,8 @@ function fillModal(p) {
     renderSlides(p.media.length ? p.media : [{ url: PLACEHOLDER_IMG, type: "image" }]);
 
     $("#modalTitle").textContent = p.title;
-    $("#modalMeta").textContent = metaLine(p, true);
-    $("#modalTech").textContent = p.techs.map(techLabel).join(", ");
+    $("#modalMeta").textContent = formatDate(p.date, true);
+    $("#modalTech").innerHTML = levelTag(p) + tagsHTML(p);
     // Written in the admin editor, so line breaks / bold / underline are kept.
     $("#modalDescription").innerHTML = p.descriptionHTML || escapeHTML(p.summary);
 
@@ -403,6 +422,20 @@ menuToggle.addEventListener("click", () => {
     menuToggle.setAttribute("aria-expanded", String(open));
     menuToggle.textContent = open ? "Close" : "Menu";
 });
+
+// Light mode is the default; the choice is remembered on this device.
+const themeBtn = $("#themeToggle");
+function updateThemeButton() {
+    const dark = document.documentElement.dataset.theme === "dark";
+    themeBtn.textContent = dark ? "Light mode" : "Dark mode";
+}
+themeBtn.addEventListener("click", () => {
+    const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("theme", next); } catch {}
+    updateThemeButton();
+});
+updateThemeButton();
 
 $("#year").textContent = new Date().getFullYear();
 

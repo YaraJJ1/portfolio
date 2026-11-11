@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projects</title>
     <meta name="description" content="My personal projects: game development in Unity & C#, graphics programming, web and desktop apps.">
+    <script>
+        // Light mode unless the visitor picked dark before.
+        try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
+    </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css">
-    <link rel="stylesheet" href="./style.css?v=3">
+    <link rel="stylesheet" href="./style.css?v=4">
 </head>
 <body>
 
@@ -14,14 +18,17 @@
         <div class="container header-inner">
             <a class="brand" href="index.html">Portfolio</a>
 
-            <button class="menu-btn" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="siteNav">Menu</button>
-
             <nav class="nav" id="siteNav" aria-label="Main">
                 <a href="index.html" class="active" aria-current="page">Projects</a>
                 <a href="skills.html">Skills</a>
                 <a href="certificates.html">Certificates</a>
                 <a href="contact.html">Contact</a>
             </nav>
+
+            <div class="header-buttons">
+                <button class="small-btn" id="themeToggle">Dark mode</button>
+                <button class="small-btn menu-btn" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="siteNav">Menu</button>
+            </div>
         </div>
     </header>
 
@@ -95,7 +102,7 @@
             <div class="modal-body">
                 <h2 class="modal-title" id="modalTitle"></h2>
                 <p class="modal-meta" id="modalMeta"></p>
-                <p class="modal-tech" id="modalTech"></p>
+                <div class="tags modal-tags" id="modalTech"></div>
 
                 <div class="modal-description" id="modalDescription"></div>
 
@@ -115,6 +122,6 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
-    <script type="module" src="./script.js?v=3"></script>
+    <script type="module" src="./script.js?v=4"></script>
 </body>
 </html>
