@@ -2,7 +2,7 @@
 // Bar levels, logos and chart areas are set in skills-data.js.
 import { escapeHTML, techLabel, techColor, fetchProjects, byStrongest } from "./projects-data.js";
 import {
-    EXTRA_SKILLS, DIFFICULTY_WEIGHT, SKILL_ORDER, levelFromProjects, levelWord,
+    EXTRA_SKILLS, DIFFICULTY_WEIGHT, SKILL_ORDER, LEVEL_ADJUST, levelFromProjects, levelWord,
     AREAS, DEFAULT_AREA, TOOLBELT, DEVICON_BASE
 } from "./skills-data.js";
 
@@ -42,9 +42,9 @@ function buildSkills(projects) {
     return [...skills.values()]
         .map(s => ({
             ...s,
-            level: s.projects.length
-                ? levelFromProjects(s.score)
-                : Math.max(0, Math.min(100, Number(s.fixedLevel) || 0))
+            level: Math.max(0, Math.min(100,
+                (s.projects.length ? levelFromProjects(s.score) : Number(s.fixedLevel) || 0)
+                + (LEVEL_ADJUST[s.label] || 0)))
         }))
         .sort((a, b) => b.level - a.level || orderIndex(a.label) - orderIndex(b.label) || a.label.localeCompare(b.label));
 }
@@ -164,6 +164,8 @@ function renderDonut(projects) {
     // Hovering a segment previews it; clicking (or Enter/Space) picks it.
     svg.querySelectorAll(".donut-seg").forEach(seg => {
         seg.addEventListener("mouseenter", () => highlight(seg.dataset.key));
+        seg.addEventListener("focus", () => highlight(seg.dataset.key));
+        seg.addEventListener("blur", () => highlight(selected));
         seg.addEventListener("click", () => select(seg.dataset.key, true));
         seg.addEventListener("keydown", e => {
             if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(seg.dataset.key, true); }
@@ -173,7 +175,12 @@ function renderDonut(projects) {
 
     // On phones the callout labels are hidden, so zoom in on the ring itself.
     const phone = window.matchMedia("(max-width: 560px)");
-    const fitView = () => svg.setAttribute("viewBox", phone.matches ? "124 44 312 312" : "0 0 560 400");
+    const fitView = () => {
+        svg.setAttribute("viewBox", phone.matches ? "124 44 312 312" : "0 0 560 400");
+        $("focusHint").textContent = phone.matches
+            ? "Tap a slice to see its area and projects."
+            : "Select an area to see its projects.";
+    };
     fitView();
     phone.addEventListener("change", fitView);
 
@@ -263,23 +270,6 @@ function renderBelt() {
         new IntersectionObserver(([entry]) => belt.classList.toggle("is-offscreen", !entry.isIntersecting))
             .observe(belt);
     }
-
-    // Pause / play button (remembered between visits).
-    const btn = $("beltToggle");
-    const setPaused = paused => {
-        belt.classList.toggle("is-paused", paused);
-        btn.setAttribute("aria-pressed", String(paused));
-        btn.textContent = paused ? "Play" : "Pause";
-        btn.setAttribute("aria-label", paused ? "Play the scrolling logos" : "Pause the scrolling logos");
-    };
-    let saved = false;
-    try { saved = localStorage.getItem("beltPaused") === "1"; } catch (e) {}
-    setPaused(saved);
-    btn.addEventListener("click", () => {
-        const paused = !belt.classList.contains("is-paused");
-        setPaused(paused);
-        try { localStorage.setItem("beltPaused", paused ? "1" : "0"); } catch (e) {}
-    });
 }
 
 let beltRate = 1, beltEase = 0;
@@ -316,4 +306,5 @@ fetchProjects()
     .catch(error => {
         console.error("Error loading projects:", error);
         $("loading").textContent = "Couldn't load skills. Please refresh the page.";
+        $("donut").closest(".panel-col").hidden = true;
     });

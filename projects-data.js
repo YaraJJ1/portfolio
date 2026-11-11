@@ -9,7 +9,7 @@ export const CATEGORY_LABELS = {
     games: "Games",
     web: "Web",
     backend: "Back-end",
-    others: "Other"
+    others: "Apps & tools"
 };
 
 export const CATEGORY_COLORS = {

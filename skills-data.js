@@ -29,6 +29,13 @@ export const EXTRA_SKILLS = [
     { key: "assembly", level: 48 }   // Beginner
 ];
 
+// Nudge a project-based level up or down when it doesn't match how you feel
+// about a skill (uses the display names). Negative = a bit lower.
+export const LEVEL_ADJUST = {
+    "CSS": -3,         // a bit below HTML
+    "JavaScript": -6   // a bit below CSS
+};
+
 // When two bars have the same level, this order decides which comes first
 // (most relevant for game work first). Uses the display names.
 export const SKILL_ORDER = ["C#", "Unity", "HLSL", "C++", "JavaScript", "HTML", "CSS", "Java", "Assembly"];

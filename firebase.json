@@ -4,13 +4,19 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "test.html",
+      "testScript.js",
+      "testStyle.css"
     ],
     "headers": [
       {
         "source": "**/*.@(html|js|css)",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache" }
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
         ]
       }
     ]

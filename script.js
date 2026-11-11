@@ -72,9 +72,19 @@ async function loadProjects() {
 function writeSummary() {
     const counts = {};
     allProjects.forEach(p => (counts[p.category] = (counts[p.category] || 0) + 1));
+    // Nouns that read naturally after a number ("1 app or tool", "5 games").
+    const NOUNS = {
+        games: ["game", "games"],
+        web: ["web project", "web projects"],
+        backend: ["back-end project", "back-end projects"],
+        others: ["app or tool", "apps and tools"]
+    };
     const parts = Object.keys(CATEGORY_LABELS)
         .filter(key => counts[key])
-        .map(key => `${counts[key]} ${CATEGORY_LABELS[key].toLowerCase()}`);
+        .map(key => {
+            const [one, many] = NOUNS[key] || [CATEGORY_LABELS[key].toLowerCase(), CATEGORY_LABELS[key].toLowerCase()];
+            return `${counts[key]} ${counts[key] === 1 ? one : many}`;
+        });
     const total = allProjects.length;
     $("#summary").textContent = `${total} project${total === 1 ? "" : "s"}${parts.length ? ` · ${parts.join(", ")}` : ""}`;
 }
