@@ -37,6 +37,7 @@ export const TECH = {
     php:        { label: "PHP",        color: "#486552" },
     sql:        { label: "SQL",        color: "#a55a40" },
     hlsl:       { label: "HLSL",       color: "#6d5a91" },
+    firebase:   { label: "Firebase",   color: "#b8650f" },
     assembly:   { label: "Assembly",   color: "#56707a" },
     asm:        { label: "Assembly",   color: "#56707a" }
 };
@@ -133,7 +134,10 @@ function normalizeProject(id, data) {
 // Loads every project from Firestore (throws on failure).
 export async function fetchProjects() {
     const snapshot = await getDocs(collection(db, "projects"));
-    return snapshot.docs.map(doc => normalizeProject(doc.id, doc.data()));
+    // Documents starting with "_" hold site settings (e.g. _site = page text), not projects.
+    return snapshot.docs
+        .filter(doc => !doc.id.startsWith("_"))
+        .map(doc => normalizeProject(doc.id, doc.data()));
 }
 
 // Strongest work first: hardest, then newest.

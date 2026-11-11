@@ -1,10 +1,11 @@
 // Skills page: scrolling logo band, skill bars on the left, a "focus" donut chart on the right.
 // Bar levels, logos and chart areas are set in skills-data.js.
-import { escapeHTML, techLabel, techColor, fetchProjects, byStrongest } from "./projects-data.js";
-import {
-    EXTRA_SKILLS, DIFFICULTY_WEIGHT, SKILL_ORDER, LEVEL_ADJUST, levelFromProjects, levelWord,
-    AREAS, DEFAULT_AREA, TOOLBELT, DEVICON_BASE
-} from "./skills-data.js";
+import { escapeHTML, techLabel, techColor, fetchProjects, byStrongest, TECH } from "./projects-data.js";
+import { DIFFICULTY_WEIGHT, SKILL_ORDER, levelFromProjects, levelWord, AREAS, DEVICON_BASE } from "./skills-data.js";
+import { start as startContent, toolbeltItem, cachedContent, mergeContent } from "./site-content.js";
+
+// Settings that can be changed in the admin page (filled in once loaded).
+let S = null;
 
 const $ = id => document.getElementById(id);
 const projectUrl = p => `project.html#project=${encodeURIComponent(p.id)}`;
@@ -22,8 +23,8 @@ const orderIndex = label => {
 
 function buildSkills(projects) {
     const skills = new Map();
-    const add = key => {
-        const label = techLabel(key);
+    const add = (key, name) => {
+        const label = TECH[key] || !name ? techLabel(key) : name;
         if (!skills.has(label)) skills.set(label, { key, label, projects: [], score: 0, fixedLevel: 0 });
         return skills.get(label);
     };
@@ -37,14 +38,14 @@ function buildSkills(projects) {
         }
     }));
     // ...plus the extra skills listed in skills-data.js.
-    EXTRA_SKILLS.forEach(extra => { add(extra.key).fixedLevel = extra.level; });
+    S.extraSkills.forEach(extra => { add(extra.key, extra.name).fixedLevel = extra.level; });
 
     return [...skills.values()]
         .map(s => ({
             ...s,
             level: Math.max(0, Math.min(100,
                 (s.projects.length ? levelFromProjects(s.score) : Number(s.fixedLevel) || 0)
-                + (LEVEL_ADJUST[s.label] || 0)))
+                + (Number(S.adjust[s.label]) || 0)))
         }))
         .sort((a, b) => b.level - a.level || orderIndex(a.label) - orderIndex(b.label) || a.label.localeCompare(b.label));
 }
@@ -96,7 +97,7 @@ function bandPath(a0, a1) {
 }
 
 function groupByArea(projects) {
-    const groups = AREAS.map(a => ({ ...a, projects: [] }));
+    const groups = AREAS.map(a => ({ ...a, text: S.areaTexts[a.key] || a.text, projects: [] }));
     projects.forEach(p => {
         const g = groups.find(a => a.test(p));
         if (g) g.projects.push(p);
@@ -184,7 +185,7 @@ function renderDonut(projects) {
     fitView();
     phone.addEventListener("change", fitView);
 
-    const start = groups.find(g => g.key === DEFAULT_AREA)
+    const start = groups.find(g => g.key === S.defaultArea)
         || [...groups].sort((a, b) => b.projects.length - a.projects.length)[0];
     select(start.key, false);
     if (!reduceMotion) svg.classList.add("animate");
@@ -236,6 +237,7 @@ function beltItem(t, isRepeat) {
 
 function renderBelt() {
     const belt = $("toolbelt");
+    const TOOLBELT = S.toolbelt.map(toolbeltItem).filter(t => t.name);
     $("toolbeltList").innerHTML = TOOLBELT.map(t => `<li>${escapeHTML(t.name)}</li>`).join("");
 
     [[1, "beltLanguages"], [2, "beltTools"]].forEach(([row, id]) => {
@@ -294,11 +296,20 @@ function setBeltSpeed() {
     });
 }
 
-renderBelt();
-
 // ---------- Load ----------
-fetchProjects()
-    .then(projects => {
+// Draw the logo band straight away from the last-known text, then redraw
+// only if the saved version turns out to be different.
+S = (cachedContent() || mergeContent({})).skills;
+renderBelt();
+const contentReady = startContent().then(content => {
+    const beltChanged = JSON.stringify(content.skills.toolbelt) !== JSON.stringify(S.toolbelt);
+    S = content.skills;
+    if (beltChanged) renderBelt();
+    return content;
+});
+
+Promise.all([fetchProjects(), contentReady])
+    .then(([projects]) => {
         $("loading").hidden = true;
         renderBars(projects);
         renderDonut(projects);

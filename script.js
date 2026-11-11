@@ -11,6 +11,10 @@ import {
     byStrongest,
     byFeatured
 } from "./projects-data.js";
+import { start as startContent } from "./site-content.js";
+
+// Footer email/GitHub follow what's set in the admin page.
+startContent();
 
 let allProjects = [];
 let visibleProjects = [];

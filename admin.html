@@ -9,7 +9,7 @@
         try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
     </script>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="./adminStyle.css?v=8">
+    <link rel="stylesheet" href="./adminStyle.css?v=11">
 </head>
 
 <body>
@@ -50,8 +50,19 @@
                     <button id="logout-btn" class="btn btn-ghost" type="button">Sign out</button>
                 </div>
             </div>
+            <nav class="admin-tabs" aria-label="What to edit">
+                <div class="admin-tabs-inner" role="tablist">
+                    <button type="button" role="tab" class="admin-tab" id="tab-projects" data-tab="projects" aria-controls="panel-projects" aria-selected="true">Projects</button>
+                    <button type="button" role="tab" class="admin-tab" id="tab-home" data-tab="home" aria-controls="panel-pages" aria-selected="false" tabindex="-1">Home</button>
+                    <button type="button" role="tab" class="admin-tab" id="tab-skills" data-tab="skills" aria-controls="panel-pages" aria-selected="false" tabindex="-1">Skills</button>
+                    <button type="button" role="tab" class="admin-tab" id="tab-certificates" data-tab="certificates" aria-controls="panel-pages" aria-selected="false" tabindex="-1">Certificates</button>
+                    <button type="button" role="tab" class="admin-tab" id="tab-contact" data-tab="contact" aria-controls="panel-pages" aria-selected="false" tabindex="-1">Contact</button>
+                </div>
+            </nav>
         </header>
 
+        <!-- ===== Projects tab ===== -->
+        <div class="tab-panel" id="panel-projects" role="tabpanel" aria-labelledby="tab-projects">
         <div class="adminLayout">
 
             <!-- Project list -->
@@ -182,10 +193,44 @@
                 </div>
             </main>
         </div>
+        </div>
+
+        <!-- ===== Page tabs (Home, Skills, Certificates, Contact) ===== -->
+        <div class="tab-panel" id="panel-pages" role="tabpanel" hidden>
+            <div class="page-editor">
+                <div class="form-head">
+                    <p class="form-mode">Edit page</p>
+                    <h2 class="addHeader" id="pageTitle">Home page</h2>
+                    <p class="form-intro"><span id="pageIntro"></span> <a id="pageViewLink" href="index.html" target="_blank" rel="noopener">View this page ↗</a></p>
+                </div>
+
+                <div class="notice" id="pageNotice" role="alert" hidden>
+                    <span class="notice-text"></span>
+                    <button type="button" class="notice-close" aria-label="Dismiss">&times;</button>
+                </div>
+
+                <p class="page-loading" id="pageLoading">Loading…</p>
+                <form id="pageForm" novalidate></form>
+
+                <div class="page-restore">
+                    <button type="button" class="btn btn-ghost btn-small" id="restoreBtn">Go back to the built-in text…</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save bar for the page tabs -->
+        <div class="save-bar" id="saveBar" hidden>
+            <div class="save-bar-inner">
+                <span class="save-state" id="saveState"><span class="save-dot" aria-hidden="true"></span><span id="saveStateText">Saved – live on your site</span></span>
+                <button type="button" class="btn btn-ghost" id="discardBtn" disabled>Discard changes</button>
+                <button type="button" class="btn btn-primary" id="saveBtn" disabled>Save changes</button>
+            </div>
+        </div>
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script type="module" src="./adminScript.js?v=8"></script>
+    <script type="module" src="./adminScript.js?v=10"></script>
+    <script type="module" src="./admin-pages.js?v=3"></script>
 </body>
 </html>

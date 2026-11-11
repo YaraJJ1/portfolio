@@ -1118,8 +1118,11 @@ a.card:focus-visible {
 .donut-seg:focus-visible path { stroke: var(--ink); stroke-width: 3; }
 .focus-chart { margin-bottom: 28px; }
 
-/* Selected area */
-.area-detail { padding-top: 22px; border-top: 1px solid var(--line); }
+/* Selected area: sits at the bottom of the Focus column so it lines up
+   with the end of the Proficiency list beside it */
+.skills-panel .panel-col:last-child { display: flex; flex-direction: column; }
+.skills-panel .focus-chart { width: 100%; }
+.area-detail { margin-top: auto; padding-top: 22px; border-top: 1px solid var(--line); }
 .area-detail h3 { margin: 0 0 4px; font-size: 18px; }
 .area-detail h3::before {
     content: "";
@@ -1372,7 +1375,7 @@ a.card:focus-visible {
 .modal-tags { margin: 12px 0 24px; }
 
 .modal-description {
-    max-width: 68ch;
+    /* Fills the popup's width; the 900px popup keeps lines a comfortable length */
     color: var(--ink-2);
     white-space: pre-line;
     overflow-wrap: anywhere;

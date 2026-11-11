@@ -666,19 +666,21 @@ async function loadAdminProjects() {
 
     try {
         const querySnapshot = await getDocs(collection(db, "projects"));
+        // Documents starting with "_" hold page text (edited in the other tabs), not projects.
+        const projectDocs = querySnapshot.docs.filter(d => !d.id.startsWith("_"));
 
         adminProjectList.innerHTML = "";
 
-        if (projectCountEl) projectCountEl.textContent = querySnapshot.size ? `(${querySnapshot.size})` : "";
+        if (projectCountEl) projectCountEl.textContent = projectDocs.length ? `(${projectDocs.length})` : "";
 
-        if (querySnapshot.empty) {
+        if (!projectDocs.length) {
             adminProjectList.innerHTML = `<li class="list-empty">No projects yet. Add your first one with the form.</li>`;
             return;
         }
 
         // Newest first, so recent work is easy to find.
         const toTime = s => { const [d, m, y] = String(s || "").split("/").map(Number); return y ? new Date(y, (m || 1) - 1, d || 1).getTime() : 0; };
-        const docs = querySnapshot.docs.slice().sort((a, b) => toTime(b.data()["data-date"]) - toTime(a.data()["data-date"]));
+        const docs = projectDocs.slice().sort((a, b) => toTime(b.data()["data-date"]) - toTime(a.data()["data-date"]));
 
         docs.forEach((docSnap) => {
             const project = docSnap.data();

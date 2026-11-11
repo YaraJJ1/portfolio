@@ -9,7 +9,7 @@
         try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
     </script>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="./style.css?v=18">
+    <link rel="stylesheet" href="./style.css?v=19">
 </head>
 <body>
 
@@ -38,13 +38,13 @@
     <main class="container">
         <section class="intro">
             <h1>Contact</h1>
-            <p>Questions about a project, an opportunity, or just want to say hi? Email is the best way to reach me.</p>
+            <p data-content="contact.intro">Questions about a project, an opportunity, or just want to say hi? Email is the best way to reach me.</p>
         </section>
 
         <div class="contact-grid">
             <section class="contact-card">
                 <h2>Email</h2>
-                <p class="contact-email">janahi.yara@gmail.com</p>
+                <p class="contact-email" data-content-email>janahi.yara@gmail.com</p>
                 <div class="contact-actions">
                     <a class="btn btn-primary" href="mailto:janahi.yara@gmail.com">Send an email</a>
                     <button class="btn" id="copyEmail" type="button">Copy address</button>
@@ -53,7 +53,7 @@
 
             <section class="contact-card">
                 <h2>GitHub</h2>
-                <p>Source code for some of my projects.</p>
+                <p data-content="contact.githubLine">Source code for some of my projects.</p>
                 <a class="btn" href="https://github.com/YaraJJ1" target="_blank" rel="noopener noreferrer">github.com/YaraJJ1</a>
             </section>
 
@@ -93,8 +93,14 @@
 
     <script src="./site.js?v=8" defer></script>
     <script>
+        // Works even if the database can't be reached; the address switches to
+        // the one set in the admin page once it loads.
+        var EMAIL = "janahi.yara@gmail.com";
+        import("./site-content.js")
+            .then(function (m) { return m.start(); })
+            .then(function (content) { EMAIL = content.contact.email; })
+            .catch(function () {});
         (function () {
-            var EMAIL = "janahi.yara@gmail.com";
             var toast = document.getElementById("toast");
             var timer;
             function showToast(msg) {

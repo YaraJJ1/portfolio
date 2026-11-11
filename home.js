@@ -9,6 +9,7 @@ import {
     fetchProjects,
     byFeatured
 } from "./projects-data.js";
+import { start as startContent, cachedContent, mergeContent } from "./site-content.js";
 
 const $ = id => document.getElementById(id);
 const projectUrl = p => `project.html#project=${encodeURIComponent(p.id)}`;
@@ -102,19 +103,35 @@ function showAreaLinks(projects) {
     });
 }
 
+// ---------- Editable text (set in the admin page) ----------
+let email = "janahi.yara@gmail.com";
+function applyHomeText(content) {
+    email = content.contact.email;
+    document.querySelectorAll(".area").forEach((area, i) => {
+        const item = content.home.areas[i];
+        if (!item) return;
+        area.querySelector("h3").textContent = item.title;
+        area.querySelector("p:not(.area-links)").textContent = item.text;
+    });
+}
+applyHomeText(cachedContent() || mergeContent({})); // no flash of old text
+const contentReady = startContent().then(content => { applyHomeText(content); return content; });
+
 // ---------- Load ----------
-fetchProjects()
-    .then(projects => {
+Promise.all([fetchProjects(), contentReady])
+    .then(([projects, content]) => {
         $("loading").hidden = true;
         const sorted = [...projects].sort(byFeatured);
         if (!sorted.length) return;
 
-        showHero(sorted[0]);
+        // The pictured project can be picked in the admin page; otherwise the top one.
+        const hero = sorted.find(p => p.id === content.home.heroProject) || sorted[0];
+        showHero(hero);
         showFacts(projects);
         showAreaLinks(sorted);
 
         const list = $("workList");
-        list.innerHTML = sorted.slice(1, 4).map(workItem).join("");
+        list.innerHTML = sorted.filter(p => p !== hero).slice(0, 3).map(workItem).join("");
         setUpPreviews(list);
         $("allProjectsLink").innerHTML = `All ${projects.length} projects &rarr;`;
     })
@@ -128,10 +145,10 @@ const toast = $("toast");
 let toastTimer;
 $("copyEmail").addEventListener("click", async () => {
     try {
-        await navigator.clipboard.writeText("janahi.yara@gmail.com");
+        await navigator.clipboard.writeText(email);
         toast.textContent = "Email address copied";
     } catch (e) {
-        toast.textContent = "Couldn't copy. The address is janahi.yara@gmail.com";
+        toast.textContent = "Couldn't copy. The address is " + email;
     }
     toast.classList.add("show");
     clearTimeout(toastTimer);

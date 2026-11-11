@@ -9,7 +9,7 @@
         try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
     </script>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="./style.css?v=18">
+    <link rel="stylesheet" href="./style.css?v=19">
 </head>
 <body>
 
@@ -38,7 +38,7 @@
     <main class="container">
         <section class="intro">
             <h1>Certificates</h1>
-            <p>Courses and certifications.</p>
+            <p data-content="certificates.intro">Courses and certifications.</p>
         </section>
 
         <ul class="cert-list" id="certList"></ul>
@@ -62,7 +62,7 @@
 
     <script src="./site.js?v=8" defer></script>
     <script type="module">
-        import { CERTIFICATES } from "./certificates-data.js?v=7";
+        import { start as startContent, cachedContent, mergeContent } from "./site-content.js";
 
         const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
         const fmt = d => {
@@ -72,10 +72,17 @@
         };
 
         const list = document.getElementById("certList");
-        const certs = [...CERTIFICATES].sort((a, b) => String(b.date).localeCompare(String(a.date)));
 
+        // Certificates are added in the admin page (Certificates tab).
+        // Draw from the last-known list right away, then again once loaded.
+        function render(content) {
+        const certs = [...content.certificates.items]
+            .filter(c => c && c.title)
+            .sort((a, b) => String(b.date).localeCompare(String(a.date)));
+
+        document.getElementById("certEmpty").hidden = certs.length > 0;
         if (!certs.length) {
-            document.getElementById("certEmpty").hidden = false;
+            list.innerHTML = "";
         } else {
             list.innerHTML = certs.map(c => `
                 <li class="cert">
@@ -83,10 +90,13 @@
                     <div class="cert-body">
                         <h2 class="cert-title">${esc(c.title)}</h2>
                         <p class="cert-meta">${esc(c.issuer)}${c.date ? ` · ${esc(fmt(c.date))}` : ""}</p>
-                        ${c.link ? `<a class="more-link" href="${esc(c.link)}" target="_blank" rel="noopener noreferrer">View certificate &rarr;</a>` : ""}
+                        ${/^https?:\/\//i.test(c.link || "") ? `<a class="more-link" href="${esc(c.link)}" target="_blank" rel="noopener noreferrer">View certificate &rarr;</a>` : ""}
                     </div>
                 </li>`).join("");
         }
+        }
+        render(cachedContent() || mergeContent({}));
+        startContent().then(render);
     </script>
 </body>
 </html>

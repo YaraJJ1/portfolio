@@ -73,7 +73,7 @@ export const AREAS = [
         order: 5,
         label: "Apps & tools",
         color: "#b07a1f",
-        text: "A personal dashboard desktop app built with JavaScript, HTML and CSS.",
+        text: "Apps and websites outside of games, built with JavaScript, HTML and CSS.",
         test: p => p.category !== "games"
     },
     {
@@ -81,7 +81,7 @@ export const AREAS = [
         order: 3,
         label: "Physics",
         color: "#3776ab",
-        text: "Buoyancy that makes objects float realistically on the moving FFT ocean.",
+        text: "Physics-driven systems, like buoyancy that keeps objects floating on a moving ocean.",
         test: p => /buoy|bouy|physics/i.test(p.title)
     },
     {
@@ -89,7 +89,7 @@ export const AREAS = [
         order: 2,
         label: "Animation",
         color: "#ad3a5a",
-        text: "Procedural animation for a multi-legged character: raycasts find the ground, and the legs and body adjust to uneven terrain.",
+        text: "Procedural animation: legs and bodies driven by code instead of keyframes, adjusting to the ground they walk on.",
         test: p => /animation|rig|ik\b/i.test(p.title)
     },
     {
@@ -97,7 +97,7 @@ export const AREAS = [
         order: 1,
         label: "Graphics",
         color: "#6d5a91",
-        text: "A real-time GPU ocean in Unity URP: Phillips spectrum and a custom inverse FFT, written in HLSL.",
+        text: "Real-time GPU work in Unity URP with compute shaders and HLSL, like an FFT ocean simulation.",
         test: p => p.techs.includes("hlsl") || /shader|render|ocean/i.test(p.title)
     },
     {
@@ -105,7 +105,7 @@ export const AREAS = [
         order: 4,
         label: "Gameplay",
         color: "#2b8a8a",
-        text: "Movement prototypes: a spaceship controller and a dual grappling hook.",
+        text: "Movement and controllers, from spaceship flight to grappling hooks.",
         test: () => true // any other game project
     }
 ];
