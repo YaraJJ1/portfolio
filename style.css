@@ -1464,3 +1464,51 @@ a, button, select, summary, .dd-item, .dd-option, [role="button"], [role="tab"],
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea { cursor: text; }
 .swiper-pagination-clickable .swiper-pagination-bullet { cursor: var(--cursor-link); }
 button:disabled { cursor: var(--cursor); }
+
+html.has-custom-cursor,
+html.has-custom-cursor * { cursor: none !important; }
+html.has-custom-cursor input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.has-custom-cursor textarea,
+html.has-custom-cursor [contenteditable="true"] { cursor: text !important; }
+html.has-custom-cursor :fullscreen,
+html.has-custom-cursor :fullscreen * { cursor: auto !important; }
+
+.custom-cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    will-change: transform;
+}
+.custom-cursor.is-visible { opacity: 1; }
+.custom-cursor.is-text { opacity: 0; }
+.custom-cursor-dot {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(20, 16, 22, 0.35), inset 0 0 0 1px rgba(20, 16, 22, 0.35);
+    transform: translate(-50%, -50%);
+    transition: width 0.25s cubic-bezier(0.075, 0.82, 0.165, 1), height 0.25s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0.2s ease;
+}
+.custom-cursor.is-link .custom-cursor-dot {
+    width: 22px;
+    height: 22px;
+    background-color: #fff;
+    box-shadow: 0 0 0 1px rgba(20, 16, 22, 0.35), 0 0 14px rgba(255, 255, 255, 0.6);
+    animation: cursor-pulse 0.6s cubic-bezier(0.075, 0.82, 0.165, 1) infinite alternate;
+}
+.custom-cursor.is-down .custom-cursor-dot { width: 12px; height: 12px; }
+@keyframes cursor-pulse {
+    from { transform: translate(-50%, -50%) scale(1); }
+    to { transform: translate(-50%, -50%) scale(1.2); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .custom-cursor.is-link .custom-cursor-dot { animation: none; }
+}
