@@ -168,7 +168,7 @@ p { text-wrap: pretty; }
     border-bottom: 2px solid transparent;
 }
 .nav a:hover { color: var(--ink); border-bottom-color: var(--line-dark); }
-.nav a.active { color: var(--ink); border-bottom-color: var(--accent); }
+.nav a.active { color: var(--ink); border-bottom-color: var(--ink); }
 
 .header-buttons { display: flex; gap: 8px; }
 
