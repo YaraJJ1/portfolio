@@ -37,14 +37,6 @@ function buildSkills(projects) {
         .sort((a, b) => b.level - a.level || b.used - a.used || a.label.localeCompare(b.label));
 }
 
-// 10 dots: one full dot per 10 points, a faded dot for 5+ left over.
-function dotsHTML(level) {
-    const full = Math.floor(level / 10);
-    const half = level % 10 >= 5 ? 1 : 0;
-    return Array.from({ length: 10 }, (_, d) =>
-        `<i class="dot${d < full ? " on" : d < full + half ? " half" : ""}" style="--d:${d}"></i>`).join("");
-}
-
 function renderBars(projects) {
     const list = $("barList");
     list.innerHTML = buildSkills(projects).map((skill, i) => {
@@ -53,15 +45,15 @@ function renderBars(projects) {
             ? `used in ${plural(skill.used, "project")}`
             : "outside these projects";
         return `
-        <li class="bar" style="--tag:${techColor(skill.key)}; --i:${i}">
+        <li class="bar" style="--tag:${techColor(skill.key)}; --level:${skill.level}%; --i:${i}">
             <span class="bar-name">${escapeHTML(skill.label)}</span>
-            <span class="dots" role="meter" aria-valuemin="0" aria-valuemax="10" aria-valuenow="${Math.round(skill.level / 10)}"
-                  aria-valuetext="${escapeHTML(word)}, ${Math.round(skill.level / 10)} out of 10" aria-label="${escapeHTML(skill.label)}">${dotsHTML(skill.level)}</span>
+            <span class="bar-track" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${skill.level}"
+                  aria-valuetext="${escapeHTML(word)}" aria-label="${escapeHTML(skill.label)}"><span class="bar-fill"></span></span>
             <span class="bar-used"><span class="bar-word">${escapeHTML(word)}</span> · ${source}</span>
         </li>`;
     }).join("");
 
-    // Light the dots up once they're on the page.
+    // Grow the bars in once they're on the page.
     requestAnimationFrame(() => requestAnimationFrame(() => list.classList.add("ready")));
 }
 

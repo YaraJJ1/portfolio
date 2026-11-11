@@ -958,21 +958,9 @@ a.card:focus-visible {
 .panel-col { padding: clamp(24px, 3.5vw, 48px); min-width: 0; }
 .panel-col + .panel-col { border-left: 1px solid var(--line); }
 
-/* Title with a hatched rule after it */
 .panel-title {
-    display: flex;
-    align-items: center;
-    gap: 16px;
     margin: 0 0 32px;
     font-size: 26px;
-    white-space: nowrap;
-}
-.panel-title::after {
-    content: "";
-    flex: 1;
-    height: 10px;
-    background: repeating-linear-gradient(-55deg, var(--line-dark) 0 2px, transparent 2px 7px);
-    opacity: 0.8;
 }
 
 /* Skill bars */
@@ -990,28 +978,32 @@ a.card:focus-visible {
     gap: 6px 18px;
 }
 .bar-name { font-size: 18px; font-weight: bold; }
-
-/* Ten-dot rating: full dots for every 10 points, a faded dot for a half step */
-.dots {
-    display: flex;
-    gap: clamp(5px, 1vw, 9px);
-}
-.dot {
-    width: 16px;
+.bar-track {
+    position: relative;
     height: 16px;
-    flex: none;
-    border-radius: 50%;
-    background: var(--line);
-    transition: background-color 0.3s ease, transform 0.3s ease;
-    transition-delay: calc(var(--i, 0) * 0.06s + var(--d) * 0.035s);
+    border-radius: 999px;
+    background: var(--bg);
+    box-shadow: inset 0 1px 2px rgba(41, 32, 42, 0.12);
+    overflow: hidden;
 }
-.bar-list.ready .dot.on { background: var(--tag); }
-.bar-list.ready .dot.half { background: color-mix(in srgb, var(--tag) 40%, var(--line)); }
-.bar-list:not(.ready) .dot { transform: scale(0.6); }
+.bar-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0;
+    border-radius: inherit;
+    background:
+        repeating-linear-gradient(-45deg,
+            rgba(255, 255, 255, 0.22) 0 7px,
+            transparent 7px 14px),
+        var(--tag);
+    transition: width 1.1s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.bar-list.ready .bar-fill { width: var(--level); }
+.bar-fill { transition-delay: calc(var(--i, 0) * 0.06s); }
 .bar-used { grid-column: 2; color: var(--muted); font-size: 15px; }
 .bar-word { color: var(--ink); }
-:root[data-theme="dark"] .bar-list.ready .dot.on { background: color-mix(in srgb, var(--tag) 70%, #fff); }
-:root[data-theme="dark"] .bar-list.ready .dot.half { background: color-mix(in srgb, color-mix(in srgb, var(--tag) 70%, #fff) 40%, var(--line)); }
+:root[data-theme="dark"] .bar-track { box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4); }
+:root[data-theme="dark"] .bar-fill { background-color: color-mix(in srgb, var(--tag) 70%, #fff); }
 
 /* Focus donut */
 .focus-chart { max-width: 600px; margin: -12px auto 0; }
