@@ -3,16 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="./style.css">
+    <title>Certificates | Yara Janahi</title>
+    <meta name="description" content="Certificates and courses completed by Yara Janahi.">
+    <script>
+        try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
+    </script>
+    <link rel="stylesheet" href="./style.css?v=7">
 </head>
 <body>
-    <div id="navigationtab">
-        <a href="index.html">Overview</a>
-        <a href="project.html">Project</a>
-        <a href="skills.html">Skills</a>
-        <a href="certificates.html">Certificates</a>
-        <a href="contact.html">Contact</a>
-    </div>
+
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="brand" href="index.html">Yara Janahi</a>
+
+            <nav class="nav" id="siteNav" aria-label="Main">
+                <a href="index.html">Home</a>
+                <a href="project.html">Projects</a>
+                <a href="skills.html">Skills</a>
+                <a href="certificates.html" class="active" aria-current="page">Certificates</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+
+            <div class="header-buttons">
+                <button class="icon-btn" id="themeToggle" aria-label="Switch to dark mode" title="Switch to dark mode">
+                    <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+                    <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>
+                </button>
+                <button class="small-btn menu-btn" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="siteNav">Menu</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="intro">
+            <h1>Certificates</h1>
+            <p>Courses and certifications I've completed.</p>
+        </section>
+
+        <ul class="cert-list" id="certList"></ul>
+
+        <div class="placeholder" id="certEmpty" hidden>
+            <h2>Coming soon</h2>
+            <p>I'm putting this list together. In the meantime, my projects show what I can do.</p>
+            <a class="btn" href="project.html">See my projects</a>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <p>© <span id="year"></span> Yara Janahi</p>
+            <p class="footer-links">
+                <a href="mailto:janahi.yara@gmail.com">Email</a>
+                <a href="https://github.com/YaraJJ1" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="./site.js?v=7" defer></script>
+    <script type="module">
+        import { CERTIFICATES } from "./certificates-data.js?v=7";
+
+        const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+        const fmt = d => {
+            const [y, m] = String(d || "").split("-").map(Number);
+            if (!y) return "";
+            return m ? new Date(y, m - 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" }) : String(y);
+        };
+
+        const list = document.getElementById("certList");
+        const certs = [...CERTIFICATES].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+
+        if (!certs.length) {
+            document.getElementById("certEmpty").hidden = false;
+        } else {
+            list.innerHTML = certs.map(c => `
+                <li class="cert">
+                    ${c.image ? `<img class="cert-img" src="${esc(c.image)}" alt="" loading="lazy">` : `<span class="cert-badge" aria-hidden="true"></span>`}
+                    <div class="cert-body">
+                        <h2 class="cert-title">${esc(c.title)}</h2>
+                        <p class="cert-meta">${esc(c.issuer)}${c.date ? ` · ${esc(fmt(c.date))}` : ""}</p>
+                        ${c.link ? `<a class="more-link" href="${esc(c.link)}" target="_blank" rel="noopener noreferrer">View certificate &rarr;</a>` : ""}
+                    </div>
+                </li>`).join("");
+        }
+    </script>
 </body>
 </html>

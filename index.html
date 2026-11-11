@@ -3,23 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projects</title>
-    <meta name="description" content="My personal projects: game development in Unity & C#, graphics programming, web and desktop apps.">
+    <title>Yara Janahi | Game Developer</title>
+    <meta name="description" content="Yara Janahi, game developer working in Unity & C#: gameplay systems, physics and real-time graphics.">
     <script>
-        // Light mode unless the visitor picked dark before.
         try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
     </script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css">
-    <link rel="stylesheet" href="./style.css?v=6">
+    <link rel="stylesheet" href="./style.css?v=7">
 </head>
 <body>
 
     <header class="site-header">
         <div class="container header-inner">
-            <a class="brand" href="index.html">Portfolio</a>
+            <a class="brand" href="index.html">Yara Janahi</a>
 
             <nav class="nav" id="siteNav" aria-label="Main">
-                <a href="index.html" class="active" aria-current="page">Projects</a>
+                <a href="index.html" class="active" aria-current="page">Home</a>
+                <a href="project.html">Projects</a>
                 <a href="skills.html">Skills</a>
                 <a href="certificates.html">Certificates</a>
                 <a href="contact.html">Contact</a>
@@ -36,112 +35,71 @@
     </header>
 
     <main class="container">
-        <section class="intro">
-            <h1>Projects</h1>
-            <p>
-                Here you'll find some of my work and personal projects, specializing in Unity &amp; C#.
+        <section class="hero">
+            <p class="eyebrow">Game developer · Unity &amp; C#</p>
+            <h1>Hi, I'm Yara<span class="dot">.</span></h1>
+            <p class="hero-text">
+                I build gameplay systems and real-time graphics in Unity, from a GPU ocean
+                and buoyancy physics to procedural animation and movement mechanics.
+                This site collects my personal projects.
             </p>
-            <p class="summary" id="summary"></p>
-        </section>
-
-        <section class="toolbar" aria-label="Filter projects">
-            <div class="tabs" role="tablist" aria-label="Category" id="categoryTabs">
-                <button class="tab active" role="tab" aria-selected="true" data-filter="all">All</button>
-                <button class="tab" role="tab" aria-selected="false" data-filter="games">Games</button>
-                <button class="tab" role="tab" aria-selected="false" data-filter="web">Web</button>
-                <button class="tab" role="tab" aria-selected="false" data-filter="backend">Back-end</button>
-                <button class="tab" role="tab" aria-selected="false" data-filter="others">Others</button>
-            </div>
-
-            <div class="controls">
-                <label class="search">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
-                    <input type="search" id="searchInput" placeholder="Search projects" autocomplete="off" aria-label="Search projects">
-                </label>
-
-                <!-- Difficulty filter dropdown -->
-                <div class="dropdown" id="levelDropdown">
-                    <button class="dd-btn" aria-haspopup="true" aria-expanded="false">
-                        Difficulty<span class="dd-count" hidden></span>
-                        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
-                    </button>
-                    <div class="dd-menu">
-                        <label class="dd-item"><input type="checkbox" value="easy"><span class="signal level-easy" aria-hidden="true"><i></i><i></i><i></i></span>Easy</label>
-                        <label class="dd-item"><input type="checkbox" value="medium"><span class="signal level-medium" aria-hidden="true"><i></i><i></i><i></i></span>Medium</label>
-                        <label class="dd-item"><input type="checkbox" value="hard"><span class="signal level-hard" aria-hidden="true"><i></i><i></i><i></i></span>Hard</label>
-                    </div>
-                </div>
-
-                <!-- Sort dropdown -->
-                <div class="dropdown" id="sortDropdown">
-                    <button class="dd-btn" aria-haspopup="true" aria-expanded="false">
-                        <span class="dd-muted">Sort:</span> <span id="sortLabel">Newest</span>
-                        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
-                    </button>
-                    <div class="dd-menu dd-right" role="menu">
-                        <button class="dd-option" role="menuitemradio" aria-checked="true" data-sort="new-old">Newest</button>
-                        <button class="dd-option" role="menuitemradio" aria-checked="false" data-sort="old-new">Oldest</button>
-                        <button class="dd-option" role="menuitemradio" aria-checked="false" data-sort="high-low">Hardest first</button>
-                        <button class="dd-option" role="menuitemradio" aria-checked="false" data-sort="low-high">Easiest first</button>
-                    </div>
-                </div>
+            <div class="hero-actions">
+                <a class="btn btn-primary" href="project.html">View projects</a>
+                <a class="btn" href="contact.html">Get in touch</a>
             </div>
         </section>
 
-        <p class="loading" id="loading">Loading projects…</p>
+        <section class="section">
+            <div class="section-head">
+                <h2>Featured work</h2>
+                <a class="more-link" href="project.html">All projects &rarr;</a>
+            </div>
+            <p class="loading" id="loading">Loading projects…</p>
+            <ul class="featured-grid" id="featuredGrid"></ul>
+        </section>
 
-        <ul class="project-grid" id="projectGrid"></ul>
+        <section class="section">
+            <div class="section-head">
+                <h2>What I work on</h2>
+                <a class="more-link" href="skills.html">Skills &rarr;</a>
+            </div>
+            <div class="focus-grid">
+                <article class="focus">
+                    <span class="focus-num">01</span>
+                    <h3>Gameplay &amp; physics</h3>
+                    <p>Character and vehicle controllers, grappling movement, and buoyancy that makes objects float on moving water.</p>
+                </article>
+                <article class="focus">
+                    <span class="focus-num">02</span>
+                    <h3>Graphics &amp; shaders</h3>
+                    <p>Real-time GPU work in URP and HLSL, like an FFT ocean simulation running in compute shaders.</p>
+                </article>
+                <article class="focus">
+                    <span class="focus-num">03</span>
+                    <h3>Animation &amp; tools</h3>
+                    <p>Procedural animation for multi-legged characters, plus desktop and web tools built with JavaScript.</p>
+                </article>
+            </div>
+        </section>
 
-        <div class="empty" id="emptyState" hidden>
-            <p>No projects match that.</p>
-            <button class="link-btn" id="clearFilters">Clear filters</button>
-        </div>
+        <section class="cta">
+            <h2>Want to work together?</h2>
+            <p>I'm always happy to talk about games, graphics, or a role on your team.</p>
+            <a class="btn btn-primary" href="contact.html">Contact me</a>
+        </section>
     </main>
 
     <footer class="site-footer">
-        <div class="container">
-            <p>© <span id="year"></span></p>
+        <div class="container footer-inner">
+            <p>© <span id="year"></span> Yara Janahi</p>
+            <p class="footer-links">
+                <a href="mailto:janahi.yara@gmail.com">Email</a>
+                <a href="https://github.com/YaraJJ1" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </p>
         </div>
     </footer>
 
-    <!-- Project detail popup -->
-    <div class="modal" id="projectModal" aria-hidden="true">
-        <div class="modal-backdrop" data-close></div>
-        <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-            <button class="modal-close" data-close aria-label="Close">&times;</button>
-
-            <div class="modal-media">
-                <div class="swiper" id="modalSwiper">
-                    <div class="swiper-wrapper"></div>
-                    <div class="swiper-pagination"></div>
-                    <div class="swiper-button-prev"></div>
-                    <div class="swiper-button-next"></div>
-                </div>
-            </div>
-
-            <div class="modal-body">
-                <h2 class="modal-title" id="modalTitle"></h2>
-                <p class="modal-meta" id="modalMeta"></p>
-                <div class="tags modal-tags" id="modalTech"></div>
-
-                <div class="modal-description" id="modalDescription"></div>
-
-                <p class="modal-links">
-                    <a id="modalGithub" target="_blank" rel="noopener noreferrer" hidden>View code on GitHub</a>
-                    <button class="link-btn" id="modalShare">Copy link</button>
-                </p>
-
-                <div class="modal-nav">
-                    <button class="link-btn" id="modalPrev">&larr; <span></span></button>
-                    <button class="link-btn" id="modalNext"><span></span> &rarr;</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
-    <script type="module" src="./script.js?v=6"></script>
+    <script src="./site.js?v=7" defer></script>
+    <script type="module" src="./home.js?v=7"></script>
 </body>
 </html>
