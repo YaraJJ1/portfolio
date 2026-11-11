@@ -945,44 +945,167 @@ a.card:focus-visible {
 .empty p { margin: 0 0 6px; }
 
 /* ---------- Skills ---------- */
-.skill-list {
+.skills-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 0;
+    margin-bottom: 96px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
+    box-shadow: var(--card-shadow);
+}
+.panel-col { padding: clamp(24px, 3.5vw, 48px); min-width: 0; }
+.panel-col + .panel-col { border-left: 1px solid var(--line); }
+
+/* Title with a hatched rule after it */
+.panel-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0 0 32px;
+    font-size: 26px;
+    white-space: nowrap;
+}
+.panel-title::after {
+    content: "";
+    flex: 1;
+    height: 10px;
+    background: repeating-linear-gradient(-55deg, var(--line-dark) 0 2px, transparent 2px 7px);
+    opacity: 0.8;
+}
+
+/* Skill bars */
+.bar-list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr));
-    gap: 16px;
+    gap: 26px;
 }
-
-.skill {
-    padding: 18px 20px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: var(--paper);
-}
-.skill-head {
-    display: flex;
+.bar {
+    display: grid;
+    grid-template-columns: 6.5em minmax(0, 1fr);
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    gap: 6px 18px;
 }
-.skill-count { color: var(--muted); font-size: 16px; }
-.skill-meter {
-    height: 6px;
-    margin: 14px 0 12px;
-    border-radius: 3px;
-    background: var(--line);
+.bar-name { font-size: 18px; font-weight: bold; }
+.bar-track {
+    position: relative;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--bg);
+    box-shadow: inset 0 1px 2px rgba(41, 32, 42, 0.12);
     overflow: hidden;
 }
-.skill-meter span {
-    display: block;
-    height: 100%;
-    border-radius: 3px;
-    background: var(--tag);
+.bar-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0;
+    border-radius: inherit;
+    background:
+        repeating-linear-gradient(-45deg,
+            rgba(255, 255, 255, 0.22) 0 7px,
+            transparent 7px 14px),
+        var(--tag);
+    transition: width 1.1s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
-.skill-projects { margin: 0; font-size: 15.5px; color: var(--ink-2); }
-.skill-projects a { color: var(--ink-2); text-underline-offset: 3px; text-decoration-color: var(--line-dark); }
-.skill-projects a:hover { color: var(--accent); text-decoration-color: currentColor; }
+.bar-list.ready .bar-fill { width: var(--level); }
+.bar:nth-child(2) .bar-fill { transition-delay: 0.06s; }
+.bar:nth-child(3) .bar-fill { transition-delay: 0.12s; }
+.bar:nth-child(4) .bar-fill { transition-delay: 0.18s; }
+.bar:nth-child(5) .bar-fill { transition-delay: 0.24s; }
+.bar:nth-child(6) .bar-fill { transition-delay: 0.3s; }
+.bar-used { grid-column: 2; color: var(--muted); font-size: 15px; }
+.bar-word { color: var(--ink); }
+:root[data-theme="dark"] .bar-track { box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4); }
+:root[data-theme="dark"] .bar-fill { background-color: color-mix(in srgb, var(--tag) 70%, #fff); }
+
+/* Focus donut */
+.focus-chart { max-width: 600px; margin: -12px auto 0; }
+.donut { display: block; width: 100%; height: auto; overflow: visible; }
+
+.donut-seg { cursor: pointer; outline: none; transform-origin: 280px 200px; transition: transform 0.2s ease, opacity 0.2s ease; }
+.donut-seg path { fill: var(--seg); }
+.donut-seg .seg-dot { fill: none; stroke: rgba(255, 255, 255, 0.85); stroke-width: 2.5; }
+.donut.has-selection .donut-seg { opacity: 0.55; }
+.donut.has-selection .donut-seg.is-active { opacity: 1; transform: scale(1.04); }
+.donut-seg:focus-visible path { stroke: var(--ink); stroke-width: 3; }
+
+.donut-label polyline { fill: none; stroke: var(--seg); stroke-width: 1.5; }
+.donut-label text { fill: var(--ink); font-size: 17px; font-weight: bold; }
+.donut-label .donut-label-count { fill: var(--muted); font-size: 13.5px; font-weight: normal; }
+.donut-label { transition: opacity 0.2s ease; }
+.donut.has-selection .donut-label { opacity: 0.55; }
+.donut.has-selection .donut-label.is-active { opacity: 1; }
+:root[data-theme="dark"] .donut-label polyline { stroke: color-mix(in srgb, var(--seg) 60%, #fff); }
+
+.donut-title { fill: var(--ink); font-size: 24px; font-weight: bold; }
+.donut-sub { fill: var(--muted); font-size: 14.5px; }
+
+.donut.animate .donut-seg { animation: seg-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i) * 0.08s); }
+@keyframes seg-in {
+    from { opacity: 0; transform: scale(0.85) rotate(-20deg); }
+}
+
+/* Legend buttons under the chart */
+.area-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin: 8px 0 24px;
+}
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink-2);
+    font-size: 15px;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.legend-item:hover { border-color: var(--line-dark); color: var(--ink); }
+.legend-item.is-active { border-color: var(--seg); background: var(--bg); color: var(--ink); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--seg); }
+
+/* Selected area */
+.area-detail {
+    padding: 18px 20px;
+    border-left: 4px solid var(--seg, var(--line));
+    border-radius: 4px;
+    background: var(--bg);
+}
+.area-detail h3 { margin: 0 0 4px; font-size: 19px; }
+.area-detail p { margin: 0 0 10px; color: var(--ink-2); font-size: 16px; }
+.area-projects {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    font-size: 15.5px;
+}
+.area-projects a { text-underline-offset: 3px; }
+
+@media (max-width: 1000px) {
+    .skills-panel { grid-template-columns: 1fr; }
+    .panel-col + .panel-col { border-left: 0; border-top: 1px solid var(--line); }
+}
+@media (max-width: 560px) {
+    .bar { grid-template-columns: 1fr; }
+    .bar-used { grid-column: 1; }
+    /* The callout labels get too small on phones; the legend covers them. */
+    .donut-label { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .donut.animate .donut-seg { animation: none; }
+}
 
 /* ---------- Certificates ---------- */
 .cert-list {

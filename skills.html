@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skills | Yara Janahi</title>
-    <meta name="description" content="Languages, engines and areas Yara Janahi works in, with the projects that use them.">
+    <meta name="description" content="The languages and tools Yara Janahi works with, and the areas the projects focus on.">
     <script>
         try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
     </script>
-    <link rel="stylesheet" href="./style.css?v=10">
+    <link rel="stylesheet" href="./style.css?v=11">
 </head>
 <body>
 
@@ -37,43 +37,25 @@
     <main class="container">
         <section class="intro">
             <h1>Skills</h1>
-            <p>The tools I use most, and the projects where I've used them.</p>
+            <p>What I work with, and where my projects tend to land. Pick an area on the chart to see the projects behind it.</p>
         </section>
 
-        <section class="section">
-            <h2 class="section-title">Languages &amp; tools</h2>
-            <p class="loading" id="loading">Loading…</p>
-            <ul class="skill-list" id="skillList"></ul>
-        </section>
+        <section class="skills-panel" aria-label="Skills overview">
+            <!-- Skill bars -->
+            <div class="panel-col">
+                <h2 class="panel-title">Languages &amp; tools</h2>
+                <p class="loading" id="loading">Loading…</p>
+                <ul class="bar-list" id="barList"></ul>
+            </div>
 
-        <section class="section">
-            <h2 class="section-title">Areas</h2>
-            <div class="focus-grid">
-                <article class="focus">
-                    <span class="focus-num">01</span>
-                    <h3>Gameplay programming</h3>
-                    <p>Player and vehicle controllers, physics-based movement such as grappling hooks, and game feel.</p>
-                </article>
-                <article class="focus">
-                    <span class="focus-num">02</span>
-                    <h3>Real-time graphics</h3>
-                    <p>GPU compute and shader work in Unity URP with HLSL, including an FFT ocean simulation.</p>
-                </article>
-                <article class="focus">
-                    <span class="focus-num">03</span>
-                    <h3>Physics simulation</h3>
-                    <p>Buoyancy and density-driven floating objects on a moving ocean surface.</p>
-                </article>
-                <article class="focus">
-                    <span class="focus-num">04</span>
-                    <h3>Procedural animation</h3>
-                    <p>Leg placement and body motion for multi-legged characters, driven by code instead of keyframes.</p>
-                </article>
-                <article class="focus">
-                    <span class="focus-num">05</span>
-                    <h3>Apps &amp; tools</h3>
-                    <p>Desktop and web apps in JavaScript, HTML and CSS, like a personal dashboard of live widgets.</p>
-                </article>
+            <!-- Focus chart -->
+            <div class="panel-col">
+                <h2 class="panel-title">Focus</h2>
+                <div class="focus-chart">
+                    <svg class="donut" id="donut" viewBox="0 0 560 400" role="group" aria-label="Projects by area"></svg>
+                </div>
+                <div class="area-legend" id="areaLegend" role="group" aria-label="Areas"></div>
+                <div class="area-detail" id="areaDetail" aria-live="polite"></div>
             </div>
         </section>
     </main>
@@ -89,6 +71,6 @@
     </footer>
 
     <script src="./site.js?v=7" defer></script>
-    <script type="module" src="./skills.js?v=7"></script>
+    <script type="module" src="./skills.js?v=11"></script>
 </body>
 </html>
