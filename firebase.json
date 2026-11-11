@@ -11,7 +11,7 @@
     ],
     "headers": [
       {
-        "source": "**/*.@(html|js|css)",
+        "regex": "^(/|/[^.]*|.*\\.(html|js|css|json|svg))$",
         "headers": [
           {
             "key": "Cache-Control",
