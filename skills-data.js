@@ -1,15 +1,24 @@
 // Skills page settings. Edit this file to change the bars and the focus chart.
 
-// Skill bars, in the order they appear.
-// level: how comfortable you are, from 0 to 100 (it sets the bar length).
+// ----- Skill bars -----
+// Every language/tool used in your projects gets a bar automatically.
+// Its level comes from those projects: each one adds points by difficulty
+// (easy 1, medium 2, hard 3), so more and harder projects = longer bar.
+// Adding a project in the admin page updates the bars by itself.
+export const DIFFICULTY_WEIGHT = { easy: 1, medium: 2, hard: 3 };
+
+export function levelFromProjects(points) {
+    // One easy project ≈ 54, one hard project ≈ 61, five projects with two hard ≈ 85.
+    return Math.round(Math.min(92, 50 + points * 3.5));
+}
+
+// Skills you have that aren't in a listed project yet. Set the level yourself
+// (0–100). Once a project uses one of these, its level comes from the projects.
 // Names and colours come from projects-data.js (TECH), so use the same keys.
-export const SKILLS = [
-    { key: "unity", level: 85 },
-    { key: "c#",    level: 85 },
-    { key: "hlsl",  level: 60 },
-    { key: "js",    level: 65 },
-    { key: "html",  level: 70 },
-    { key: "css",   level: 70 }
+export const EXTRA_SKILLS = [
+    { key: "c++",      level: 60 },
+    { key: "java",     level: 60 },
+    { key: "assembly", level: 60 }
 ];
 
 // The word shown next to each bar.

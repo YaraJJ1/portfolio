@@ -1011,11 +1011,7 @@ a.card:focus-visible {
     transition: width 1.1s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 .bar-list.ready .bar-fill { width: var(--level); }
-.bar:nth-child(2) .bar-fill { transition-delay: 0.06s; }
-.bar:nth-child(3) .bar-fill { transition-delay: 0.12s; }
-.bar:nth-child(4) .bar-fill { transition-delay: 0.18s; }
-.bar:nth-child(5) .bar-fill { transition-delay: 0.24s; }
-.bar:nth-child(6) .bar-fill { transition-delay: 0.3s; }
+.bar-fill { transition-delay: calc(var(--i, 0) * 0.06s); }
 .bar-used { grid-column: 2; color: var(--muted); font-size: 15px; }
 .bar-word { color: var(--ink); }
 :root[data-theme="dark"] .bar-track { box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4); }

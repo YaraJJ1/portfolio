@@ -1,7 +1,7 @@
 // Skills page: skill bars on the left, a "focus" donut chart on the right.
 // Bar levels and chart areas are set in skills-data.js.
 import { escapeHTML, techLabel, techColor, fetchProjects, byStrongest } from "./projects-data.js";
-import { SKILLS, AREAS, levelWord } from "./skills-data.js";
+import { EXTRA_SKILLS, DIFFICULTY_WEIGHT, levelFromProjects, AREAS, levelWord } from "./skills-data.js";
 
 const $ = id => document.getElementById(id);
 const projectUrl = p => `project.html#project=${encodeURIComponent(p.id)}`;
@@ -12,19 +12,44 @@ const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // ---------- Skill bars ----------
+function buildSkills(projects) {
+    const skills = new Map();
+    const add = (key, fixedLevel) => {
+        const label = techLabel(key);
+        if (!skills.has(label)) skills.set(label, { key, label, fixedLevel, used: 0, score: 0 });
+        return skills.get(label);
+    };
+
+    // Every technology used in a project gets a bar automatically...
+    projects.forEach(p => p.techs.forEach(key => {
+        const s = add(key);
+        s.used += 1;
+        s.score += DIFFICULTY_WEIGHT[p.difficulty] || 1;
+    }));
+    // ...plus the extra skills listed in skills-data.js.
+    EXTRA_SKILLS.forEach(s => {
+        const entry = add(s.key, s.level);
+        if (entry.used === 0) entry.fixedLevel = s.level;
+    });
+
+    return [...skills.values()]
+        .map(s => ({ ...s, level: s.used ? levelFromProjects(s.score) : Math.max(0, Math.min(100, s.fixedLevel || 0)) }))
+        .sort((a, b) => b.level - a.level || b.used - a.used || a.label.localeCompare(b.label));
+}
+
 function renderBars(projects) {
     const list = $("barList");
-    list.innerHTML = SKILLS.map(skill => {
-        const label = techLabel(skill.key);
-        const used = projects.filter(p => p.techs.some(t => techLabel(t) === label)).length;
-        const level = Math.max(0, Math.min(100, Number(skill.level) || 0));
-        const word = levelWord(level);
+    list.innerHTML = buildSkills(projects).map((skill, i) => {
+        const word = levelWord(skill.level);
+        const source = skill.used
+            ? `used in ${plural(skill.used, "project")}`
+            : "outside these projects";
         return `
-        <li class="bar" style="--tag:${techColor(skill.key)}; --level:${level}%">
-            <span class="bar-name">${escapeHTML(label)}</span>
-            <span class="bar-track" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${level}"
-                  aria-valuetext="${escapeHTML(word)}" aria-label="${escapeHTML(label)}"><span class="bar-fill"></span></span>
-            <span class="bar-used"><span class="bar-word">${escapeHTML(word)}</span> · ${used ? `used in ${plural(used, "project")}` : "not in a listed project yet"}</span>
+        <li class="bar" style="--tag:${techColor(skill.key)}; --level:${skill.level}%; --i:${i}">
+            <span class="bar-name">${escapeHTML(skill.label)}</span>
+            <span class="bar-track" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${skill.level}"
+                  aria-valuetext="${escapeHTML(word)}" aria-label="${escapeHTML(skill.label)}"><span class="bar-fill"></span></span>
+            <span class="bar-used"><span class="bar-word">${escapeHTML(word)}</span> · ${source}</span>
         </li>`;
     }).join("");
 

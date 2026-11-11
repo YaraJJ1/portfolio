@@ -36,7 +36,9 @@ export const TECH = {
     unity:      { label: "Unity",      color: "#4b4b55" },
     php:        { label: "PHP",        color: "#486552" },
     sql:        { label: "SQL",        color: "#a55a40" },
-    hlsl:       { label: "HLSL",       color: "#6d5a91" }
+    hlsl:       { label: "HLSL",       color: "#6d5a91" },
+    assembly:   { label: "Assembly",   color: "#56707a" },
+    asm:        { label: "Assembly",   color: "#56707a" }
 };
 
 export const PLACEHOLDER_IMG = "images.png";
