@@ -97,7 +97,7 @@ function homeForm(c) {
             return `<label class="field"><span class="field-label">${["First", "Second", "Third"][i]} project</span>
                 <select name="selectedWork${i}">${opts.join("")}</select></label>`;
         }).join("") +
-        `<p class="section-help">The pictured project in the banner is never repeated here.</p>`
+        `<p class="section-help" style="margin-top:4px">If a slot repeats another slot or the pictured project, it fills automatically instead.</p>`
     ) + section("What I work on", "Three short cards. The link to your skills page is added automatically.",
         textField("areasIntro", "Section intro", c.areasIntro, d.areasIntro, { max: 200, rows: 2 }) +
         c.areas.map((a, i) => `
