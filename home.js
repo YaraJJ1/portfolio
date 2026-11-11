@@ -18,13 +18,15 @@ const canPreview = window.matchMedia("(hover: hover) and (pointer: fine)").match
 
 // ---------- Hero picture: the strongest project ----------
 function showHero(p) {
-    $("heroShotImg").src = p.thumb;
-    $("heroShotLink").href = projectUrl(p);
-    $("heroShotCaption").innerHTML = `
-        <span class="caption-title">${escapeHTML(p.title)}</span>
-        <span class="caption-meta">${escapeHTML([formatDate(p.date), p.techs.map(techLabel).join(", ")].filter(Boolean).join(" · "))}</span>
-        <a href="${projectUrl(p)}">View project &rarr;</a>`;
-    $("heroShot").classList.add("ready");
+    const img = $("heroShotImg");
+    img.addEventListener("load", () => img.classList.add("loaded"), { once: true });
+    img.src = p.thumb;
+
+    const link = $("heroShotLink");
+    link.href = projectUrl(p);
+    link.title = [formatDate(p.date), p.techs.map(techLabel).join(", ")].filter(Boolean).join(" · ");
+    $("heroShotTitle").textContent = p.title;
+    link.hidden = false;
 }
 
 // ---------- Quick facts under the intro ----------
@@ -118,7 +120,6 @@ fetchProjects()
     })
     .catch(error => {
         console.error("Error loading projects:", error);
-        $("heroShot").hidden = true;
         $("loading").innerHTML = 'Couldn\'t load projects right now. <a href="project.html">Try the projects page</a>.';
     });
 

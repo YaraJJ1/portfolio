@@ -8,7 +8,7 @@
     <script>
         try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
     </script>
-    <link rel="stylesheet" href="./style.css?v=9">
+    <link rel="stylesheet" href="./style.css?v=10">
 </head>
 <body>
 
@@ -35,43 +35,46 @@
     </header>
 
     <main>
-        <!-- Intro + the strongest project as a big picture -->
+        <!-- Intro: text over a picture of the strongest project -->
         <section class="container home-hero">
-            <div class="hero-copy">
-                <p class="hero-role">Game developer &middot; Unity &amp; C#</p>
-                <h1>Yara Janahi</h1>
-                <p class="hero-text">
-                    I like the technical side of games: simulating an ocean on the GPU,
-                    making things float on it, and working out where a many-legged creature
-                    should put its feet. Below is some of what I've built.
-                </p>
-                <div class="hero-actions">
-                    <a class="btn btn-primary" href="project.html">See my projects</a>
-                    <a class="btn" href="contact.html">Get in touch</a>
+            <div class="hero-banner" id="heroBanner">
+                <img class="hero-bg" id="heroShotImg" alt="" fetchpriority="high">
+                <div class="hero-copy">
+                    <p class="hero-role">Game developer working in Unity &amp; C#</p>
+                    <h1>Yara Janahi</h1>
+                    <p class="hero-text">
+                        I like the technical side of games: simulating an ocean on the GPU,
+                        making things float on it, and working out where a many-legged
+                        creature should put its feet.
+                    </p>
+                    <div class="hero-actions">
+                        <a class="btn btn-primary" href="project.html">See my projects</a>
+                        <a class="btn btn-ghost-light" href="contact.html">Get in touch</a>
+                    </div>
                 </div>
-
-                <dl class="hero-facts" id="heroFacts" hidden>
-                    <div>
-                        <dt>Projects</dt>
-                        <dd id="factCount"></dd>
-                    </div>
-                    <div>
-                        <dt>Mostly in</dt>
-                        <dd id="factTech"></dd>
-                    </div>
-                    <div>
-                        <dt>Latest</dt>
-                        <dd id="factLatest"></dd>
-                    </div>
-                </dl>
+                <a class="hero-credit" id="heroShotLink" href="project.html" hidden>
+                    <span>Pictured</span> <strong id="heroShotTitle"></strong> <span aria-hidden="true">&rarr;</span>
+                </a>
             </div>
 
-            <figure class="hero-shot" id="heroShot">
-                <a class="hero-shot-media" id="heroShotLink" href="project.html" aria-hidden="true" tabindex="-1">
-                    <img id="heroShotImg" alt="" fetchpriority="high">
-                </a>
-                <figcaption id="heroShotCaption"></figcaption>
-            </figure>
+            <dl class="hero-facts" id="heroFacts" hidden>
+                <div>
+                    <dt>Projects</dt>
+                    <dd id="factCount"></dd>
+                </div>
+                <div>
+                    <dt>Mostly in</dt>
+                    <dd id="factTech"></dd>
+                </div>
+                <div>
+                    <dt>Latest</dt>
+                    <dd id="factLatest"></dd>
+                </div>
+                <div>
+                    <dt>Code</dt>
+                    <dd><a href="https://github.com/YaraJJ1" target="_blank" rel="noopener noreferrer">github.com/YaraJJ1</a></dd>
+                </div>
+            </dl>
         </section>
 
         <!-- Selected work -->
@@ -136,6 +139,6 @@
     </footer>
 
     <script src="./site.js?v=7" defer></script>
-    <script type="module" src="./home.js?v=9"></script>
+    <script type="module" src="./home.js?v=10"></script>
 </body>
 </html>
