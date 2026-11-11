@@ -1,7 +1,10 @@
-// Skills page: skill bars on the left, a "focus" donut chart on the right.
-// Bar levels and chart areas are set in skills-data.js.
+// Skills page: scrolling logo band, skill bars on the left, a "focus" donut chart on the right.
+// Bar levels, logos and chart areas are set in skills-data.js.
 import { escapeHTML, techLabel, techColor, fetchProjects, byStrongest } from "./projects-data.js";
-import { EXTRA_SKILLS, DIFFICULTY_WEIGHT, levelFromProjects, AREAS, levelWord } from "./skills-data.js";
+import {
+    EXTRA_SKILLS, DIFFICULTY_WEIGHT, SKILL_ORDER, levelFromProjects, levelWord,
+    AREAS, DEFAULT_AREA, TOOLBELT, DEVICON_BASE
+} from "./skills-data.js";
 
 const $ = id => document.getElementById(id);
 const projectUrl = p => `project.html#project=${encodeURIComponent(p.id)}`;
@@ -12,44 +15,62 @@ const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // ---------- Skill bars ----------
+const orderIndex = label => {
+    const i = SKILL_ORDER.indexOf(label);
+    return i < 0 ? SKILL_ORDER.length : i;
+};
+
 function buildSkills(projects) {
     const skills = new Map();
-    const add = (key, fixedLevel) => {
+    const add = key => {
         const label = techLabel(key);
-        if (!skills.has(label)) skills.set(label, { key, label, fixedLevel, used: 0, score: 0 });
+        if (!skills.has(label)) skills.set(label, { key, label, projects: [], score: 0, fixedLevel: 0 });
         return skills.get(label);
     };
 
     // Every technology used in a project gets a bar automatically...
-    projects.forEach(p => p.techs.forEach(key => {
+    [...projects].sort(byStrongest).forEach(p => p.techs.forEach(key => {
         const s = add(key);
-        s.used += 1;
-        s.score += DIFFICULTY_WEIGHT[p.difficulty] || 1;
+        if (!s.projects.includes(p)) {
+            s.projects.push(p);
+            s.score += DIFFICULTY_WEIGHT[p.difficulty] || 1;
+        }
     }));
     // ...plus the extra skills listed in skills-data.js.
-    EXTRA_SKILLS.forEach(s => {
-        const entry = add(s.key, s.level);
-        if (entry.used === 0) entry.fixedLevel = s.level;
-    });
+    EXTRA_SKILLS.forEach(extra => { add(extra.key).fixedLevel = extra.level; });
 
     return [...skills.values()]
-        .map(s => ({ ...s, level: s.used ? levelFromProjects(s.score) : Math.max(0, Math.min(100, s.fixedLevel || 0)) }))
-        .sort((a, b) => b.level - a.level || b.used - a.used || a.label.localeCompare(b.label));
+        .map(s => ({
+            ...s,
+            level: s.projects.length
+                ? levelFromProjects(s.score)
+                : Math.max(0, Math.min(100, Number(s.fixedLevel) || 0))
+        }))
+        .sort((a, b) => b.level - a.level || orderIndex(a.label) - orderIndex(b.label) || a.label.localeCompare(b.label));
+}
+
+// "Used in GPU FFT Ocean" reads better than "used in one project",
+// so name the projects when there are only one or two.
+function evidence(skill) {
+    const n = skill.projects.length;
+    if (!n) return "Not in a project here yet";
+    if (n <= 2) return "Used in " + skill.projects
+        .map(p => `<a href="${projectUrl(p)}">${escapeHTML(p.title)}</a>`).join(" and ");
+    return `Used in ${plural(n, "project")}`;
 }
 
 function renderBars(projects) {
     const list = $("barList");
     list.innerHTML = buildSkills(projects).map((skill, i) => {
         const word = levelWord(skill.level);
-        const source = skill.used
-            ? `used in ${plural(skill.used, "project")}`
-            : "outside these projects";
+        const nameId = `skill-${i}`;
         return `
         <li class="bar" style="--tag:${techColor(skill.key)}; --level:${skill.level}%; --i:${i}">
-            <span class="bar-name">${escapeHTML(skill.label)}</span>
+            <span class="bar-name" id="${nameId}">${escapeHTML(skill.label)}</span>
             <span class="bar-track" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${skill.level}"
-                  aria-valuetext="${escapeHTML(word)}" aria-label="${escapeHTML(skill.label)}"><span class="bar-fill"></span></span>
-            <span class="bar-used"><span class="bar-word">${escapeHTML(word)}</span> · ${source}</span>
+                  aria-valuetext="${escapeHTML(word)}" aria-labelledby="${nameId}"><span class="bar-fill"></span></span>
+            <span class="bar-word" aria-hidden="true">${escapeHTML(word)}</span>
+            <span class="bar-used">${evidence(skill)}</span>
         </li>`;
     }).join("");
 
@@ -80,7 +101,9 @@ function groupByArea(projects) {
         const g = groups.find(a => a.test(p));
         if (g) g.projects.push(p);
     });
-    return groups.filter(g => g.projects.length);
+    return groups
+        .filter(g => g.projects.length)
+        .sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
 }
 
 let groups = [];
@@ -108,11 +131,10 @@ function renderDonut(projects) {
               `M${C.x} ${C.y - R_IN} a${R_IN} ${R_IN} 0 1 0 0 ${R_IN * 2} a${R_IN} ${R_IN} 0 1 0 0 ${-R_IN * 2} Z`
             : bandPath(a0, a1);
         const [dx, dy] = point((R_IN + R_OUT) / 2, mid);
-        const name = `${g.label}: ${plural(g.projects.length, "project")}`;
 
+        // Mouse only: the legend buttons are the keyboard/screen-reader control.
         segments += `
-        <g class="donut-seg" data-key="${g.key}" style="--seg:${g.color}; --i:${i}" tabindex="0" role="button" aria-label="${escapeHTML(name)}">
-            <title>${escapeHTML(name)}</title>
+        <g class="donut-seg" data-key="${g.key}" style="--seg:${g.color}; --i:${i}">
             <path d="${d}" fill-rule="evenodd"></path>
             <circle class="seg-dot" cx="${fmt(dx)}" cy="${fmt(dy)}" r="5"></circle>
         </g>`;
@@ -124,7 +146,7 @@ function renderDonut(projects) {
         const lx3 = lx2 + (right ? 26 : -26);
         const tx = lx3 + (right ? 8 : -8);
         labels += `
-        <g class="donut-label" data-key="${g.key}" style="--seg:${g.color}" aria-hidden="true">
+        <g class="donut-label" data-key="${g.key}" style="--seg:${g.color}">
             <polyline points="${fmt(lx1)},${fmt(ly1)} ${fmt(lx2)},${fmt(ly2)} ${fmt(lx3)},${fmt(ly2)}"></polyline>
             <text x="${fmt(tx)}" y="${fmt(ly2 - 3)}" text-anchor="${right ? "start" : "end"}">${escapeHTML(g.label)}</text>
             <text class="donut-label-count" x="${fmt(tx)}" y="${fmt(ly2 + 15)}" text-anchor="${right ? "start" : "end"}">${cap(plural(g.projects.length, "project"))}</text>
@@ -134,29 +156,25 @@ function renderDonut(projects) {
     svg.innerHTML = `
         ${segments}
         ${labels}
-        <g class="donut-center" aria-hidden="true">
+        <g class="donut-center">
             <text class="donut-title" id="donutTitle" x="${C.x}" y="${C.y - 2}" text-anchor="middle"></text>
             <text class="donut-sub" id="donutSub" x="${C.x}" y="${C.y + 24}" text-anchor="middle"></text>
         </g>`;
 
     $("areaLegend").innerHTML = groups.map(g => `
-        <button type="button" class="legend-item" data-key="${g.key}" style="--seg:${g.color}" aria-pressed="false">
+        <button type="button" class="legend-item" data-key="${g.key}" style="--seg:${g.color}" aria-pressed="false" aria-controls="areaDetail">
             <span class="legend-dot" aria-hidden="true"></span>${escapeHTML(g.label)}
         </button>`).join("");
 
-    // Hover, focus or click an area to select it.
+    // Hovering a segment previews it; clicking picks it.
     svg.querySelectorAll(".donut-seg").forEach(seg => {
-        const pick = () => select(seg.dataset.key);
-        seg.addEventListener("mouseenter", pick);
-        seg.addEventListener("focus", pick);
-        seg.addEventListener("click", pick);
-        seg.addEventListener("keydown", e => {
-            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); }
-        });
+        seg.addEventListener("mouseenter", () => highlight(seg.dataset.key));
+        seg.addEventListener("click", () => select(seg.dataset.key, true));
     });
+    svg.addEventListener("mouseleave", () => highlight(selected));
     $("areaLegend").addEventListener("click", e => {
         const btn = e.target.closest(".legend-item");
-        if (btn) select(btn.dataset.key);
+        if (btn) select(btn.dataset.key, true);
     });
 
     // On phones the callout labels are hidden, so zoom in on the ring itself.
@@ -165,35 +183,115 @@ function renderDonut(projects) {
     fitView();
     phone.addEventListener("change", fitView);
 
-    // Start on the biggest area.
-    const biggest = [...groups].sort((a, b) => b.projects.length - a.projects.length)[0];
-    select(biggest.key);
+    const start = groups.find(g => g.key === DEFAULT_AREA)
+        || [...groups].sort((a, b) => b.projects.length - a.projects.length)[0];
+    select(start.key, false);
     if (!reduceMotion) svg.classList.add("animate");
 }
 
-function select(key) {
-    if (key === selected) return;
-    selected = key;
+// Visual emphasis only (used for hover previews and the chosen area).
+function highlight(key) {
     const g = groups.find(x => x.key === key);
     if (!g) return;
-
-    document.querySelectorAll("[data-key]").forEach(el => {
-        el.classList.toggle("is-active", el.dataset.key === key);
-        if (el.classList.contains("legend-item")) el.setAttribute("aria-pressed", String(el.dataset.key === key));
-    });
+    $("donut").querySelectorAll("[data-key]").forEach(el => el.classList.toggle("is-active", el.dataset.key === key));
     $("donut").classList.add("has-selection");
-
     $("donutTitle").textContent = g.label;
     $("donutSub").textContent = cap(plural(g.projects.length, "project"));
+}
 
-    $("areaDetail").style.setProperty("--seg", g.color);
-    $("areaDetail").innerHTML = `
+function select(key, byUser) {
+    const g = groups.find(x => x.key === key);
+    if (!g) return;
+    selected = key;
+    highlight(key);
+
+    document.querySelectorAll(".legend-item").forEach(btn => {
+        const on = btn.dataset.key === key;
+        btn.classList.toggle("is-active", on);
+        btn.setAttribute("aria-pressed", String(on));
+    });
+
+    const detail = $("areaDetail");
+    // Only announce changes the visitor asked for, not the first render.
+    if (byUser) detail.setAttribute("aria-live", "polite");
+    detail.style.setProperty("--seg", g.color);
+    detail.innerHTML = `
         <h3>${escapeHTML(g.label)}</h3>
         <p>${escapeHTML(g.text)}</p>
         <ul class="area-projects">
             ${g.projects.map(p => `<li><a href="${projectUrl(p)}">${escapeHTML(p.title)}</a></li>`).join("")}
         </ul>`;
 }
+
+// ---------- Scrolling logo band ----------
+const BELT_SPEED = 22; // pixels per second: slow on purpose
+
+function beltItem(t, isRepeat) {
+    const cls = [t.mono && "mono", t.square && "square"].filter(Boolean).join(" ");
+    const mark = t.icon
+        ? `<img src="${DEVICON_BASE}${t.icon}.svg" alt="" width="44" height="44" decoding="async"${cls ? ` class="${cls}"` : ""}>`
+        : `<span class="belt-badge" style="--c:${t.color || "#6f6873"}">${escapeHTML(t.badge || t.name)}</span>`;
+    return `<span class="belt-item"${isRepeat ? " data-dup" : ""}>${mark}<span class="belt-name">${escapeHTML(t.name)}</span></span>`;
+}
+
+function renderBelt() {
+    const belt = $("toolbelt");
+    $("toolbeltList").innerHTML = TOOLBELT.map(t => `<li>${escapeHTML(t.name)}</li>`).join("");
+
+    [[1, "beltLanguages"], [2, "beltTools"]].forEach(([row, id]) => {
+        const items = TOOLBELT.filter(t => t.row === row);
+        const track = $(id);
+        if (!items.length) { track.closest(".belt-row").hidden = true; return; }
+
+        // One "set" is the row's items repeated until it's wider than any screen;
+        // the track holds two sets so the loop is seamless.
+        const set = [];
+        while (set.length < Math.max(14, items.length)) set.push(...items);
+        const html = set.map((t, i) => beltItem(t, i >= items.length)).join("");
+        track.innerHTML = `<div class="belt-set">${html}</div><div class="belt-set belt-set--copy">${html}</div>`;
+    });
+
+    // Measure once fonts are in, then start (so the speed never jumps).
+    const start = () => { setBeltSpeed(); belt.classList.add("is-ready"); };
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
+    if ("ResizeObserver" in window) {
+        const ro = new ResizeObserver(setBeltSpeed);
+        belt.querySelectorAll(".belt-set:not(.belt-set--copy)").forEach(s => ro.observe(s));
+    }
+
+    // Stop animating while it's off screen.
+    if ("IntersectionObserver" in window) {
+        new IntersectionObserver(([entry]) => belt.classList.toggle("is-offscreen", !entry.isIntersecting))
+            .observe(belt);
+    }
+
+    // Pause / play button (remembered between visits).
+    const btn = $("beltToggle");
+    const setPaused = paused => {
+        belt.classList.toggle("is-paused", paused);
+        btn.setAttribute("aria-pressed", String(paused));
+        btn.textContent = paused ? "Play" : "Pause";
+        btn.setAttribute("aria-label", paused ? "Play the scrolling logos" : "Pause the scrolling logos");
+    };
+    let saved = false;
+    try { saved = localStorage.getItem("beltPaused") === "1"; } catch (e) {}
+    setPaused(saved);
+    btn.addEventListener("click", () => {
+        const paused = !belt.classList.contains("is-paused");
+        setPaused(paused);
+        try { localStorage.setItem("beltPaused", paused ? "1" : "0"); } catch (e) {}
+    });
+}
+
+// Same speed on both rows, whatever their length.
+function setBeltSpeed() {
+    document.querySelectorAll(".belt-track").forEach(track => {
+        const set = track.querySelector(".belt-set");
+        if (set && set.offsetWidth) track.style.animationDuration = `${Math.round(set.offsetWidth / BELT_SPEED)}s`;
+    });
+}
+
+renderBelt();
 
 // ---------- Load ----------
 fetchProjects()

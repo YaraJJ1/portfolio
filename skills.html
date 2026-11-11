@@ -8,7 +8,7 @@
     <script>
         try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
     </script>
-    <link rel="stylesheet" href="./style.css?v=14">
+    <link rel="stylesheet" href="./style.css?v=16">
 </head>
 <body>
 
@@ -35,15 +35,24 @@
     </header>
 
     <main class="container">
-        <section class="intro">
+        <section class="skills-hero">
             <h1>Skills</h1>
-            <p>What I work with, and where my projects tend to land. Pick an area on the chart to see the projects behind it.</p>
+        </section>
+
+        <!-- Languages and tools, scrolling slowly in two rows -->
+        <section class="toolbelt" id="toolbelt" aria-labelledby="toolbeltTitle">
+            <h2 class="sr-only" id="toolbeltTitle">Languages and tools I use</h2>
+            <ul class="sr-only" id="toolbeltList"></ul>
+            <div class="belt-row" aria-hidden="true"><div class="belt-track" id="beltLanguages"></div></div>
+            <div class="belt-row belt-row--reverse" aria-hidden="true"><div class="belt-track" id="beltTools"></div></div>
+            <button class="small-btn belt-toggle" id="beltToggle" type="button" aria-pressed="false">Pause</button>
         </section>
 
         <section class="skills-panel" aria-label="Skills overview">
             <!-- Skill bars -->
             <div class="panel-col">
-                <h2 class="panel-title">Languages &amp; tools</h2>
+                <h2 class="panel-title">Proficiency</h2>
+                <p class="panel-hint">Based on how many projects use each one, and how demanding they were.</p>
                 <p class="loading" id="loading">Loading…</p>
                 <ul class="bar-list" id="barList"></ul>
             </div>
@@ -51,11 +60,12 @@
             <!-- Focus chart -->
             <div class="panel-col">
                 <h2 class="panel-title">Focus</h2>
+                <p class="panel-hint">Select an area to see its projects.</p>
                 <div class="focus-chart">
-                    <svg class="donut" id="donut" viewBox="0 0 560 400" role="group" aria-label="Projects by area"></svg>
+                    <svg class="donut" id="donut" viewBox="0 0 560 400" aria-hidden="true"></svg>
                 </div>
-                <div class="area-legend" id="areaLegend" role="group" aria-label="Areas"></div>
-                <div class="area-detail" id="areaDetail" aria-live="polite"></div>
+                <div class="area-legend" id="areaLegend" role="group" aria-label="Choose an area"></div>
+                <div class="area-detail" id="areaDetail"></div>
             </div>
         </section>
     </main>
@@ -71,6 +81,6 @@
     </footer>
 
     <script src="./site.js?v=7" defer></script>
-    <script type="module" src="./skills.js?v=14"></script>
+    <script type="module" src="./skills.js?v=16"></script>
 </body>
 </html>
