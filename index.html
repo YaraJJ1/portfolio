@@ -3,36 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projects | Portfolio</title>
-    <meta name="description" content="Personal and professional projects: game development in Unity & C#, graphics programming, web and desktop apps.">
-    <meta name="theme-color" content="#120e13">
-
-    <!-- Set the saved/preferred theme before first paint so there's no flash -->
-    <script>
-        (function () {
-            var theme;
-            try { theme = localStorage.getItem("theme"); } catch (e) {}
-            if (!theme) theme = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-            document.documentElement.dataset.theme = theme;
-        })();
-    </script>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <title>Projects</title>
+    <meta name="description" content="My personal projects: game development in Unity & C#, graphics programming, web and desktop apps.">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css">
-    <link rel="stylesheet" href="./style.css?v=2">
+    <link rel="stylesheet" href="./style.css?v=3">
 </head>
 <body>
-    <div class="scroll-progress" aria-hidden="true"></div>
 
-    <!-- ===== Header ===== -->
-    <header class="site-header" id="siteHeader">
+    <header class="site-header">
         <div class="container header-inner">
-            <a class="brand" href="index.html" aria-label="Portfolio home">
-                <span class="brand-mark" aria-hidden="true"></span>
-                <span class="brand-text">Portfolio</span>
-            </a>
+            <a class="brand" href="index.html">Portfolio</a>
+
+            <button class="menu-btn" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="siteNav">Menu</button>
 
             <nav class="nav" id="siteNav" aria-label="Main">
                 <a href="index.html" class="active" aria-current="page">Projects</a>
@@ -40,141 +22,70 @@
                 <a href="certificates.html">Certificates</a>
                 <a href="contact.html">Contact</a>
             </nav>
-
-            <div class="header-actions">
-                <button class="icon-btn" id="themeToggle" aria-label="Toggle light and dark theme">
-                    <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
-                    <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z"/></svg>
-                </button>
-                <button class="icon-btn menu-btn" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="siteNav">
-                    <span></span><span></span><span></span>
-                </button>
-            </div>
         </div>
     </header>
 
-    <main>
-        <!-- ===== Hero ===== -->
-        <section class="hero">
-            <div class="hero-bg" aria-hidden="true">
-                <span class="blob blob-1"></span>
-                <span class="blob blob-2"></span>
-                <span class="blob blob-3"></span>
-                <span class="hero-grid"></span>
+    <main class="container">
+        <section class="intro">
+            <h1>Projects</h1>
+            <p>
+                Here you'll find some of my work and personal projects, specializing in Unity &amp; C#.
+            </p>
+            <p class="summary" id="summary"></p>
+        </section>
+
+        <section class="toolbar" aria-label="Filter projects">
+            <div class="tabs" role="tablist" aria-label="Category" id="categoryTabs">
+                <button class="tab active" role="tab" aria-selected="true" data-filter="all">All</button>
+                <button class="tab" role="tab" aria-selected="false" data-filter="games">Games</button>
+                <button class="tab" role="tab" aria-selected="false" data-filter="web">Web</button>
+                <button class="tab" role="tab" aria-selected="false" data-filter="backend">Back-end</button>
+                <button class="tab" role="tab" aria-selected="false" data-filter="others">Others</button>
             </div>
 
-            <div class="container hero-inner">
-                <p class="eyebrow"><span class="pulse-dot" aria-hidden="true"></span> Selected work</p>
-                <h1 class="hero-title">Featured <span class="gradient-text">Projects</span></h1>
-                <p class="hero-sub">
-                    Here you'll find my personal and professional work, from gameplay systems and
-                    real-time graphics to desktop and web apps, specializing in Unity &amp; C#.
-                </p>
+            <div class="controls">
+                <input type="search" id="searchInput" placeholder="Search" autocomplete="off" aria-label="Search projects">
 
-                <dl class="hero-stats" id="heroStats">
-                    <div class="stat"><dt>Projects</dt><dd><span data-stat="total">0</span></dd></div>
-                    <div class="stat"><dt>Game dev</dt><dd><span data-stat="games">0</span></dd></div>
-                    <div class="stat"><dt>Technologies</dt><dd><span data-stat="tech">0</span></dd></div>
-                    <div class="stat"><dt>Latest</dt><dd><span data-stat="latest">—</span></dd></div>
-                </dl>
+                <div class="levels" role="group" aria-label="Difficulty">
+                    <label><input type="checkbox" value="easy"> Easy</label>
+                    <label><input type="checkbox" value="medium"> Medium</label>
+                    <label><input type="checkbox" value="hard"> Hard</label>
+                </div>
 
-                <a href="#projects" class="scroll-cue" aria-label="Scroll to projects">
-                    <span></span>
-                </a>
+                <select id="sortSelect" aria-label="Sort by">
+                    <option value="new-old" selected>Newest</option>
+                    <option value="old-new">Oldest</option>
+                    <option value="high-low">Hardest</option>
+                    <option value="low-high">Easiest</option>
+                </select>
             </div>
         </section>
 
-        <!-- ===== Toolbar: categories, search, difficulty, sort ===== -->
-        <section class="toolbar" id="projects" aria-label="Filter projects">
-            <div class="container toolbar-inner">
-                <div class="tabs" role="tablist" aria-label="Category" id="categoryTabs">
-                    <span class="tab-indicator" aria-hidden="true"></span>
-                    <button class="tab active" role="tab" aria-selected="true" data-filter="all">All <span class="tab-count" data-count="all">0</span></button>
-                    <button class="tab" role="tab" aria-selected="false" data-filter="games">Games <span class="tab-count" data-count="games">0</span></button>
-                    <button class="tab" role="tab" aria-selected="false" data-filter="web">Web <span class="tab-count" data-count="web">0</span></button>
-                    <button class="tab" role="tab" aria-selected="false" data-filter="backend">Back-end <span class="tab-count" data-count="backend">0</span></button>
-                    <button class="tab" role="tab" aria-selected="false" data-filter="others">Others <span class="tab-count" data-count="others">0</span></button>
-                </div>
+        <p class="loading" id="loading">Loading projects…</p>
 
-                <div class="controls">
-                    <label class="search">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                        <input type="search" id="searchInput" placeholder="Search projects, tech…" autocomplete="off" aria-label="Search projects">
-                        <kbd aria-hidden="true">/</kbd>
-                    </label>
+        <ul class="project-grid" id="projectGrid"></ul>
 
-                    <div class="chips" role="group" aria-label="Difficulty">
-                        <button class="chip" data-difficulty="easy" aria-pressed="false"><i class="lvl lvl-easy"></i>Easy</button>
-                        <button class="chip" data-difficulty="medium" aria-pressed="false"><i class="lvl lvl-medium"></i>Medium</button>
-                        <button class="chip" data-difficulty="hard" aria-pressed="false"><i class="lvl lvl-hard"></i>Hard</button>
-                    </div>
-
-                    <label class="select">
-                        <span class="visually-hidden">Sort by</span>
-                        <select id="sortSelect">
-                            <option value="new-old" selected>Newest first</option>
-                            <option value="old-new">Oldest first</option>
-                            <option value="high-low">Hardest first</option>
-                            <option value="low-high">Easiest first</option>
-                        </select>
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-                    </label>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== Project grid ===== -->
-        <section class="projects-section">
-            <div class="container">
-                <p class="result-count" id="resultCount" aria-live="polite"></p>
-
-                <ul class="project-grid" id="projectGrid">
-                    <!-- Skeleton cards shown while Firestore loads; replaced by script.js -->
-                    <li class="card skeleton"><div class="card-media"></div><div class="card-body"><span></span><span></span><span></span></div></li>
-                    <li class="card skeleton"><div class="card-media"></div><div class="card-body"><span></span><span></span><span></span></div></li>
-                    <li class="card skeleton"><div class="card-media"></div><div class="card-body"><span></span><span></span><span></span></div></li>
-                </ul>
-
-                <div class="empty-state" id="emptyState" hidden>
-                    <div class="empty-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8.5 11h5"/></svg>
-                    </div>
-                    <h2>No projects match those filters</h2>
-                    <p>Try a different search or clear the filters to see everything.</p>
-                    <button class="btn btn-primary" id="clearFilters">Clear filters</button>
-                </div>
-            </div>
-        </section>
+        <div class="empty" id="emptyState" hidden>
+            <p>No projects match that.</p>
+            <button class="link-btn" id="clearFilters">Clear filters</button>
+        </div>
     </main>
 
     <footer class="site-footer">
-        <div class="container footer-inner">
-            <p>© <span id="year"></span> Portfolio. All projects designed &amp; built by me.</p>
-            <nav aria-label="Footer">
-                <a href="skills.html">Skills</a>
-                <a href="certificates.html">Certificates</a>
-                <a href="contact.html">Contact</a>
-            </nav>
+        <div class="container">
+            <p>© <span id="year"></span></p>
         </div>
     </footer>
 
-    <button class="to-top" id="toTop" aria-label="Back to top">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
-    </button>
-
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-    <!-- ===== Project detail modal ===== -->
+    <!-- Project detail popup -->
     <div class="modal" id="projectModal" aria-hidden="true">
         <div class="modal-backdrop" data-close></div>
         <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-            <button class="icon-btn modal-close" data-close aria-label="Close project">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
-            </button>
+            <button class="modal-close" data-close aria-label="Close">&times;</button>
 
             <div class="modal-media">
                 <div class="swiper" id="modalSwiper">
-                    <div class="swiper-wrapper"><!-- slides injected by script.js --></div>
+                    <div class="swiper-wrapper"></div>
                     <div class="swiper-pagination"></div>
                     <div class="swiper-button-prev"></div>
                     <div class="swiper-button-next"></div>
@@ -182,46 +93,28 @@
             </div>
 
             <div class="modal-body">
-                <div class="modal-meta">
-                    <span class="pill" id="modalCategory"></span>
-                    <span class="difficulty" id="modalDifficulty"></span>
-                    <time id="modalDate"></time>
-                </div>
-
                 <h2 class="modal-title" id="modalTitle"></h2>
-                <p class="modal-summary" id="modalSummary"></p>
+                <p class="modal-meta" id="modalMeta"></p>
+                <p class="modal-tech" id="modalTech"></p>
 
-                <ul class="tech-list" id="modalTech"></ul>
-
-                <div class="modal-actions">
-                    <a class="btn btn-primary" id="modalGithub" target="_blank" rel="noopener noreferrer" hidden>
-                        <svg viewBox="0 0 16 16" aria-hidden="true" class="gh"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
-                        View code
-                    </a>
-                    <button class="btn btn-ghost" id="modalShare">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg>
-                        Copy link
-                    </button>
-                </div>
-
-                <h3 class="modal-subhead">About this project</h3>
                 <div class="modal-description" id="modalDescription"></div>
 
+                <p class="modal-links">
+                    <a id="modalGithub" target="_blank" rel="noopener noreferrer" hidden>View code on GitHub</a>
+                    <button class="link-btn" id="modalShare">Copy link</button>
+                </p>
+
                 <div class="modal-nav">
-                    <button class="modal-nav-btn" id="modalPrev">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-                        <span><small>Previous</small><strong></strong></span>
-                    </button>
-                    <button class="modal-nav-btn next" id="modalNext">
-                        <span><small>Next</small><strong></strong></span>
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-                    </button>
+                    <button class="link-btn" id="modalPrev">&larr; <span></span></button>
+                    <button class="link-btn" id="modalNext"><span></span> &rarr;</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
-    <script type="module" src="./script.js?v=2"></script>
+    <script type="module" src="./script.js?v=3"></script>
 </body>
 </html>
