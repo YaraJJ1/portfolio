@@ -1522,10 +1522,10 @@ body::before {
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    background: radial-gradient(ellipse 85% 60vh at 50% -12vh, rgba(112, 84, 190, 0.30), transparent 72%);
+    background: linear-gradient(180deg, rgba(112, 84, 190, 0.26) 0, rgba(112, 84, 190, 0.12) 22vh, rgba(112, 84, 190, 0) 50vh);
 }
 :root[data-theme="dark"] body::before {
-    background: radial-gradient(ellipse 85% 60vh at 50% -12vh, rgba(185, 166, 240, 0.15), transparent 72%);
+    background: linear-gradient(180deg, rgba(185, 166, 240, 0.14) 0, rgba(185, 166, 240, 0.06) 22vh, rgba(185, 166, 240, 0) 50vh);
 }
 @media (prefers-reduced-transparency: reduce) {
     body::before { display: none; }
