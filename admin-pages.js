@@ -89,6 +89,15 @@ function homeForm(c) {
         textField("intro", "Intro", c.intro, d.intro, { max: 300, rows: 3, hint: "One or two sentences about what you do." }) +
         `<label class="field"><span class="field-label">Pictured project <span class="hint">Its first image fills the banner.</span></span>
             <select name="heroProject">${options.join("")}</select></label>`
+    ) + section("Selected work", "The three projects shown under the banner. Leave a slot on Automatic to fill it with your strongest remaining work.",
+        [0, 1, 2].map(i => {
+            const pick = (c.selectedWork || [])[i] || "";
+            const opts = [`<option value="">Automatic</option>`]
+                .concat(projects.map(p => `<option value="${esc(p.id)}" ${p.id === pick ? "selected" : ""}>${esc(p.title)}</option>`));
+            return `<label class="field"><span class="field-label">${["First", "Second", "Third"][i]} project</span>
+                <select name="selectedWork${i}">${opts.join("")}</select></label>`;
+        }).join("") +
+        `<p class="section-help">The pictured project in the banner is never repeated here.</p>`
     ) + section("What I work on", "Three short cards. The link to your skills page is added automatically.",
         textField("areasIntro", "Section intro", c.areasIntro, d.areasIntro, { max: 200, rows: 2 }) +
         c.areas.map((a, i) => `
@@ -254,6 +263,10 @@ function readForm(page) {
             role: orBlank(val(f, "role"), d.role),
             intro: orBlank(val(f, "intro"), d.intro),
             heroProject: val(f, "heroProject"),
+            selectedWork: (() => {
+                const picks = [0, 1, 2].map(i => val(f, `selectedWork${i}`));
+                return picks.some(Boolean) ? picks : [];
+            })(),
             areasIntro: orBlank(val(f, "areasIntro"), d.areasIntro),
             areas: d.areas.map((a, i) => ({
                 title: orBlank(val(f, `areaTitle${i}`), a.title),

@@ -131,7 +131,19 @@ Promise.all([fetchProjects(), contentReady])
         showAreaLinks(sorted);
 
         const list = $("workList");
-        list.innerHTML = sorted.filter(p => p !== hero).slice(0, 3).map(workItem).join("");
+        // "Selected work" can be picked in the admin page; empty slots fill automatically.
+        const picks = (content.home.selectedWork || [])
+            .map(id => sorted.find(p => p.id === id))
+            .filter((p, i, arr) => p && p !== hero && arr.indexOf(p) === i);
+        const rest = sorted.filter(p => p !== hero && !picks.includes(p));
+        const shown = [];
+        for (let i = 0; i < 3; i++) {
+            const wanted = (content.home.selectedWork || [])[i];
+            const pick = wanted && picks.find(p => p.id === wanted);
+            if (pick && !shown.includes(pick)) shown.push(pick);
+            else if (rest.length) shown.push(rest.shift());
+        }
+        list.innerHTML = shown.map(workItem).join("");
         setUpPreviews(list);
         $("allProjectsLink").innerHTML = `All ${projects.length} projects &rarr;`;
     })

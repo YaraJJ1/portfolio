@@ -52,6 +52,7 @@ export const DEFAULTS = {
         role: "Game developer working in Unity & C#",
         intro: "I like the technical side of games: player movement, physics, shaders and procedural animation. Systems that are hard to get right and obvious when they're wrong.",
         heroProject: "", // "" = the top project automatically
+        selectedWork: [], // up to 3 project ids for "Selected work"; "" or missing = automatic
         areasIntro: "Mostly the systems underneath a game: how things move, collide and look.",
         areas: [
             { title: "Gameplay & physics", text: "Movement and vehicle controllers, grappling hooks, and buoyancy that lets objects ride on moving water." },
