@@ -57,8 +57,10 @@ const grid = $("#projectGrid");
 const loading = $("#loading");
 const emptyState = $("#emptyState");
 const searchInput = $("#searchInput");
-const sortSelect = $("#sortSelect");
-const levelBoxes = $$(".levels input");
+const levelDropdown = $("#levelDropdown");
+const sortDropdown = $("#sortDropdown");
+const levelBoxes = $$("input[type=checkbox]", levelDropdown);
+const sortOptions = $$(".dd-option", sortDropdown);
 const modal = $("#projectModal");
 const toastEl = $("#toast");
 
@@ -97,8 +99,13 @@ function tag(text, color, extraClass = "") {
     return `<span class="tag ${extraClass}" style="--tag:${color}">${escapeHTML(text)}</span>`;
 }
 
+// Difficulty shown as signal bars (1 = easy, 2 = medium, 3 = hard).
 function levelTag(p) {
-    return p.difficulty ? `<span class="tag level level-${escapeHTML(p.difficulty)}">${escapeHTML(capitalize(p.difficulty))}</span>` : "";
+    if (!p.difficulty) return "";
+    const label = capitalize(p.difficulty);
+    return `<span class="level level-${escapeHTML(p.difficulty)}" title="${escapeHTML(label)} difficulty">
+        <span class="signal" aria-hidden="true"><i></i><i></i><i></i></span>${escapeHTML(label)}
+    </span>`;
 }
 
 function tagsHTML(p) {
@@ -258,10 +265,57 @@ $$(".tab").forEach(tab => {
     });
 });
 
+/* Dropdown menus (Difficulty, Sort) */
+const dropdowns = [levelDropdown, sortDropdown];
+
+function closeDropdowns(except) {
+    dropdowns.forEach(dd => {
+        if (dd === except) return;
+        dd.classList.remove("open");
+        $(".dd-btn", dd).setAttribute("aria-expanded", "false");
+    });
+}
+
+dropdowns.forEach(dd => {
+    $(".dd-btn", dd).addEventListener("click", () => {
+        const open = !dd.classList.contains("open");
+        closeDropdowns(dd);
+        dd.classList.toggle("open", open);
+        $(".dd-btn", dd).setAttribute("aria-expanded", String(open));
+    });
+});
+
+document.addEventListener("click", e => {
+    if (!dropdowns.some(dd => dd.contains(e.target))) closeDropdowns();
+});
+
+function updateLevelCount() {
+    const count = $(".dd-count", levelDropdown);
+    count.textContent = state.difficulties.size;
+    count.hidden = state.difficulties.size === 0;
+    levelDropdown.classList.toggle("active", state.difficulties.size > 0);
+}
+
 levelBoxes.forEach(box => {
     box.addEventListener("change", () => {
         box.checked ? state.difficulties.add(box.value) : state.difficulties.delete(box.value);
+        updateLevelCount();
         render();
+    });
+});
+
+function setSort(value) {
+    state.sort = value;
+    sortOptions.forEach(o => o.setAttribute("aria-checked", String(o.dataset.sort === value)));
+    const chosen = sortOptions.find(o => o.dataset.sort === value);
+    $("#sortLabel").textContent = chosen ? chosen.textContent : "";
+    render();
+}
+
+sortOptions.forEach(option => {
+    option.addEventListener("click", () => {
+        setSort(option.dataset.sort);
+        closeDropdowns();
     });
 });
 
@@ -270,16 +324,12 @@ searchInput.addEventListener("input", () => {
     render();
 });
 
-sortSelect.addEventListener("change", () => {
-    state.sort = sortSelect.value;
-    render();
-});
-
 $("#clearFilters").addEventListener("click", () => {
     state.query = "";
     state.difficulties.clear();
     searchInput.value = "";
     levelBoxes.forEach(b => (b.checked = false));
+    updateLevelCount();
     $('.tab[data-filter="all"]').click();
 });
 
@@ -408,7 +458,10 @@ $("#modalShare").addEventListener("click", async () => {
 });
 
 document.addEventListener("keydown", e => {
-    if (e.key === "Escape") closeModal();
+    if (e.key === "Escape") {
+        closeDropdowns();
+        closeModal();
+    }
 });
 
 window.addEventListener("hashchange", openFromHash);
@@ -426,8 +479,10 @@ menuToggle.addEventListener("click", () => {
 // Light mode is the default; the choice is remembered on this device.
 const themeBtn = $("#themeToggle");
 function updateThemeButton() {
-    const dark = document.documentElement.dataset.theme === "dark";
-    themeBtn.textContent = dark ? "Light mode" : "Dark mode";
+    // The icons themselves are swapped in CSS; this keeps the label right.
+    const label = document.documentElement.dataset.theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
+    themeBtn.setAttribute("aria-label", label);
+    themeBtn.title = label;
 }
 themeBtn.addEventListener("click", () => {
     const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
