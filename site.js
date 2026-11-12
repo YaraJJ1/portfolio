@@ -64,7 +64,7 @@
 
     var CLICKABLE = 'a, button, select, summary, label[for], [role="button"], [role="tab"], .card, .tab, .work-media, .focus-seg, .dd-item, .dd-option, .swiper-button-prev, .swiper-button-next, .swiper-pagination-bullet';
     var TEXT = 'input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, [contenteditable="true"]';
-    var x = -100, y = -100, cx = -100, cy = -100, moving = false;
+    var x = -100, y = -100, cx = -100, cy = -100, moving = false, lastTarget = null;
 
     function updateState(t) {
         t = t instanceof Element ? t : null;
@@ -95,7 +95,7 @@
             moving = true;
             requestAnimationFrame(frame);
         }
-        updateState(e.target);
+        if (e.target !== lastTarget) { lastTarget = e.target; updateState(e.target); }
     }, { passive: true });
 
     window.addEventListener("scroll", function () {

@@ -124,8 +124,17 @@ function normalizeProject(id, data) {
     };
 }
 
+let snapshotPromise = null;
+export function projectsSnapshot() {
+    if (!snapshotPromise) {
+        snapshotPromise = getDocs(collection(db, "projects"));
+        snapshotPromise.catch(() => { snapshotPromise = null; });
+    }
+    return snapshotPromise;
+}
+
 export async function fetchProjects() {
-    const snapshot = await getDocs(collection(db, "projects"));
+    const snapshot = await projectsSnapshot();
     return snapshot.docs
         .filter(doc => !doc.id.startsWith("_"))
         .map(doc => normalizeProject(doc.id, doc.data()));

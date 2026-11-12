@@ -8,8 +8,13 @@
     <script>
         try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
     </script>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js">
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12.2.0/swiper-bundle.min.css" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="./style.css?v=37">
 </head>
 <body>
@@ -149,8 +154,8 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
-    <script src="./site.js?v=14" defer></script>
-    <script type="module" src="./script.js?v=9"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@12.2.0/swiper-bundle.min.js" defer></script>
+    <script src="./site.js?v=15" defer></script>
+    <script type="module" src="./script.js?v=10"></script>
 </body>
 </html>

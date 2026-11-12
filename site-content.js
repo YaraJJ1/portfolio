@@ -1,5 +1,6 @@
 import { db } from "./firebase.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import { doc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import { projectsSnapshot } from "./projects-data.js";
 import { EXTRA_SKILLS, LEVEL_ADJUST, TOOLBELT, AREAS, DEFAULT_AREA, DEVICON_BASE } from "./skills-data.js";
 import { CERTIFICATES } from "./certificates-data.js";
 
@@ -122,9 +123,10 @@ export function cachedContent() {
 let loading = null;
 export function loadContent() {
     if (!loading) {
-        loading = getDoc(siteDocRef())
-            .then(snap => {
-                const saved = snap.exists() ? snap.data() : {};
+        loading = projectsSnapshot()
+            .then(snapshot => {
+                const site = snapshot.docs.find(d => d.id === SITE_DOC_ID);
+                const saved = site ? site.data() : {};
                 try { localStorage.setItem(CACHE_KEY, JSON.stringify(saved)); } catch (e) {}
                 return mergeContent(saved);
             })

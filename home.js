@@ -16,8 +16,26 @@ const projectUrl = p => `project.html#project=${encodeURIComponent(p.id)}`;
 const canPreview = window.matchMedia("(hover: hover) and (pointer: fine)").matches
     && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+const HERO_KEY = "heroImage";
+try {
+    const last = localStorage.getItem(HERO_KEY);
+    if (last) {
+        const img = $("heroShotImg");
+        img.addEventListener("load", () => img.classList.add("loaded"), { once: true });
+        img.src = last;
+    }
+} catch (e) {}
+
 function showHero(p) {
+    try { localStorage.setItem(HERO_KEY, p.thumb); } catch (e) {}
     const img = $("heroShotImg");
+    if (img.getAttribute("src") === p.thumb) {
+        const link0 = $("heroShotLink");
+        link0.href = projectUrl(p);
+        $("heroShotTitle").textContent = p.title;
+        link0.hidden = false;
+        return;
+    }
     img.addEventListener("load", () => img.classList.add("loaded"), { once: true });
     img.src = p.thumb;
 
