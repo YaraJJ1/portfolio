@@ -292,7 +292,7 @@ const background = () => Array.from(document.body.children)
 
 function renderSlides(media) {
     $(".swiper-wrapper", swiperEl).innerHTML = media.map(item => item.type === "video"
-        ? `<div class="swiper-slide"><video src="${escapeHTML(item.url)}" controls playsinline preload="none"></video></div>`
+        ? `<div class="swiper-slide"><video src="${escapeHTML(item.url)}#t=0.001" controls playsinline preload="metadata"></video></div>`
         : `<div class="swiper-slide"><img src="${escapeHTML(item.url)}" alt="" loading="lazy" decoding="async"></div>`
     ).join("");
 
