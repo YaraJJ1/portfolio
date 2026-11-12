@@ -170,14 +170,16 @@ function skillsForm(c) {
         `<div class="list" id="extraList">${extras.map(extraRow).join("")}</div>
          <button type="button" class="btn btn-ghost btn-small" data-add="extra">+ Add skill</button>`
     ) + section("Fine-tune bars",
-        "Your projects decide how full each bar is. If one looks wrong, nudge it.",
+        "Your projects decide how full each bar is. If one looks wrong, nudge it, or hide it from the Skills page. Project tags stay.",
         fromProjects.length ? fromProjects.map(s => {
             const cur = Number(c.adjust[s.label]) || 0;
             const options = NUDGES.some(n => n.value === cur) ? NUDGES : [...NUDGES, { value: cur, label: `Custom (${cur > 0 ? "+" : ""}${cur})` }];
             const nearest = options.find(n => n.value === cur);
+            const isHidden = (c.hidden || []).includes(s.label);
             return `
-            <fieldset class="nudge-row">
+            <fieldset class="nudge-row${isHidden ? " is-hidden" : ""}">
                 <legend>${esc(s.label)} <span class="hint">from your projects: ${esc(levelWord(s.level))}</span></legend>
+                <label class="hide-skill"><input type="checkbox" name="hide:${esc(s.label)}" ${isHidden ? "checked" : ""}><span class="when-shown">Hide on portfolio</span><span class="when-hidden">Hidden from portfolio (untick to show again)</span></label>
                 <div class="segmented">
                     ${options.map(n => `<label><input type="radio" name="adjust:${esc(s.label)}" value="${n.value}" ${n === nearest ? "checked" : ""}><span>${esc(n.label)}</span></label>`).join("")}
                 </div>
@@ -280,6 +282,9 @@ function readForm(page) {
             const v = Number(r.value);
             if (v) adjust[label] = v; else delete adjust[label];
         });
+        const shown = new Set(projectSkills().map(s => s.label));
+        const hidden = (mergeContent(saved).skills.hidden || []).filter(l => !shown.has(l));
+        f.querySelectorAll('.hide-skill input:checked').forEach(r => hidden.push(r.name.slice("hide:".length)));
         const toolbelt = [...f.querySelectorAll('[data-row="belt"]')].map(row => {
             const logo = row.querySelector('select[name^="beltLogo"]').value;
             const name = row.querySelector(".row-name").value.trim();
@@ -292,7 +297,7 @@ function readForm(page) {
         }).filter(t => t.name);
         const areaTexts = {};
         AREAS.forEach(a => { areaTexts[a.key] = orBlank(val(f, `area:${a.key}`), DEFAULTS.skills.areaTexts[a.key] || ""); });
-        return { extraSkills: extras, adjust, toolbelt, areaTexts, defaultArea: val(f, "defaultArea") };
+        return { extraSkills: extras, adjust, hidden, toolbelt, areaTexts, defaultArea: val(f, "defaultArea") };
     }
     if (page === "certificates") {
         const items = [...f.querySelectorAll('[data-row="cert"]')].map(card => {
@@ -474,6 +479,7 @@ form.addEventListener("input", e => {
 });
 form.addEventListener("change", e => {
     const t = e.target;
+    if (t.closest(".hide-skill")) t.closest(".nudge-row").classList.toggle("is-hidden", t.checked);
     if (t.matches('select[name^="beltLogo"]')) {
         const row = t.closest(".list-row");
         row.querySelector(".badge-fields").hidden = !!t.value;

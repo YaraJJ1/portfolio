@@ -57,6 +57,7 @@ export const DEFAULTS = {
     skills: {
         extraSkills: EXTRA_SKILLS.map(s => ({ key: s.key, level: s.level })),
         adjust: { ...LEVEL_ADJUST },
+        hidden: [],
         toolbelt: TOOLBELT.map(t => t.icon
             ? { row: t.row, name: t.name, logo: logoKeyForIcon(t.icon) }
             : { row: t.row, name: t.name, logo: "", badge: t.badge, color: t.color }),

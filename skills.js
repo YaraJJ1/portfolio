@@ -33,7 +33,9 @@ function buildSkills(projects) {
     }));
     S.extraSkills.forEach(extra => { add(extra.key, extra.name).fixedLevel = extra.level; });
 
+    const hidden = new Set(S.hidden || []);
     return [...skills.values()]
+        .filter(s => !hidden.has(s.label))
         .map(s => ({
             ...s,
             level: Math.max(0, Math.min(100,
