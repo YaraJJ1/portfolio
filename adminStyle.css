@@ -242,7 +242,7 @@ a { color: var(--accent); }
     border-radius: 6px;
     border: 1px solid transparent;
 }
-.adminProjectItem:hover { background: var(--bg); }
+@media (hover: hover) { .adminProjectItem:hover { background: var(--bg); } }
 .adminProjectItem.is-editing { background: var(--accent-soft); border-color: var(--accent); }
 
 .adminProjectThumb {
@@ -773,13 +773,18 @@ a { color: var(--accent); }
     border: 0;
 }
 
+@media (max-width: 1200px) {
+    .adminLayout { grid-template-columns: 1fr; gap: 28px; padding: 28px 32px; }
+    .projectListSection { position: static; max-height: none; }
+    .adminProjectList { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 8px; padding: 12px; overflow: visible; }
+    .adminProjectItem { border-color: var(--line); background: var(--field); }
+}
 @media (max-width: 960px) {
-    .adminLayout { grid-template-columns: 1fr; padding: 20px 16px; }
-    .projectListSection { position: static; max-height: 420px; }
-    .admin-header-inner { padding: 10px 16px; flex-wrap: wrap; }
+    .adminLayout { padding: 24px 24px; }
+    .admin-header-inner { padding: 12px 24px; flex-wrap: wrap; }
     .signed-in { display: none; }
-    .admin-tabs-inner { padding: 0 8px; }
-    .page-editor { margin: 16px 12px 120px; padding: 20px 18px 24px; }
+    .admin-tabs-inner { padding: 0 16px; }
+    .page-editor { margin: 24px 24px 120px; padding: 24px 24px 28px; }
 }
 
 @media (max-width: 640px) {
@@ -803,4 +808,18 @@ a { color: var(--accent); }
 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; animation-duration: 0.01ms !important; }
+}
+@media (max-width: 640px) {
+    .adminLayout { padding: 16px; gap: 20px; }
+    .admin-header-inner { padding: 10px 16px; }
+    .admin-tabs-inner { padding: 0 8px; }
+    .page-editor { margin: 16px 12px 120px; padding: 20px 18px 24px; }
+    .adminProjectList { grid-template-columns: 1fr; padding: 8px; }
+}
+@media (pointer: coarse) {
+    .editBtn, .deleteBtn { height: 40px; padding: 0 16px; font-size: 15.5px; }
+    .adminProjectActions { gap: 10px; }
+    .admin-tab { height: 52px; padding: 0 18px; }
+    .adminProjectThumb { width: 80px; height: 56px; }
+    .adminProjectItem { grid-template-columns: 80px minmax(0, 1fr); padding: 12px; }
 }
