@@ -34,7 +34,7 @@ function showFacts(projects) {
         const label = techLabel(t);
         counts[label] = (counts[label] || 0) + 1;
     }));
-    const topTech = Object.keys(counts).sort((a, b) => counts[b] - counts[a]).slice(0, 3);
+    const topTech = Object.keys(counts).sort((a, b) => counts[b] - counts[a]).slice(0, 2);
     const latest = [...projects].sort((a, b) => b.date - a.date)[0];
 
     $("factCount").textContent = projects.length;
