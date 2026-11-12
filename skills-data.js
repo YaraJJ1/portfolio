@@ -43,38 +43,37 @@ export const DEVICON_BASE = "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.
 
 export const AREAS = [
     {
-        key: "tools",
-        order: 4,
-        label: "Tools & apps",
-        color: "#b07a1f",
-        text: "Software beyond the game itself: web apps, desktop tools and editor utilities.",
-        test: p => p.category !== "games" || /\b(tool|editor|plugin|pipeline)s?\b/i.test(p.title)
-    },
-    {
-        key: "animation",
-        order: 3,
-        label: "Animation",
-        color: "#ad3a5a",
-        text: "Runtime animation systems driven from code, such as procedural locomotion, IK and rigs.",
-        test: p => /anim|\brig\b|\bik\b|kinematic|locomotion|gait/i.test(p.title)
-    },
-    {
-        key: "graphics",
-        order: 2,
-        label: "Graphics",
-        color: "#6d5a91",
-        text: "Real-time rendering: shaders, GPU compute and visual effects.",
-        test: p => p.techs.some(t => /hlsl|glsl|shader|compute/i.test(t)) ||
-            /shader|render|vfx|lighting|post.?process|ray.?(march|trac)|toon|cel.?shad/i.test(p.title)
-    },
-    {
-        key: "gameplay",
+        key: "games",
         order: 1,
-        label: "Gameplay",
-        color: "#2b8a8a",
-        text: "Player controllers, movement and physics-driven mechanics built in Unity and C#.",
+        label: "Games",
+        color: "#2b6f75",
+        text: "Gameplay systems, graphics and animation built in Unity and C#.",
+        test: p => p.category === "games"
+    },
+    {
+        key: "web",
+        order: 2,
+        label: "Web",
+        color: "#4862d4",
+        text: "Websites and web apps built with JavaScript, HTML and CSS.",
+        test: p => p.category === "web"
+    },
+    {
+        key: "backend",
+        order: 3,
+        label: "Back-end",
+        color: "#8a5a3c",
+        text: "Servers, databases and APIs.",
+        test: p => p.category === "backend"
+    },
+    {
+        key: "others",
+        order: 4,
+        label: "Apps & tools",
+        color: "#6a606c",
+        text: "Desktop apps and tools outside of games and the web.",
         test: () => true
     }
 ];
 
-export const DEFAULT_AREA = "gameplay";
+export const DEFAULT_AREA = "games";

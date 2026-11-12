@@ -1,4 +1,4 @@
-import { escapeHTML, techLabel, techColor, fetchProjects, byStrongest, TECH } from "./projects-data.js";
+import { escapeHTML, techLabel, techColor, fetchProjects, byStrongest, TECH, formatDate, levelTag } from "./projects-data.js";
 import { DIFFICULTY_WEIGHT, SKILL_ORDER, levelFromProjects, levelWord, AREAS, DEVICON_BASE } from "./skills-data.js";
 import { start as startContent, toolbeltItem, cachedContent, mergeContent } from "./site-content.js";
 
@@ -121,7 +121,7 @@ function renderFocus(projects) {
     setHint();
     phone.addEventListener("change", setHint);
 
-    const start = groups.find(g => g.key === S.defaultArea) || groups.find(g => g.key === "gameplay")
+    const start = groups.find(g => g.key === S.defaultArea) || groups.find(g => g.key === "games")
         || [...groups].sort((x, y) => y.projects.length - x.projects.length)[0];
     select(start.key, false);
     requestAnimationFrame(() => requestAnimationFrame(() => bar.classList.add("ready")));
@@ -142,7 +142,14 @@ function select(key, byUser) {
         <h3>${escapeHTML(g.label)}</h3>
         <p>${escapeHTML(g.text)}</p>
         <ul class="area-projects">
-            ${g.projects.map(p => `<li><a href="${projectUrl(p)}">${escapeHTML(p.title)}</a></li>`).join("")}
+            ${g.projects.map(p => `
+            <li><a class="area-project" href="${projectUrl(p)}">
+                <img src="${escapeHTML(p.thumb)}" alt="" loading="lazy">
+                <span class="area-project-body">
+                    <span class="area-project-title">${escapeHTML(p.title)}</span>
+                    <span class="area-project-meta">${escapeHTML(formatDate(p.date))}${levelTag(p)}</span>
+                </span>
+            </a></li>`).join("")}
         </ul>`;
 }
 
