@@ -1052,39 +1052,43 @@ a.card:focus-visible {
 :root[data-theme="dark"] .bar-track { box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4); }
 :root[data-theme="dark"] .bar-fill { background-color: color-mix(in srgb, var(--tag) 70%, #fff); }
 
-.focus-chart { max-width: 600px; margin: -12px auto 0; }
-.donut { display: block; width: 100%; height: auto; overflow: visible; }
-
-.donut-seg { cursor: pointer; transform-origin: 280px 200px; transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease; }
-.donut-seg path { fill: var(--seg); }
-.donut-seg .seg-dot { fill: none; stroke: rgba(255, 255, 255, 0.85); stroke-width: 2.5; }
-.donut.has-selection .donut-seg:not(.is-active) { opacity: 0.75; filter: saturate(0.6); }
-.donut.has-selection .donut-seg.is-active { transform: scale(1.04); }
-:root[data-theme="dark"] .donut.has-selection .donut-seg:not(.is-active) { opacity: 0.8; }
-
-.donut-label polyline { fill: none; stroke: var(--seg); stroke-width: 1.5; transition: opacity 0.2s ease; }
-.donut-label text { fill: var(--ink); font-size: 18px; font-weight: bold; }
-.donut-label .donut-label-count { fill: var(--muted); font-size: 14px; font-weight: normal; }
-.donut.has-selection .donut-label:not(.is-active) polyline { opacity: 0.4; }
-.donut.has-selection .donut-label:not(.is-active) text:first-of-type { fill: var(--ink-2); font-weight: normal; }
-:root[data-theme="dark"] .donut-label polyline { stroke: color-mix(in srgb, var(--seg) 60%, #fff); }
-
-.donut-title { fill: var(--ink); font-size: 26px; font-weight: bold; }
-.donut-sub { fill: var(--muted); font-size: 14px; }
-
-.donut.animate .donut-seg { animation: seg-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i) * 0.08s); }
-@keyframes seg-in {
-    from { opacity: 0; transform: scale(0.85) rotate(-20deg); }
+.focus-bar { display: flex; gap: 4px; margin: 28px 0 0; }
+.focus-seg {
+    flex: var(--w) 1 0;
+    min-width: 64px;
+    display: grid;
+    gap: 2px;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    font: inherit;
+    color: var(--ink-2);
 }
+.seg-name { font-size: 16px; line-height: 1.2; white-space: nowrap; }
+.seg-count { font-size: 14px; color: var(--muted); white-space: nowrap; }
+.seg-fill {
+    height: 28px;
+    margin-top: 8px;
+    background: var(--seg);
+    border-radius: 4px;
+    transform-origin: left;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.focus-seg:first-child .seg-fill { border-radius: 999px 4px 4px 999px; }
+.focus-seg:last-child .seg-fill { border-radius: 4px 999px 999px 4px; }
+.focus-seg:only-child .seg-fill { border-radius: 999px; }
+.focus-seg:hover .seg-fill { transform: translateY(-2px); }
+.focus-seg[aria-pressed="true"] { color: var(--ink); }
+.focus-seg[aria-pressed="true"] .seg-name { font-weight: bold; }
+.focus-seg[aria-pressed="true"] .seg-fill { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--seg); }
+.focus-seg:focus-visible { outline: none; }
+.focus-seg:focus-visible .seg-fill { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink); }
+.focus-bar:not(.ready) .seg-fill { transform: scaleX(0); }
+.focus-bar.ready .seg-fill { transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) calc(var(--i) * 0.08s), box-shadow 0.2s ease; }
+:root[data-theme="dark"] .seg-fill { background: color-mix(in srgb, var(--seg) 70%, #fff); }
 
-.donut-seg { outline: none; }
-.donut-seg:focus-visible path { stroke: var(--ink); stroke-width: 3; }
-.focus-chart { margin-bottom: 28px; }
-
-.skills-panel .panel-col:last-child { display: flex; flex-direction: column; }
-.skills-panel .focus-chart { width: 100%; }
-.chart-note { margin: -16px 0 24px; text-align: center; color: var(--muted); font-size: 14px; }
-.area-detail { margin-top: auto; padding-top: 22px; border-top: 1px solid var(--line); }
+.area-detail { margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--line); }
 .area-detail h3 { margin: 0 0 4px; font-size: 18px; }
 .area-detail h3::before {
     content: "";
@@ -1128,11 +1132,12 @@ a.card:focus-visible {
     .bar { grid-template-columns: minmax(0, 1fr) auto; }
     .bar-track { grid-column: 1 / 3; grid-row: 2; }
     .bar-used { grid-column: 1 / 3; }
-    .donut-label { display: none; }
-    .focus-chart { max-width: 300px; }
+    .seg-name, .seg-count { display: none; }
+    .focus-seg { min-width: 0; }
+    .seg-fill { height: 36px; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .donut.animate .donut-seg { animation: none; }
+    .seg-fill { transition: none !important; }
     .toolbelt.is-ready .belt-track { width: auto; animation: none; }
     .belt-row { -webkit-mask-image: none; mask-image: none; }
     .belt-set { flex-wrap: wrap; justify-content: center; gap: 20px 40px; padding: 0; }
@@ -1465,7 +1470,7 @@ a.card:focus-visible {
 }
 html { cursor: var(--cursor); }
 a, button, select, summary, .dd-item, .dd-option, [role="button"], [role="tab"],
-.card, .tab, .work-media, .hero-credit, .donut-seg, .swiper-button-prev, .swiper-button-next,
+.card, .tab, .work-media, .hero-credit, .focus-seg, .swiper-button-prev, .swiper-button-next,
 .search input::-webkit-search-cancel-button { cursor: var(--cursor-link); }
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea { cursor: text; }
 .swiper-pagination-clickable .swiper-pagination-bullet { cursor: var(--cursor-link); }

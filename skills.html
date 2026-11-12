@@ -9,7 +9,7 @@
         try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
     </script>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="./style.css?v=34">
+    <link rel="stylesheet" href="./style.css?v=35">
 </head>
 <body>
 
@@ -57,11 +57,8 @@
 
             <div class="panel-col">
                 <h2 class="panel-title">Focus</h2>
-                <p class="panel-hint" id="focusHint">Select an area to see its projects.</p>
-                <div class="focus-chart">
-                    <svg class="donut" id="donut" viewBox="0 0 560 400" role="group" aria-label="Projects by area"></svg>
-                </div>
-                <p class="chart-note">Slice size is weighted by project difficulty.</p>
+                <p class="panel-hint" id="focusHint">Width is weighted by project difficulty. Select an area.</p>
+                <div class="focus-bar" id="focusBar" role="group" aria-label="Projects by area"></div>
                 <div class="area-detail" id="areaDetail"></div>
             </div>
         </section>
@@ -77,7 +74,7 @@
         </div>
     </footer>
 
-    <script src="./site.js?v=13" defer></script>
-    <script type="module" src="./skills.js?v=22"></script>
+    <script src="./site.js?v=14" defer></script>
+    <script type="module" src="./skills.js?v=23"></script>
 </body>
 </html>

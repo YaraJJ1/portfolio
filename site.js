@@ -62,7 +62,7 @@
     document.body.appendChild(cursor);
     root.classList.add("has-custom-cursor");
 
-    var CLICKABLE = 'a, button, select, summary, label[for], [role="button"], [role="tab"], .card, .tab, .work-media, .donut-seg, .dd-item, .dd-option, .swiper-button-prev, .swiper-button-next, .swiper-pagination-bullet';
+    var CLICKABLE = 'a, button, select, summary, label[for], [role="button"], [role="tab"], .card, .tab, .work-media, .focus-seg, .dd-item, .dd-option, .swiper-button-prev, .swiper-button-next, .swiper-pagination-bullet';
     var TEXT = 'input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, [contenteditable="true"]';
     var x = -100, y = -100, cx = -100, cy = -100, moving = false;
 
