@@ -1506,18 +1506,10 @@ html.has-custom-cursor :fullscreen * { cursor: auto !important; }
 }
 .custom-cursor-dot .cursor-outline { fill: none; stroke: #000; stroke-opacity: 0.55; stroke-width: 2; }
 .custom-cursor-dot .cursor-ring { fill: #fff; fill-opacity: 0; stroke: #fff; stroke-width: 1; }
-.custom-cursor.is-link circle {
-    r: 10.5px;
-    animation: cursor-pulse 0.7s cubic-bezier(0.45, 0, 0.55, 1) 0.3s infinite alternate;
-}
 .custom-cursor.is-link .cursor-ring { fill-opacity: 1; }
 .custom-cursor.is-down circle { r: 6px; animation: none; }
-@keyframes cursor-pulse { to { r: 11.5px; } }
 @media (max-resolution: 1.5dppx) {
     .custom-cursor-dot .cursor-outline { stroke-width: 3; stroke-opacity: 0.4; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .custom-cursor.is-link circle { animation: none; }
 }
 
 body::before {
