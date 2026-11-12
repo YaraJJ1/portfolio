@@ -551,7 +551,12 @@ main .home-contact { padding-bottom: 104px; }
     border-bottom: 1px solid var(--line);
     background: transparent;
 }
-.toolbar.is-stuck { background: var(--bg); }
+.toolbar.is-stuck {
+    background: linear-gradient(180deg, rgba(112, 84, 190, 0.26) 0, rgba(112, 84, 190, 0.12) 22vh, rgba(112, 84, 190, 0) 50vh) fixed, var(--bg);
+}
+:root[data-theme="dark"] .toolbar.is-stuck {
+    background: linear-gradient(180deg, rgba(185, 166, 240, 0.14) 0, rgba(185, 166, 240, 0.06) 22vh, rgba(185, 166, 240, 0) 50vh) fixed, var(--bg);
+}
 
 .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
 
