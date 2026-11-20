@@ -1201,10 +1201,10 @@ a.card:focus-visible {
 .cert-img-link {
     flex-shrink: 0;
     display: block;
-    width: 64px;
-    height: 64px;
+    width: 96px;
+    height: 96px;
     border-radius: 50%;
-    border: 3px double var(--accent);
+    border: 4px double var(--accent);
     background: var(--accent-soft);
     overflow: hidden;
 }
@@ -1221,6 +1221,7 @@ a.card:focus-visible {
     object-fit: cover;
 }
 @media (hover: hover) { .cert-img-link:hover { transform: scale(1.06); } }
+@media (max-width: 480px) { .cert-img-link, .cert-badge { width: 72px; height: 72px; } }
 .cert-title { margin: 0 0 4px; font-size: 20px; }
 .cert-meta { margin: 0 0 10px; color: var(--muted); font-size: 16px; }
 
