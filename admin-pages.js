@@ -223,7 +223,7 @@ function certRow(cert, i) {
         </div>
         ${textField(`certLink${i}`, "Link to verify", cert.link || "", "", { type: "url", hint: "Optional. Must start with https://" })}
         <div class="field cert-picture">
-            <span class="field-label">Picture <span class="hint">Optional. A screenshot of the certificate works well.</span></span>
+            <span class="field-label">Picture <span class="hint">Optional. Shown in the round badge, so a square logo (like the issuer's) works best.</span></span>
             <div class="cert-picture-row">
                 <img class="cert-picture-preview" src="${esc(cert.image || "")}" alt="" ${cert.image ? "" : "hidden"}>
                 <label class="btn btn-ghost btn-small file-btn"><input type="file" class="cert-file sr-only" accept="image/png,image/jpeg,image/webp"><span class="file-btn-text">${cert.image ? "Change picture" : "Add picture"}</span></label>
