@@ -1,6 +1,6 @@
 import { db } from "./firebase.js";
 import {
-    collection, getDocs, getDoc, setDoc, deleteField
+    collection, doc, getDocs, getDoc, setDoc, deleteField
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import { escapeHTML, techLabel, DIFFICULTY_ORDER, TECH } from "./projects-data.js";
@@ -24,6 +24,7 @@ let cleanState = "";
 let started = false;
 let loadFailed = false;
 let saving = false;
+let uploading = 0;
 let uidCount = 0;
 const uid = () => "pf" + (++uidCount);
 const COLOR_NAMES = { "#6d5a91": "Purple", "#56707a": "Slate", "#2b6f75": "Teal", "#4862d4": "Blue", "#ad3a5a": "Rose", "#9c6214": "Amber" };
@@ -221,6 +222,15 @@ function certRow(cert, i) {
                 <select name="certYear${i}"><option value="">Year…</option>${years.map(yr => `<option ${Number(y) === yr ? "selected" : ""}>${yr}</option>`).join("")}</select></label>
         </div>
         ${textField(`certLink${i}`, "Link to verify", cert.link || "", "", { type: "url", hint: "Optional. Must start with https://" })}
+        <div class="field cert-picture">
+            <span class="field-label">Picture <span class="hint">Optional. A screenshot of the certificate works well.</span></span>
+            <div class="cert-picture-row">
+                <img class="cert-picture-preview" src="${esc(cert.image || "")}" alt="" ${cert.image ? "" : "hidden"}>
+                <label class="btn btn-ghost btn-small file-btn"><input type="file" class="cert-file sr-only" accept="image/png,image/jpeg,image/webp"><span class="file-btn-text">${cert.image ? "Change picture" : "Add picture"}</span></label>
+                <button type="button" class="link-btn" data-remove-picture ${cert.image ? "" : "hidden"}>Remove picture</button>
+            </div>
+            <p class="cert-picture-status" role="status"></p>
+        </div>
     </div>`;
 }
 
@@ -374,7 +384,7 @@ const isDirty = () => current !== "projects" && cleanState !== "" && formState()
 
 function updateSaveBar() {
     const dirty = isDirty();
-    $("saveBtn").disabled = !dirty || !started || loadFailed || saving;
+    $("saveBtn").disabled = !dirty || !started || loadFailed || saving || uploading > 0;
     $("discardBtn").disabled = !dirty || saving;
     $("discardBtn").hidden = !dirty;
     $("saveBar").classList.toggle("is-dirty", dirty);
@@ -479,6 +489,10 @@ form.addEventListener("input", e => {
 });
 form.addEventListener("change", e => {
     const t = e.target;
+    if (t.classList.contains("cert-file")) {
+        uploadCertPicture(t);
+        return;
+    }
     if (t.closest(".hide-skill")) t.closest(".nudge-row").classList.toggle("is-hidden", t.checked);
     if (t.matches('select[name^="beltLogo"]')) {
         const row = t.closest(".list-row");
@@ -488,6 +502,75 @@ form.addEventListener("change", e => {
     }
     updateSaveBar();
 });
+
+function setCertPicture(card, url) {
+    card.dataset.image = url;
+    const img = card.querySelector(".cert-picture-preview");
+    img.hidden = !url;
+    if (url) img.src = url; else img.removeAttribute("src");
+    card.querySelector("[data-remove-picture]").hidden = !url;
+    card.querySelector(".file-btn-text").textContent = url ? "Change picture" : "Add picture";
+}
+
+async function shrinkImage(file) {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1400 / bitmap.width);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    return new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error("Couldn't read that picture.")), "image/jpeg", 0.88));
+}
+
+async function uploadToGithub(blob, name) {
+    const snap = await getDoc(doc(db, "config", "githubToken"));
+    const token = snap.exists() && snap.data().token;
+    if (!token) throw new Error("The upload key is missing.");
+    const content = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.slice(reader.result.indexOf(",") + 1));
+        reader.onerror = () => reject(new Error("Couldn't read that picture."));
+        reader.readAsDataURL(blob);
+    });
+    const path = `images/${name}`;
+    const res = await fetch(`https://api.github.com/repos/yarajj1/portfolio/contents/${path}`, {
+        method: "PUT",
+        headers: { Authorization: `token ${token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
+        body: JSON.stringify({ message: `Add certificate image: ${name}`, content, branch: "main" })
+    });
+    if (!res.ok) throw new Error(`Upload failed (${res.status}).`);
+    return `https://cdn.jsdelivr.net/gh/yarajj1/portfolio@main/${path}`;
+}
+
+async function uploadCertPicture(input) {
+    const file = input.files && input.files[0];
+    input.value = "";
+    if (!file) return;
+    const card = input.closest('[data-row="cert"]');
+    const status = card.querySelector(".cert-picture-status");
+    if (!/^image\//.test(file.type)) { status.textContent = "Pick a PNG, JPG or WebP picture."; return; }
+    const title = (card.querySelector('[name^="certTitle"]') || {}).value || "certificate";
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 40) || "certificate";
+    uploading++;
+    updateSaveBar();
+    card.querySelector(".file-btn").classList.add("is-busy");
+    status.textContent = "Uploading…";
+    try {
+        const blob = await shrinkImage(file);
+        const url = await uploadToGithub(blob, `${Date.now()}-cert-${slug}.jpg`);
+        setCertPicture(card, url);
+        status.textContent = "Uploaded. Press Save to put it on your site.";
+    } catch (err) {
+        status.textContent = `${err.message || "Upload failed."} Try again.`;
+    } finally {
+        uploading--;
+        card.querySelector(".file-btn").classList.remove("is-busy");
+        updateSaveBar();
+    }
+}
 
 function renumber(list) {
     const rows = [...list.children];
@@ -504,6 +587,13 @@ form.addEventListener("click", e => {
     if (!btn) return;
     const row = btn.closest("[data-row]");
 
+    if (btn.hasAttribute("data-remove-picture")) {
+        const card = btn.closest('[data-row="cert"]');
+        setCertPicture(card, "");
+        card.querySelector(".file-btn input").focus();
+        updateSaveBar();
+        return;
+    }
     if (btn.classList.contains("reset-link")) {
         const field = btn.closest(".field");
         const input = field.querySelector("input, textarea");

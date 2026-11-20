@@ -14,7 +14,7 @@
     <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js">
     <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js">
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="./style.css?v=37">
+    <link rel="stylesheet" href="./style.css?v=39">
 </head>
 <body>
 
@@ -89,7 +89,7 @@
         } else {
             list.innerHTML = certs.map(c => `
                 <li class="cert">
-                    ${c.image ? `<img class="cert-img" src="${esc(c.image)}" alt="" loading="lazy">` : `<span class="cert-badge" aria-hidden="true"></span>`}
+                    ${c.image ? `<a class="cert-img-link" href="${esc(c.image)}" target="_blank" rel="noopener" aria-label="View the full ${esc(c.title)} certificate"><img class="cert-img" src="${esc(c.image)}" alt="" loading="lazy" decoding="async"></a>` : `<span class="cert-badge" aria-hidden="true"></span>`}
                     <div class="cert-body">
                         <h2 class="cert-title">${esc(c.title)}</h2>
                         <p class="cert-meta">${esc(c.issuer)}${c.date ? ` · ${esc(fmt(c.date))}` : ""}</p>

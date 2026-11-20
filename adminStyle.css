@@ -623,6 +623,14 @@ a { color: var(--accent); }
     border-radius: var(--radius);
     background: var(--bg);
 }
+.cert-picture-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.cert-picture-preview { width: 112px; aspect-ratio: 5 / 4; object-fit: cover; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+.file-btn { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+.file-btn:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.file-btn.is-busy { opacity: 0.6; pointer-events: none; }
+.cert-picture-status { margin: 6px 0 0; color: var(--ink-2); font-size: 14.5px; }
+.cert-picture-status:empty { display: none; }
+@media (pointer: coarse) { .file-btn { min-height: 44px; } }
 .sub-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
 .sub-card-title { margin: 0 0 8px; color: var(--muted); font-size: 14.5px; font-variant-caps: all-small-caps; letter-spacing: 0.07em; }
 .sub-card-head .sub-card-title { margin: 0; }
