@@ -318,16 +318,17 @@ Promise.all([fetchProjects(), contentReady])
         showAreaLinks(sorted);
 
         const list = $("workList");
-        const picks = (content.home.selectedWork || [])
-            .map(id => sorted.find(p => p.id === id))
-            .filter((p, i, arr) => p && p !== hero && arr.indexOf(p) === i);
-        const rest = sorted.filter(p => p !== hero && !picks.includes(p));
+        const wanted = (content.home.selectedWork || []).map(id => sorted.find(p => p.id === id));
+        const chosen = new Set(wanted.filter(Boolean));
+        const rest = [...sorted.filter(p => !chosen.has(p) && !heroes.includes(p)), ...sorted.filter(p => !chosen.has(p) && heroes.includes(p))];
         const shown = [];
         for (let i = 0; i < 3; i++) {
-            const wanted = (content.home.selectedWork || [])[i];
-            const pick = wanted && picks.find(p => p.id === wanted);
+            const pick = wanted[i];
             if (pick && !shown.includes(pick)) shown.push(pick);
-            else if (rest.length) shown.push(rest.shift());
+            else {
+                const next = rest.find(p => !shown.includes(p));
+                if (next) shown.push(next);
+            }
         }
         list.innerHTML = shown.map(workItem).join("");
         setUpPreviews(list);
