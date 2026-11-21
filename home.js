@@ -80,22 +80,30 @@ function showHero(list) {
     };
 
     const controls = $("heroControls");
-    controls.innerHTML = `
-        <button type="button" class="hero-arrow" data-dir="-1" aria-label="Previous picture"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg></button>
-        <span class="hero-dots">${list.map((p, i) => `<button type="button" class="hero-dot" data-i="${i}" aria-label="Show ${escapeHTML(p.title)}"></button>`).join("")}</span>
-        <button type="button" class="hero-arrow" data-dir="1" aria-label="Next picture"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>`;
+    controls.innerHTML = `<span class="hero-dots">${list.map((p, i) => `<button type="button" class="hero-dot" data-i="${i}" aria-label="Show ${escapeHTML(p.title)}"></button>`).join("")}</span>`;
     controls.hidden = false;
+    banner.insertAdjacentHTML("beforeend", `
+        <button type="button" class="hero-edge hero-edge-prev" data-dir="-1" aria-label="Previous picture"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg></button>
+        <button type="button" class="hero-edge hero-edge-next" data-dir="1" aria-label="Next picture"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>`);
+    banner.querySelectorAll(".hero-edge").forEach(btn => btn.addEventListener("click", () => {
+        const dir = Number(btn.dataset.dir);
+        stopped = true;
+        go(index + dir, dir);
+    }));
     const dots = [...controls.querySelectorAll(".hero-dot")];
 
     let index = 0;
     let timer = null;
     let paused = false;
     let creditTimer = null;
+    let stopped = false;
+    let lock = 0;
 
     const mark = () => dots.forEach((d, i) => d.setAttribute("aria-current", i === index ? "true" : "false"));
     const finishCredit = () => { clearTimeout(creditTimer); setCredit(list[index]); credit.classList.remove("is-changing"); };
     const schedule = () => {
         clearTimeout(timer);
+        if (stopped) return;
         if (!reduced && !paused && !document.hidden) timer = setTimeout(() => go(index + 1, 1), HERO_DELAY);
     };
 
@@ -119,28 +127,85 @@ function showHero(list) {
         credit.classList.add("is-changing");
         clearTimeout(creditTimer);
         creditTimer = setTimeout(finishCredit, 350);
+        lock = performance.now() + 700;
         schedule();
     }
 
     controls.addEventListener("click", e => {
         const btn = e.target.closest("button");
         if (!btn) return;
-        if (btn.dataset.dir) go(index + Number(btn.dataset.dir), Number(btn.dataset.dir));
-        else go(Number(btn.dataset.i), Number(btn.dataset.i) > index ? 1 : -1);
+        const i = Number(btn.dataset.i);
+        stopped = true;
+        go(i, i > index ? 1 : -1);
     });
 
-    let startX = null, startY = 0;
+    const n = list.length;
+    const place = (s, x) => { s.classList.add("no-anim"); s.style.transform = x; };
+    let drag = null;
+    let justDragged = false;
     banner.addEventListener("pointerdown", e => {
-        if (e.pointerType === "mouse" || e.target.closest("a, button")) return;
-        startX = e.clientX; startY = e.clientY;
+        if (e.button !== 0 || e.target.closest("a, button") || performance.now() < lock) return;
+        drag = { x: e.clientX, y: e.clientY, dx: 0, id: e.pointerId, active: false, nb: -1, t: performance.now() };
     });
-    banner.addEventListener("pointerup", e => {
-        if (startX === null) return;
-        const dx = e.clientX - startX, dy = e.clientY - startY;
-        startX = null;
-        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(index + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
+    banner.addEventListener("pointermove", e => {
+        if (!drag || e.pointerId !== drag.id) return;
+        const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+        if (!drag.active) {
+            if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+            if (Math.abs(dy) >= Math.abs(dx)) { drag = null; return; }
+            drag.active = true;
+            try { banner.setPointerCapture(e.pointerId); } catch (err) {}
+            banner.classList.add("is-dragging");
+            clearTimeout(timer);
+            const sel = window.getSelection && window.getSelection();
+            if (sel) sel.removeAllRanges();
+        }
+        e.preventDefault();
+        drag.dx = dx;
+        const dir = dx < 0 ? 1 : -1;
+        const nb = (index + dir + n) % n;
+        if (drag.nb !== -1 && drag.nb !== nb && drag.nb !== index) place(slides[drag.nb], "translateX(100%)");
+        drag.nb = nb;
+        drag.dir = dir;
+        load(nb);
+        place(slides[index], `translateX(${dx}px)`);
+        if (nb !== index) place(slides[nb], `translateX(calc(${dir * 100}% + ${dx}px))`);
     });
-    banner.addEventListener("pointercancel", () => { startX = null; });
+    const endDrag = e => {
+        if (!drag || (e && e.pointerId !== drag.id)) return;
+        const d = drag;
+        drag = null;
+        if (!d.active) return;
+        banner.classList.remove("is-dragging");
+        justDragged = true;
+        setTimeout(() => { justDragged = false; }, 0);
+        const width = banner.clientWidth || 1;
+        const speed = Math.abs(d.dx) / Math.max(1, performance.now() - d.t);
+        const cur = slides[index];
+        const nb = slides[d.nb];
+        void cur.offsetWidth;
+        cur.classList.remove("no-anim");
+        nb.classList.remove("no-anim");
+        if (d.nb !== index && (Math.abs(d.dx) > width * 0.18 || (speed > 0.5 && Math.abs(d.dx) > 30))) {
+            nb.style.transform = "translateX(0)";
+            cur.style.transform = `translateX(${-d.dir * 100}%)`;
+            index = d.nb;
+            stopped = true;
+            lock = performance.now() + 700;
+            mark();
+            credit.classList.add("is-changing");
+            clearTimeout(creditTimer);
+            creditTimer = setTimeout(finishCredit, 350);
+        } else {
+            cur.style.transform = "translateX(0)";
+            if (d.nb !== index) nb.style.transform = `translateX(${d.dir * 100}%)`;
+        }
+        schedule();
+    };
+    banner.addEventListener("pointerup", endDrag);
+    banner.addEventListener("pointercancel", endDrag);
+    banner.addEventListener("click", e => { if (justDragged) { e.preventDefault(); e.stopPropagation(); } }, true);
+    banner.addEventListener("dragstart", e => e.preventDefault());
 
     const pause = () => { paused = true; clearTimeout(timer); };
     const resume = () => { paused = false; schedule(); };

@@ -390,6 +390,51 @@ main .home-hero {
 }
 .hero-slide.no-anim { transition: none; }
 .hero-banner.has-slides { touch-action: pan-y; }
+.hero-banner.is-dragging { user-select: none; -webkit-user-select: none; }
+@media (hover: hover) {
+    html:not(.has-custom-cursor) .hero-banner.has-slides { cursor: grab; }
+    html:not(.has-custom-cursor) .hero-banner.is-dragging { cursor: grabbing; }
+    html:not(.has-custom-cursor) .hero-banner.has-slides :is(a, button) { cursor: pointer; }
+}
+.hero-banner.is-dragging .hero-slide { will-change: transform; }
+
+.hero-edge {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-top: -22px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 50%;
+    background: rgba(18, 14, 20, 0.45);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    cursor: pointer;
+    opacity: 0.9;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+    transition: opacity 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+.hero-edge-prev { left: 16px; }
+.hero-edge-next { right: 16px; }
+.hero-edge svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.hero-banner:hover .hero-edge, .hero-edge:focus-visible { opacity: 1; }
+.hero-edge:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@media (hover: hover) {
+    .hero-edge:hover { background: rgba(18, 14, 20, 0.75); }
+    .hero-edge-prev:hover { transform: translateX(-2px); }
+    .hero-edge-next:hover { transform: translateX(2px); }
+}
+@media (min-width: 721px) {
+    .hero-banner.has-slides { padding-left: max(80px, clamp(32px, 4.5vw, 72px)); }
+}
+@media (max-width: 720px) {
+    .hero-edge { display: none; }
+}
 .hero-slide .hero-bg { z-index: auto; }
 
 .hero-controls {
