@@ -623,6 +623,17 @@ a { color: var(--accent); }
     border-radius: var(--radius);
     background: var(--bg);
 }
+.hero-picks { margin: 0 0 18px; padding: 0; border: 0; min-width: 0; }
+.hero-picks legend { padding: 0; margin-bottom: 8px; }
+.hero-pick-list { counter-reset: pick; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 8px; }
+.hero-pick { position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); cursor: pointer; }
+.hero-pick input { flex-shrink: 0; width: 18px; height: 18px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.hero-pick img { width: 64px; height: 40px; object-fit: cover; border-radius: 4px; background: var(--line); }
+.hero-pick span { font-size: 15px; line-height: 1.25; }
+.hero-pick:has(input:checked) { counter-increment: pick; border-color: var(--accent); background: var(--accent-soft); font-weight: bold; }
+.hero-pick:has(input:checked)::after { content: counter(pick); margin-left: auto; display: grid; place-items: center; flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 13px; }
+.hero-pick:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (hover: hover) { .hero-pick:hover { border-color: var(--accent); } }
 .cert-picture-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .cert-picture-preview { width: 96px; height: 96px; padding: 2px; object-fit: cover; border: 4px double var(--accent); border-radius: 50%; background: var(--accent-soft); background-clip: content-box; }
 .file-btn { position: relative; display: inline-flex; align-items: center; cursor: pointer; }

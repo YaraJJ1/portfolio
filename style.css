@@ -292,7 +292,7 @@ main .home-hero {
     opacity: 0;
     transform: scale(1.14);
     transform-origin: 0 100%;
-    transition: opacity 0.8s ease, transform 1.6s ease;
+    transition: opacity 1.4s ease, transform 8s ease-out;
 }
 .hero-bg.loaded { opacity: 1; transform: scale(1.1); }
 .hero-bg:not([src]) { visibility: hidden; }
@@ -372,6 +372,8 @@ main .home-hero {
 }
 .hero-credit strong { font-weight: normal; }
 .hero-credit:hover { background: rgba(18, 14, 20, 0.8); }
+.hero-credit { transition: opacity 0.4s ease, background-color 0.2s ease; }
+.hero-credit.is-changing { opacity: 0; }
 
 .hero-facts {
     display: grid;

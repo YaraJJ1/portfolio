@@ -26,24 +26,83 @@ try {
     }
 } catch (e) {}
 
-function showHero(p) {
-    try { localStorage.setItem(HERO_KEY, p.thumb); } catch (e) {}
-    const img = $("heroShotImg");
-    if (img.getAttribute("src") === p.thumb) {
-        const link0 = $("heroShotLink");
-        link0.href = projectUrl(p);
-        $("heroShotTitle").textContent = p.title;
-        link0.hidden = false;
-        return;
-    }
-    img.addEventListener("load", () => img.classList.add("loaded"), { once: true });
-    img.src = p.thumb;
+const HERO_DELAY = 9000;
 
+function setCredit(p) {
     const link = $("heroShotLink");
     link.href = projectUrl(p);
     link.title = [formatDate(p.date), p.techs.map(techLabel).join(", ")].filter(Boolean).join(" · ");
     $("heroShotTitle").textContent = p.title;
     link.hidden = false;
+}
+
+function showHero(list) {
+    const first = list[0];
+    try { localStorage.setItem(HERO_KEY, first.thumb); } catch (e) {}
+    const base = $("heroShotImg");
+    if (base.getAttribute("src") !== first.thumb) {
+        base.classList.remove("loaded");
+        base.addEventListener("load", () => base.classList.add("loaded"), { once: true });
+        base.src = first.thumb;
+    }
+    setCredit(first);
+    if (list.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const credit = $("heroShotLink");
+    const slides = list.map((p, i) => {
+        if (i === 0) return base;
+        const img = document.createElement("img");
+        img.className = "hero-bg";
+        img.alt = "";
+        img.decoding = "async";
+        base.after(img);
+        return img;
+    });
+    let index = 0;
+    let timer = null;
+    let paused = false;
+    let creditTimer = null;
+    const finishCredit = () => { clearTimeout(creditTimer); setCredit(list[index]); credit.classList.remove("is-changing"); };
+
+    const ready = i => new Promise(resolve => {
+        const img = slides[i];
+        if (img.getAttribute("src") && img.complete) return resolve();
+        img.addEventListener("load", resolve, { once: true });
+        img.addEventListener("error", resolve, { once: true });
+        if (!img.getAttribute("src")) img.src = list[i].thumb;
+    });
+
+    const schedule = () => {
+        clearTimeout(timer);
+        if (!paused && !document.hidden) timer = setTimeout(next, HERO_DELAY);
+    };
+
+    async function next() {
+        const to = (index + 1) % list.length;
+        await ready(to);
+        if (paused || document.hidden) return;
+        const from = slides[index];
+        from.after(slides[to]);
+        void slides[to].offsetWidth;
+        slides[to].classList.add("loaded");
+        setTimeout(() => { if (from !== slides[index]) from.classList.remove("loaded"); }, 1500);
+        credit.classList.add("is-changing");
+        index = to;
+        creditTimer = setTimeout(finishCredit, 400);
+        ready((to + 1) % list.length);
+        schedule();
+    }
+
+    const banner = $("heroBanner");
+    const pause = () => { paused = true; clearTimeout(timer); finishCredit(); };
+    const resume = () => { paused = false; schedule(); };
+    banner.addEventListener("focusin", pause);
+    banner.addEventListener("focusout", resume);
+    banner.addEventListener("pointerenter", pause);
+    banner.addEventListener("pointerleave", resume);
+    document.addEventListener("visibilitychange", schedule);
+    ready(1);
+    schedule();
 }
 
 function showFacts(projects) {
@@ -134,8 +193,11 @@ Promise.all([fetchProjects(), contentReady])
         const sorted = [...projects].sort(byFeatured);
         if (!sorted.length) return;
 
-        const hero = sorted.find(p => p.id === content.home.heroProject) || sorted[0];
-        showHero(hero);
+        const heroIds = (content.home.heroProjects && content.home.heroProjects.length) ? content.home.heroProjects : [content.home.heroProject];
+        const heroes = heroIds.map(id => sorted.find(p => p.id === id)).filter((p, i, arr) => p && p.thumb && arr.indexOf(p) === i);
+        if (!heroes.length) heroes.push(sorted[0]);
+        const hero = heroes[0];
+        showHero(heroes);
         showFacts(projects);
         showAreaLinks(sorted);
 

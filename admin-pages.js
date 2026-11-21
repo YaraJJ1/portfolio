@@ -78,13 +78,14 @@ function section(title, help, body) {
 
 function homeForm(c) {
     const d = DEFAULTS.home;
-    const options = [`<option value="">Automatic (your top project)</option>`]
-        .concat(projects.map(p => `<option value="${esc(p.id)}" ${p.id === c.heroProject ? "selected" : ""}>${esc(p.title)}</option>`));
+    const heroIds = (c.heroProjects && c.heroProjects.length) ? c.heroProjects : (c.heroProject ? [c.heroProject] : []);
     return section("Top banner", "The big picture at the top of your home page.",
         textField("role", "Line above your name", c.role, d.role, { max: 80 }) +
         textField("intro", "Intro", c.intro, d.intro, { max: 300, rows: 3, hint: "One or two sentences about what you do." }) +
-        `<label class="field"><span class="field-label">Pictured project <span class="hint">Its first image fills the banner.</span></span>
-            <select name="heroProject">${options.join("")}</select></label>`
+        `<fieldset class="field hero-picks">
+            <legend class="field-label">Pictured projects <span class="hint">Each one's first image fills the banner. Tick more than one and the banner slowly fades between them, in the numbered order. Tick none to use your top project.</span></legend>
+            <div class="hero-pick-list">${projects.map(p => `<label class="hero-pick"><input type="checkbox" name="heroPick" value="${esc(p.id)}" ${heroIds.includes(p.id) ? "checked" : ""}><img src="${esc(p.thumb || "")}" alt="" loading="lazy"><span>${esc(p.title)}</span></label>`).join("")}</div>
+        </fieldset>`
     ) + section("Selected work", "The three projects shown under the banner. Leave a slot on Automatic to fill it with your strongest remaining work.",
         [0, 1, 2].map(i => {
             const pick = (c.selectedWork || [])[i] || "";
@@ -266,7 +267,8 @@ function readForm(page) {
         return {
             role: orBlank(val(f, "role"), d.role),
             intro: orBlank(val(f, "intro"), d.intro),
-            heroProject: val(f, "heroProject"),
+            heroProject: (f.querySelector('input[name="heroPick"]:checked') || {}).value || "",
+            heroProjects: [...f.querySelectorAll('input[name="heroPick"]:checked')].map(i => i.value),
             selectedWork: (() => {
                 const picks = [0, 1, 2].map(i => val(f, `selectedWork${i}`));
                 return picks.some(Boolean) ? picks : [];
@@ -731,6 +733,7 @@ async function loadData() {
                 id: d.id,
                 title: data.imgTxt || "Untitled project",
                 difficulty: data["data-difficulty"] || "",
+                thumb: ((Array.isArray(data.media) ? data.media : []).find(m => m && m.url && m.type !== "video") || {}).url || (Array.isArray(data.images) && data.images[0]) || data.imgSrc || "",
                 techs: String(data["code-language"] || "").trim().toLowerCase().split(/\s+/).filter(Boolean)
             };
         })

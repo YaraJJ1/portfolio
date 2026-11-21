@@ -44,6 +44,7 @@ export const DEFAULTS = {
         role: "Game developer working in Unity & C#",
         intro: "I like the technical side of games: player movement, physics, shaders and procedural animation. Systems that are hard to get right and obvious when they're wrong.",
         heroProject: "",
+        heroProjects: [],
         selectedWork: [],
         areasIntro: "Mostly the systems underneath a game: how things move, collide and look.",
         areas: [
