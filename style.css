@@ -385,7 +385,8 @@ main .home-hero {
     position: absolute;
     inset: 0;
     overflow: hidden;
-    transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+    transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    backface-visibility: hidden;
     will-change: transform;
 }
 .hero-slide.no-anim { transition: none; }
@@ -408,24 +409,22 @@ main .home-hero {
     height: 44px;
     margin-top: -22px;
     padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.22);
+    border: 0;
     border-radius: 50%;
-    background: rgba(18, 14, 20, 0.45);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
+    background: transparent;
     color: #fff;
     cursor: pointer;
-    opacity: 0.9;
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+    opacity: 0.7;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.6));
     transition: opacity 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
 }
 .hero-edge-prev { left: 16px; }
 .hero-edge-next { right: 16px; }
-.hero-edge svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.hero-edge svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .hero-banner:hover .hero-edge, .hero-edge:focus-visible { opacity: 1; }
 .hero-edge:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 @media (hover: hover) {
-    .hero-edge:hover { background: rgba(18, 14, 20, 0.75); }
+    .hero-edge:hover { background: rgba(18, 14, 20, 0.35); }
     .hero-edge-prev:hover { transform: translateX(-2px); }
     .hero-edge-next:hover { transform: translateX(2px); }
 }

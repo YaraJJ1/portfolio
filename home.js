@@ -127,7 +127,7 @@ function showHero(list) {
         credit.classList.add("is-changing");
         clearTimeout(creditTimer);
         creditTimer = setTimeout(finishCredit, 350);
-        lock = performance.now() + 700;
+        lock = performance.now() + 600;
         schedule();
     }
 
@@ -191,7 +191,7 @@ function showHero(list) {
             cur.style.transform = `translateX(${-d.dir * 100}%)`;
             index = d.nb;
             stopped = true;
-            lock = performance.now() + 700;
+            lock = performance.now() + 600;
             mark();
             credit.classList.add("is-changing");
             clearTimeout(creditTimer);
