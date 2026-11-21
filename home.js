@@ -46,62 +46,113 @@ function showHero(list) {
         base.src = first.thumb;
     }
     setCredit(first);
-    if (list.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (list.length < 2) return;
 
+    const banner = $("heroBanner");
     const credit = $("heroShotLink");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const track = document.createElement("div");
+    track.className = "hero-slides";
+    base.before(track);
     const slides = list.map((p, i) => {
-        if (i === 0) return base;
-        const img = document.createElement("img");
-        img.className = "hero-bg";
-        img.alt = "";
-        img.decoding = "async";
-        base.after(img);
-        return img;
+        const slide = document.createElement("div");
+        slide.className = "hero-slide";
+        let img = base;
+        if (i > 0) {
+            img = document.createElement("img");
+            img.className = "hero-bg";
+            img.alt = "";
+            img.decoding = "async";
+        }
+        slide.appendChild(img);
+        slide.style.transform = i === 0 ? "translateX(0)" : "translateX(100%)";
+        track.appendChild(slide);
+        return slide;
     });
+    banner.classList.add("has-slides");
+
+    const load = i => {
+        const img = slides[i].querySelector("img");
+        if (img.getAttribute("src")) return;
+        img.addEventListener("load", () => img.classList.add("loaded"), { once: true });
+        img.src = list[i].thumb;
+    };
+
+    const controls = $("heroControls");
+    controls.innerHTML = `
+        <button type="button" class="hero-arrow" data-dir="-1" aria-label="Previous picture"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg></button>
+        <span class="hero-dots">${list.map((p, i) => `<button type="button" class="hero-dot" data-i="${i}" aria-label="Show ${escapeHTML(p.title)}"></button>`).join("")}</span>
+        <button type="button" class="hero-arrow" data-dir="1" aria-label="Next picture"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>`;
+    controls.hidden = false;
+    const dots = [...controls.querySelectorAll(".hero-dot")];
+
     let index = 0;
     let timer = null;
     let paused = false;
     let creditTimer = null;
+
+    const mark = () => dots.forEach((d, i) => d.setAttribute("aria-current", i === index ? "true" : "false"));
     const finishCredit = () => { clearTimeout(creditTimer); setCredit(list[index]); credit.classList.remove("is-changing"); };
-
-    const ready = i => new Promise(resolve => {
-        const img = slides[i];
-        if (img.getAttribute("src") && img.complete) return resolve();
-        img.addEventListener("load", resolve, { once: true });
-        img.addEventListener("error", resolve, { once: true });
-        if (!img.getAttribute("src")) img.src = list[i].thumb;
-    });
-
     const schedule = () => {
         clearTimeout(timer);
-        if (!paused && !document.hidden) timer = setTimeout(next, HERO_DELAY);
+        if (!reduced && !paused && !document.hidden) timer = setTimeout(() => go(index + 1, 1), HERO_DELAY);
     };
 
-    async function next() {
-        const to = (index + 1) % list.length;
-        await ready(to);
-        if (paused || document.hidden) return;
-        const from = slides[index];
-        from.after(slides[to]);
-        void slides[to].offsetWidth;
-        slides[to].classList.add("loaded");
-        setTimeout(() => { if (from !== slides[index]) from.classList.remove("loaded"); }, 1500);
-        credit.classList.add("is-changing");
+    function go(to, dir) {
+        to = (to + list.length) % list.length;
+        if (to === index) return;
+        load(to);
+        load((to + dir + list.length) % list.length);
+        const incoming = slides[to];
+        const outgoing = slides[index];
+        slides.forEach((s, i) => { if (i !== to && i !== index) { s.classList.add("no-anim"); s.style.transform = "translateX(100%)"; } });
+        incoming.classList.add("no-anim");
+        incoming.style.transform = `translateX(${dir * 100}%)`;
+        void incoming.offsetWidth;
+        incoming.classList.remove("no-anim");
+        incoming.style.transform = "translateX(0)";
+        outgoing.classList.remove("no-anim");
+        outgoing.style.transform = `translateX(${-dir * 100}%)`;
         index = to;
-        creditTimer = setTimeout(finishCredit, 400);
-        ready((to + 1) % list.length);
+        mark();
+        credit.classList.add("is-changing");
+        clearTimeout(creditTimer);
+        creditTimer = setTimeout(finishCredit, 350);
         schedule();
     }
 
-    const banner = $("heroBanner");
-    const pause = () => { paused = true; clearTimeout(timer); finishCredit(); };
+    controls.addEventListener("click", e => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        if (btn.dataset.dir) go(index + Number(btn.dataset.dir), Number(btn.dataset.dir));
+        else go(Number(btn.dataset.i), Number(btn.dataset.i) > index ? 1 : -1);
+    });
+
+    let startX = null, startY = 0;
+    banner.addEventListener("pointerdown", e => {
+        if (e.pointerType === "mouse" || e.target.closest("a, button")) return;
+        startX = e.clientX; startY = e.clientY;
+    });
+    banner.addEventListener("pointerup", e => {
+        if (startX === null) return;
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        startX = null;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(index + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
+    });
+    banner.addEventListener("pointercancel", () => { startX = null; });
+
+    const pause = () => { paused = true; clearTimeout(timer); };
     const resume = () => { paused = false; schedule(); };
-    banner.addEventListener("focusin", pause);
+    banner.addEventListener("focusin", e => { if (e.target.matches(":focus-visible")) pause(); });
     banner.addEventListener("focusout", resume);
-    banner.addEventListener("pointerenter", pause);
-    banner.addEventListener("pointerleave", resume);
+    banner.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") pause(); });
+    banner.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") resume(); });
     document.addEventListener("visibilitychange", schedule);
-    ready(1);
+
+    mark();
+    load(1);
+    load(list.length - 1);
     schedule();
 }
 
